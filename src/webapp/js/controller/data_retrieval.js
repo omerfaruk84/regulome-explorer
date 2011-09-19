@@ -1,7 +1,7 @@
 
 var base_query_url = '',
     csacr_base_query_uri = '/google-dsapi-svc/addama/datasources/csacr',
-    tcga_base_query_uri = '/google-dsapi-svc/addama/datasources/tcga',
+    tcga_base_query_uri = '/google-dsapi-svc/addama/datasources/biovis',
     dataset_table = '/regulome_explorer_dataset/query';
 
 var query_uri = '/query',
@@ -20,6 +20,7 @@ var query_uri = '/query',
     patient_uri =  '',
             pathway_uri = '',
     feature_data_uri =  '';
+    feature_values_uri ='';
 
 function registerDataRetrievalListeners() {
     var d = vq.events.Dispatcher;
@@ -36,18 +37,19 @@ function registerDataRetrievalListeners() {
         loadAnnotations();
     });
     d.addListener('click_association',function(link) {
-        loadFeatureData(link);
+        loadFeatureData(link,biovis.displayOptions());
     });
 }
 
  function selectDataset(set_label) {
     current_data = set_label;
-    network_uri = '/mv_'+set_label+'_feature_networks/query';
+    network_uri = '/mv_'+set_label+'_feature_associations/query';
     feature_uri = '/v_'+set_label+'_feature_sources/query';
     clin_uri = '/v_'+set_label+'_feature_clinlabel/query';
-    patient_uri =  '/v_'+set_label+'_patients/query';
-    feature_data_uri =  '/v_' + set_label + '_patient_values/query';
+    patient_uri =  '/v_'+set_label+'_strains/query';
+    feature_data_uri =  '/v_' + set_label + '_strain_values/query';
     pathway_uri = '/' + set_label + '_feature_pathways/query';
+     feature_values_uri = '/' + set_label + '_features/query';
 }
 
 function loadDatasetLabels() {
@@ -75,9 +77,7 @@ function loadDatasetLabels() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','dataset_labels',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
     }
 
-
     Ext.Ajax.request({url:clin_label_query,success:clinicalLabelQueryHandler,failure: queryFailed});
-
     var sources_query_str = query_param + 'select source' + json_out_param;
     var sources_query = base_query_url + tcga_base_query_uri + feature_uri + sources_query_str;
 
@@ -86,7 +86,6 @@ function loadDatasetLabels() {
     }
 
     Ext.Ajax.request({url:sources_query,success:featureSourceQueryHandler,failure: queryFailed});
-
 
     var patient_query_str = query_param + 'limit 1'+json_out_param;
     var patient_query = base_query_url + tcga_base_query_uri + patient_uri+patient_query_str;
@@ -100,7 +99,8 @@ function loadDatasetLabels() {
 
 }
 
-function loadFeatureData(link) {
+
+function loadFeatureData(link,display_options) {
 
     function loadComplete() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','features',patients));
@@ -111,22 +111,39 @@ function loadFeatureData(link) {
     }
 
     var patients = {data : null};
-
     var query_str = 'select f1id, f2id, f1alias, f1values, f2alias, f2values ' +
             'where f1id  = ' + link.sourceNode.id + ' and f2id = ' + link.targetNode.id + ' limit 1';
     var patient_query_str = query_param + query_str + json_out_param;
     var patient_query = base_query_url + tcga_base_query_uri + feature_data_uri + patient_query_str;
 
     function patientQueryHandle(response) {
-            patients['data'] = Ext.decode(response.responseText);
-        loadComplete();
+        patients['data'] = Ext.decode(response.responseText)[0];
     }
 
-        function queryFailed(response) {
+    function queryFailed(response) {
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','features',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
+    }
+
+    if(display_options.scatterplot_highlight_property != null) {
+        patients['highlight_data'] = null;
+        var highlight_query = 'select `id`, alias, patient_values ' +
+            'where `id`  = ' + display_options.scatterplot_highlight_property + ' limit 1';
+        var highlight_query_str = query_param + highlight_query + json_out_param;
+        var highlight_query_full = base_query_url + tcga_base_query_uri + feature_values_uri + highlight_query_str;
+
+        function highlightQueryHandle(response) {
+            patients['highlight_data'] = Ext.decode(response.responseText)[0];
+        }
+        function highlightQueryFailed(response) {
             vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','features',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
         }
-    Ext.Ajax.request({url:patient_query,success:patientQueryHandle,failure: queryFailed});
+        Ext.Ajax.request({url:highlight_query_full,success:highlightQueryHandle,failure: highlightQueryFailed});
+    }
 
+    var timer = new vq.utils.SyncDatasources(200,40,loadComplete,patients,loadFailed);
+
+    timer.start_poll();
+    Ext.Ajax.request({url:patient_query,success:patientQueryHandle,failure: queryFailed});
 }
 
 function loadAnnotations() {
@@ -169,20 +186,20 @@ function loadNetworkData(query_params,callback) {
 
     var responses = {network : null};
 
-    var network_query=buildGQLQuery(query_params);
+    network_query=buildGQLQuery(query_params);
 
     function handleNetworkQuery(response) {
-            responses['network'] = Ext.decode(response.responseText);
-            loadComplete();
+        responses['network'] = Ext.decode(response.responseText);
+        loadComplete();
     }
-function queryFailed(response) {
-    vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','assocations',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
-}
+    function queryFailed(response) {
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','assocations',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
+    }
 
     var association_query_str = query_param + network_query + json_out_param;
     var association_query = base_query_url + tcga_base_query_uri + network_uri + association_query_str;
 
-   Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: queryFailed});
+    Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: queryFailed});
 
 }
 
@@ -273,7 +290,7 @@ function buildGQLQuery(args) {
 
 function parseLabel(label) {
     if (label.length > 1 && label.indexOf('*') >= 0) {
-        return 'starts with \'' + label.replace(new RegExp('[*]', 'g'),'') + '\'';
+        return 'like \'' + label.replace(new RegExp('[*]', 'g'),'%') + '\'';
          } else {
              return '=\'' + label + '\'';
     }
