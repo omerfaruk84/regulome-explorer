@@ -3,38 +3,31 @@
 function registerLayoutListeners() {
      var d = vq.events.Dispatcher;
     d.addListener('data_ready','dataset_labels',function(obj){
-        loadListStores(obj);
+        loadListStores(obj.types);
          resetFormPanel();
-        requestFilteredData();
-    });
-    d.addListener( 'load_fail','associations',function(obj){
-        network_mask.hide();
-    });
-     d.addListener( 'query_fail','associations',function(obj){
-        network_mask.hide();
-    });
-    d.addListener('click_association',function(link){
-         openDetailsWindow(link);
-    });
-    d.addListener('data_ready','features',function(obj) {
-        renderScatterPlot(obj);
-        details_window_mask.hide();
+        requestFeatureFilteredData();
     });
     d.addListener('data_ready','annotations',function(obj){
-                Ext.getCmp('dataset_grid').getSelectionModel().selectFirstRow();
-                loadSelectedDataset();
+        vq.events.Dispatcher.dispatch(new vq.events.Event('dataset_selected','main','v_pv20_clinical_correlate_pairwise'));
      });
     d.addListener('render_complete','circvis',function(circvis_plot){
        exposeCirclePlot();
+        var nav = Ext.getCmp('nav_check').checked;
+        vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:nav,zoom_enable:nav}));
     });
-    d.addListener('data_ready','associations',function(data) {
-        loadDataTableStore(data);
+    d.addListener('render_complete','circvis_features',function(circvis_plot){
+        exposeCirclePlot();
+        var nav = Ext.getCmp('nav_check').checked;
+        vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:nav,zoom_enable:nav}));
     });
-     d.addListener('render_complete','linear',function(linear){
-       exposeLinearPlot();
+    d.addListener('render_complete','linear',function(linear){
+       exposeLinearPlot(linear.chr, linear.start, linear.range);
     });
-     d.addListener('render_complete','scatterplot',function(obj){
-       scatterplot_obj=obj;
+    d.addListener('render_complete','linear_features',function(linear){
+        exposeLinearPlot(linear.chr, linear.start, linear.range);
+    });
+    d.addListener('data_ready','filtered_features',function(obj) {
+        loadDataTableStore(obj.data);
     });
 }
 
@@ -44,18 +37,6 @@ Window manipulation
 
 function hideDatasetWindow() {
     dataset_window.hide();
-}
-
-/*
-    hide mask after scatterplot dispatches a 'completion' event?
- */
-
-function openDetailsWindow(association) {
-    details_window.show();
-    details_window_mask =  new Ext.LoadMask('details-window', {msg:"Loading Data..."});
-    details_window_mask.show();
-    renderMedlineDocuments(association);
-    renderPathways(association);
 }
 
 function showSVGDialog() {
@@ -71,11 +52,6 @@ function export_svg() {
         svg_tags =serializer.serializeToString(panel_dom.firstChild);
     }
     Ext.getCmp('export-textarea').setRawValue(svg_tags);
-}
-
-function loadDataDialog() {
-         dataset_window.show();
-        Ext.getCmp('dataset_grid').store.load();
 }
 
 function exportDataDialog() {
@@ -107,8 +83,44 @@ function openBrowserTab(url) {
         Filters
  */
 function requestFilteredData() {
-         vq.events.Dispatcher.dispatch(new vq.events.Event('data_request','associations',getFilterSelections()));
-         prepareVisPanels();
+    prepareVisPanels();
+    var task = new Ext.util.DelayedTask(function(){
+        vq.events.Dispatcher.dispatch(new vq.events.Event('data_request','associations',{filter:getFilterSelections()}));
+    });
+            task.delay(300);
+}
+
+function requestFeatureFilteredData() {
+    prepareVisPanels();
+    var task = new Ext.util.DelayedTask(function(){
+        vq.events.Dispatcher.dispatch(new vq.events.Event('data_request','filteredfeatures',{filter:getFeatureFilterSelections()}));
+    });
+    task.delay(300);
+}
+
+function getFeatureFilterSelections() {
+    var type = Ext.getCmp('feature_type_combo').getValue();
+    var label;
+    switch(type) {
+        case('CLIN'):
+            label = Ext.getCmp('feature_clin_label').getValue();
+            break;
+        default :
+            label = Ext.getCmp('feature_label_field').getValue();
+    }
+
+    return {
+        type:type,
+        label: label,
+        chr: Ext.getCmp('feature_chr_combo').getValue(),
+        start: Ext.getCmp('feature_chr_start').getValue(),
+        stop: Ext.getCmp('feature_chr_stop').getValue(),
+        score: Ext.getCmp('feature_score').getValue(),
+        score_fn: Ext.getCmp('feature_score_fn').getValue(),
+        correlation: Ext.getCmp('feature_correlation').getValue(),
+        correlation_fn : Ext.getCmp('feature_correlation_fn').getValue()
+
+    };
 }
 
 /*
@@ -116,7 +128,6 @@ getFilterSelections
     gathers the selections of each filter widget, packs it into a single object, and returns it
     easier to consume by event listeners, hopefully?
  */
-
 function getFilterSelections() {
     var type_1 = Ext.getCmp('f1_type_combo').getValue();
     var label_1;
@@ -136,40 +147,41 @@ function getFilterSelections() {
           default :
            label_2 = Ext.getCmp('f2_label_field').getValue();
     }
-   return packFilterSelections(
-            type_1,
-            label_1,
-            Ext.getCmp('f1_chr_combo').getValue(),
-            Ext.getCmp('f1_chr_start').getValue(),
-            Ext.getCmp('f1_chr_stop').getValue(),
-
-            type_2,
-            label_2,
-            Ext.getCmp('f2_chr_combo').getValue(),
-            Ext.getCmp('f2_chr_start').getValue(),
-            Ext.getCmp('f2_chr_stop').getValue(),
-
-            Ext.getCmp('min_importance').getValue(),
-            Ext.getCmp('min_correlation').getValue(),
-
-            Ext.getCmp('order_combo').getValue(),
-            Ext.getCmp('limit_combo').getValue(),
-
-            Ext.getCmp('correlation_fn').getValue(),
-            Ext.getCmp('max_pvalue').getValue()
-            );
+   return   {
+        f1_type:type_1,
+        f1_label: label_1,
+        f1_chr:Ext.getCmp('f1_chr_combo').getValue(),
+        f1_start:Ext.getCmp('f1_chr_start').getValue(),
+        f1_stop: Ext.getCmp('f1_chr_stop').getValue(),
+        f2_type:type_2,
+        f2_label:label_2,
+        f2_chr:Ext.getCmp('f2_chr_combo').getValue(),
+        f2_start:Ext.getCmp('f2_chr_start').getValue(),
+        f2_stop: Ext.getCmp('f2_chr_stop').getValue(),
+        correlation:Ext.getCmp('correlation').getValue(),
+        order:  Ext.getCmp('order_combo').getValue(),
+        limit: Ext.getCmp('limit_combo').getValue(),
+        correlation_fn:    Ext.getCmp('correlation_fn').getValue(),
+        pvalue:  Ext.getCmp('max_pvalue').getValue(),
+        score:  Ext.getCmp('score').getValue(),
+        score_fn: Ext.getCmp('score_fn').getValue()
+       };
 }
 
-function packFilterSelections() {
-   return {f1_type:arguments[0],f1_label:arguments[1], f1_chr:arguments[2],
-       f1_start:arguments[3],f1_stop:arguments[4],
-        f2_type:arguments[5],f2_label:arguments[6], f2_chr:arguments[7],
-       f2_start:arguments[8],f2_stop:arguments[9],
-        importance:arguments[10],correlation:arguments[11],order:arguments[12],
-    limit:arguments[13],correlation_fn:arguments[14],pvalue:arguments[15]};
-
+function resetFeatureFormPanel() {
+    Ext.getCmp('feature_type_combo').reset(),
+        Ext.getCmp('feature_label_field').reset(),
+        Ext.getCmp('feature_chr_combo').reset(),
+        Ext.getCmp('feature_clin_label').reset(),
+        Ext.getCmp('feature_chr_start').reset(),
+        Ext.getCmp('feature_chr_stop').reset(),
+        Ext.getCmp('feature_score').reset(),
+        Ext.getCmp('feature_score_fn').reset(),
+        Ext.getCmp('feature_max_pvalue').reset(),
+        Ext.getCmp('feature_correlation_fn').reset(),
+        Ext.getCmp('feature_order_combo').reset(),
+        Ext.getCmp('feature_limit_combo').reset()
 }
-
 
 function resetFormPanel() {
     Ext.getCmp('f1_type_combo').reset(),
@@ -184,9 +196,11 @@ function resetFormPanel() {
             Ext.getCmp('f2_clin_label').reset(),
             Ext.getCmp('f2_chr_start').reset(),
             Ext.getCmp('f2_chr_stop').reset(),
-            Ext.getCmp('min_importance').reset(),
+        Ext.getCmp('score').reset(),
+        Ext.getCmp('score_fn').reset(),
             Ext.getCmp('max_pvalue').reset(),
-            Ext.getCmp('min_correlation').reset(),
+        Ext.getCmp('correlation').reset(),
+        Ext.getCmp('correlation_fn').reset(),
             Ext.getCmp('order_combo').reset(),
             Ext.getCmp('limit_combo').reset()
 }
@@ -194,156 +208,33 @@ function resetFormPanel() {
 /*
   should be called by an event listener
  */
-
-    function loadListStores(dataset_labels) {
-        var label_list = dataset_labels['feature_sources'].map(function(row) {
-            return {value:row.source, label: label_map[row.source] || row.source};
+function loadListStores(dataset_labels) {
+    var label_list = dataset_labels.map(function(row) {
+        return {value:row, label: label_map[row] || row};
         });
         label_list.unshift({value:'*',label:'All'});
+    Ext.StoreMgr.get('feature_type_combo_store').loadData(label_list);
+        Ext.getCmp('feature_type_combo').setValue('*');
         Ext.StoreMgr.get('f1_type_combo_store').loadData(label_list);
-        Ext.getCmp('f1_type_combo').setValue('GEXP');
+        Ext.getCmp('f1_type_combo').setValue('*');
         Ext.StoreMgr.get('f2_type_combo_store').loadData(label_list);
         Ext.getCmp('f2_type_combo').setValue('*');
-        var clin_list = dataset_labels['clin_labels'].map(function(row) {
-            return {value:row.label, label: row.label};
-        });
-        clin_list.unshift({value:'*',label:'All'});
-        Ext.StoreMgr.get('f1_clin_list_store').loadData(clin_list);
-        Ext.getCmp('f1_clin_label').setValue('*');
-        Ext.StoreMgr.get('f2_clin_list_store').loadData(clin_list);
-        Ext.getCmp('f2_clin_label').setValue('*');
 }
 
 function loadDataTableStore(data) {
-    var mapped_data = pv.blend(data['network'],data['unlocated']).map(function(row) {
-  return {target_id: row.node1.id, target_source: row.node1.source,target_label: row.node1.label,target_chr: row.node1.chr,
-      target_start: row.node1.start,target_stop:row.node1.stop,
-      source_id: row.node2.id, source_source :row.node2.source,source_label: row.node2.label,source_chr: row.node2.chr,
-      source_start: row.node2.start,source_stop: row.node2.stop,
-                importance : row.importance, correlation:row.correlation, pvalue : row.pvalue };
+    var mapped_data = data.map(function(row) {
+  return {source: row.source,label: row.label,chr: row.chr,
+      start: row.start,end:row.end,
+                     score : row.score, agg : row.agg };
                             });
  Ext.StoreMgr.get('data_grid_store').loadData(mapped_data);
 }
 
-/*
-loadSelectedDataset
-    should dispatch an event after validating dataset selection
- */
-
-function loadSelectedDataset() {
-    var selected_record = Ext.getCmp('dataset_grid').getSelectionModel().getSelected();
-    if (selected_record != null) {
-        var selected_dataset = selected_record.json.label;
-        vq.events.Dispatcher.dispatch(new vq.events.Event('dataset_selected','dataset_grid',selected_dataset));
-        hideDatasetWindow();
-        Ext.getCmp('filters').setTitle( 'Filtering ' + selected_dataset);
-//        loadDataset(selected_json);
-    } else {
-        Ext.MessageBox.alert('Dataset not selected','Select a dataset to load.');
-    }
-}
-
-/*
-renderScatterPlot
-    should be wrapped in an event listener external to the ui layout code
- */
-function renderScatterPlot() {
-    var regression_type = Ext.getCmp('scatterplot_regression_radiogroup').getValue().getRawValue();
-    var reverse_axes = Ext.getCmp('scatterplot_axes_checkbox').getValue();
-    var discretize_x = Ext.getCmp('scatterplot_discrete_x_checkbox').getValue();
-    var discretize_y = Ext.getCmp('scatterplot_discrete_y_checkbox').getValue();
-    var event_obj =  {
-                        div:document.getElementById('scatterplot_panel'),
-                        regression_type:regression_type,
-                        reverse_axes:reverse_axes,
-                        discretize_x : discretize_x,
-                        discretize_y :discretize_y
-                        };
-       if (arguments.length ==1)  //data passed into function
-            event_obj['data'] = arguments[0];
-
-    Ext.getCmp('details-tabpanel').layout.setActiveItem('scatterplot_parent');
-    Ext.getCmp('scatterplot_parent').show();
-    vq.events.Dispatcher.dispatch(
-            new vq.events.Event('render_scatterplot','details',event_obj)
-    );
-}
-
-/*
-MEDLINE functions
- */
-
-function renderMedlineDocuments(association) {
-    var term1 = association.sourceNode.label;
-    var term2 = association.targetNode.label;
-     retrieveMedlineDocuments(term1,term2);
-    Ext.StoreMgr.get('dataDocument_grid_store').load({params: {start:0, rows:20}});
-}
-
-function retrieveMedlineDocuments(term1,term2){
-     Ext.StoreMgr.get('dataDocument_grid_store').on({
-         beforeload:{
-             fn: function(store,options){
-                store.proxy.setUrl('/solr/select/?q=%2Btext%3A\"' + term1 + '\" %2Btext%3A\"' + term2 + '\"&fq=%2Bpub_date_year%3A%5B1991 TO 2011%5D&wt=json' +
-                '&hl=true&hl.fl=article_title,abstract_text&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true');
-             }
-         }
-     });
-}
-
-/*
-        Grid Column rendering functions
- */
-
-function renderPMID(value, p, record) {
-    return String.format('<b><a href="http://www.ncbi.nlm.nih.gov/pubmed/{0}" target="_blank">{0}</a></b>', record.data.pmid);
-}
-
-function renderTitle(value, p, record) {
-    var jsonData = record.store.reader.jsonData;
-    if (jsonData.highlighting[record.id] != undefined && jsonData.highlighting[record.id].article_title != undefined) {
-        return jsonData.highlighting[record.id].article_title[0];
-    }
-    else
-        return record.data.article_title;
-}
-/*
-        Pathways functions
-*/
-function renderPathways(association) {
-    var target_id = association.sourceNode.id;
-    var predictor_id = association.targetNode.id;
-    retrievePathways(target_id,predictor_id);
-    Ext.StoreMgr.get('target_pathways_grid_store').load();
-    Ext.StoreMgr.get('predictor_pathways_grid_store').load();
-    Ext.getCmp('target_pathways_grid').setTitle('Target: ' + association.sourceNode.label);
-    Ext.getCmp('predictor_pathways_grid').setTitle('Predictor: ' + association.targetNode.label);
-}
-
-function retrievePathways(target_id,predictor_id){
-    var pathway_query = 'select pathway_name, pathway_type, pvalue';
-     Ext.StoreMgr.get('target_pathways_grid_store').on({
-         beforeload:{
-             fn: function(store,options){
-                 store.proxy.setUrl(base_query_url + tcga_base_query_uri + pathway_uri + '?tq=' + pathway_query +
-                         ' where featureid = ' + target_id+'&tqx=out:json_array');
-             }
-         }
-     });
-     Ext.StoreMgr.get('predictor_pathways_grid_store').on({
-         beforeload:{
-             fn: function(store,options){
-                 store.proxy.setUrl(base_query_url + tcga_base_query_uri + pathway_uri + '?tq=' + pathway_query +
-                         ' where featureid = ' + predictor_id+'&tqx=out:json_array');
-             }
-         }
-     });
-}
 
 /*clean divs*/
 
 function prepareVisPanels() {
-    network_mask = new Ext.LoadMask('view-region', {msg:"Loading Data..."});
+    network_mask = new Ext.LoadMask('randomforest-panel', {msg:"Loading Data..."});
     network_mask.show();
     wipeLinearPlot();
 }
@@ -358,16 +249,16 @@ function exposeCirclePlot(){
     Ext.getCmp('circle-parent').expand(true);
    network_mask.hide();
 }
- function exposeLinearPlot(chr,start,range_length) {
-     Ext.getCmp('linear-parent').expand(true);
-     Ext.getCmp('linear-parent').setTitle('Chromosome-level View: Chromosome ' + chr);
-     var task = new Ext.util.DelayedTask(function(){
-         var rf =  Ext.getCmp('rf-graphical').body;
-         var d = rf.dom;
-         rf.scroll('b',d.scrollHeight - d.offsetHeight,true);
-     });
-     task.delay(300);
- }
+function exposeLinearPlot(chr,start,range_length) {
+    Ext.getCmp('linear-parent').expand(true);
+    Ext.getCmp('linear-parent').setTitle('Chromosome-level View: Chromosome ' + chr);
+    var task = new Ext.util.DelayedTask(function(){
+        var rf =  Ext.getCmp('rf-graphical').body;
+        var d = rf.dom;
+        rf.scroll('b',d.scrollHeight - d.offsetHeight,true);
+    });
+    task.delay(300);
+}
 
 function openRFPanel() {
 loadDataLabelLists(function() {
@@ -405,10 +296,9 @@ Ext.onReady(function() {
                 xtype: 'tabpanel',
                 border : false,
                 activeTab : 0,
-                deferredRender : false,
                 items: [               {
                     xtype : 'panel', id :'rf-graphical',
-                    layout : 'auto', title: 'Multi-Scale',
+                    layout : 'auto', title: 'Graphical',
                     autoScroll : 'true',
                     items: [{
                         xtype: 'panel', id:'circle-parent',
@@ -463,34 +353,10 @@ Ext.onReady(function() {
                                 width:150,
                                 border:false,
                                 frame : false,
-                                x:820,
+                                x:840,
                                 y:20
                             }]
-                    }]},{
-                    xtype: 'panel',  id:'network-panel',
-                    name : 'network-panel',
-                    title : 'Network',
-                    monitorResize : true,
-                    autoScroll : false,
-                    forceLayout : true,
-                    layout : 'absolute',
-                    height: 800,
-                    width:1050,
-                    collapsible : false,
-                    items : [
-                        { xtype : 'panel',
-                            border : false,
-                            frame : false,
-                            items: [ {
-                                xtype:'panel' ,
-                                id : 'graph-panel',
-                                name : 'graph-panel',
-                                autoScroll:false,
-                                height: 800,
-                                width:800
-                            }]
-                        }]
-                }, {
+                    }]},  {
                     xtype: 'panel',  id:'grid-panel',
                     name : 'grid-panel',
                     title : 'Data Table',
@@ -519,20 +385,13 @@ Ext.onReady(function() {
                             },
                             cm : new Ext.grid.ColumnModel({
                                 columns: [
-                                    {header : "Id", width:40, hidden: true, id:'target_id', dataIndex:'target_id'},
-                                    { header: "Type", width: 40,  id:'target_source', dataIndex:'target_source',groupName:'Target'},
-                                    { header: "Label", width: 120, id: 'target_label',dataIndex:'target_label',groupName:'Target'},
-                                    { header: "Chr", width:30 , id:'target_chr', dataIndex:'target_chr',groupName:'Target'},
-                                    { header: "Start", width:100, id:'target_start',dataIndex:'target_start',groupName:'Target'},
-                                    { header: "Stop", width:100, id:'target_stop',dataIndex:'target_stop',groupName:'Target'},
-                                        {header : "Id", width:40,  hidden: true, id:'source_id', dataIndex:'source_id'},
-                                    { header: "Type", width: 40,  id:'source_source', dataIndex:'source_source',groupName:'Source'},
-                                    { header: "Label", width: 120, id: 'source_label',dataIndex:'source_label',groupName:'Source'},
-                                    { header: "Chr", width:30 , id:'source_chr', dataIndex:'source_chr',groupName:'Source'},
-                                    { header: "Start", width:100, id:'source_start',dataIndex:'source_start',groupName:'Source'},
-                                    { header: "Stop", width:100, id:'source_stop',dataIndex:'source_stop',groupName:'Source'},
-                                    { header: "Importance", width:50, id:'importance',dataIndex:'importance'},
-                                    { header: "Correlation", width:50, id:'correlation',dataIndex:'correlation'}
+                                    { header: "Type", width: 40,  id:'source', dataIndex:'source'},
+                                    { header: "Label", width: 120, id: 'label',dataIndex:'label'},
+                                    { header: "Chr", width:30 , id:'chr', dataIndex:'chr'},
+                                    { header: "Start", width:70, id:'start',dataIndex:'start'},
+                                    { header: "Stop", width:70, id:'end',dataIndex:'end'},
+                                    { header: "Score", width:50, id:'score',dataIndex:'score'},
+                                    { header: "Aggresiveness", width:100, id:'agg',dataIndex:'agg'}
                                 ],
                                 defaults: {
                                     sortable: true,
@@ -542,22 +401,19 @@ Ext.onReady(function() {
                             store : new Ext.data.JsonStore({
                                 autoLoad:false,
                                 storeId:'data_grid_store',
-                                fields : ['target_id','target_source','target_label','target_chr','target_start','target_stop',
-                                   'source_id', 'source_source','source_label','source_chr','source_start','source_stop','importance','correlation']
-                            }),
-                            listeners: {
-                                rowclick : function(grid,rowIndex,event) {
-                                    var record = grid.getStore().getAt(rowIndex);
-                                    var link = {};link.sourceNode = {};link.targetNode = {};
-                                    link.sourceNode.id = record.get('target_id');
-                                    link.targetNode.id = record.get('source_id');
-                                     //initiateDetailsPopup(link);
-                                    vq.events.Dispatcher.dispatch(new vq.events.Event('click_association','associations_table',link));
-                                }
-                            }
+                                fields : ['source','label','chr','start','end','score','agg']
+                            })
+//                            listeners: {
+//                                rowclick : function(grid,rowIndex,event) {
+//                                    var record = grid.getStore().getAt(rowIndex);
+//                                    var link = {};link.sourceNode = {};link.targetNode = {};
+//                                    link.sourceNode.id = record.get('target_id');
+//                                    link.targetNode.id = record.get('source_id');
+//                                    vq.events.Dispatcher.dispatch(new vq.events.Event('click_association','associations_table',link));
+//                                }
+//                            }
                         }]
-                }]
-            },
+                }]},
             {region: 'east',
                 collapsible: true,
                 floatable: true,
@@ -574,8 +430,174 @@ Ext.onReady(function() {
                         openHelpWindow('Tools',toolsHelpString);
                     }}],
                 items: [{
+                    xtype: 'form', id:'filter_features',
+                    title : 'Filter Features',
+                    bodyStyle:'padding:5px 5px 5px 5px',
+                    defaults:{anchor:'100%'},
+                    border : false,
+                    labelAlign : 'right',
+                    labelWidth: 70,
+                    labelSeparator : '',
+                    defaultType:'textfield',
+                    monitorValid : true,
+                    buttons : [
+                                {
+                                    text: 'Filter',
+                                    formBind : true,
+                                    listeners : {
+                                        click : function(button,e) {
+                                            requestFeatureFilteredData();
+                                        }
+                                    }
+                                },
+                                { text: 'Reset',
+                                    listeners : {
+                                        click : function(button,e) {
+                                            resetFeatureFormPanel();
+                                        }
+                                    }
+                                }
+                            ],
+                    tools: [{
+                       id: 'help',
+                        handler: function(event, toolEl, panel){
+                            openHelpWindow('Filtering',filteringHelpString);
+                        }}],
+                    items :[  {  xtype:'fieldset',
+                        title:'Feature',
+                        collapsible: true,
+                        collapsed: false,
+                        defaults:{anchor:'100%'},
+                        labelWidth: 70,
+                        labelSeparator : '',
+                        defaultType:'textfield',
+                        autoHeight:true,
+                        items:[
+                            {
+                                xtype:'combo',
+                                name:'feature_type_combo',
+                                id:'feature_type_combo',
+                                mode:'local',
+                                allowBlank : true,
+                                store: new Ext.data.JsonStore({
+                                    autoLoad : false,
+                                    fields : ['value','label'],
+                                    idProperty:'value',
+                                    data: [
+                                        {value: '*',label:'All'}
+                                    ],
+                                    storeId:'feature_type_combo_store'
+                                }),
+                                fieldLabel:'Type',
+                                valueField:'value',
+                                displayField:'label',
+                                tabIndex : 0,
+                                typeAhead : true,
+                                selectOnFocus:true,
+                                triggerAction : 'all',
+                                forceSelection : true,
+                                emptyText : 'Select a Type...',
+                                value : '*',
+                                listeners : {
+                                    select : function(field,record, index) {
+                                        switch(record.id)  {
+                                            case('CLIN'):
+                                                Ext.getCmp('feature_label_field').setVisible(false);
+                                                Ext.getCmp('feature_clin_label').setVisible(true);
+                                                break;
+                                            default:
+                                                Ext.getCmp('feature_label_field').setVisible(true);
+                                                Ext.getCmp('feature_clin_label').setVisible(false);
+                                        }
+                                    }
+                                }
+                            }, {
+                                name:'feature_label_field',
+                                id:'feature_label_field',
+                                emptyText : 'Input Label...',
+                                tabIndex: 1,
+                                selectOnFocus:true,
+                                fieldLabel:'Label'
+                            }, {
+                                name:'feature_clin_label',
+                                mode:'local',
+                                id:'feature_clin_label',
+                                xtype:'combo',
+                                allowBlank : false,
+                                hidden:true,
+                                store: new Ext.data.JsonStore({
+                                    autoLoad : false,
+                                    data: [],
+                                    fields : ['value','label'],
+                                    idProperty:'value',
+                                    storeId:'feature_clin_list_store'
+                                }),
+                                listWidth:200,
+                                fieldLabel:'Clinical Feature',
+                                selectOnFocus:true,
+                                forceSelection : true,
+                                triggerAction : 'all',
+                                valueField:'value',
+                                displayField:'label',
+                                emptyText:'CLIN Feature...',
+                                value:'*'
+                            },
+                            {
+                                xtype:'combo', name:'feature_chr_combo',id:'feature_chr_combo',
+                                mode:'local',
+                                allowBlank : false,
+                                store: new Ext.data.JsonStore({
+                                    autoLoad : true,
+                                    fields : ['value','label'],
+                                    idProperty:'value',
+                                    data: chrom_list,
+                                    storeId:'feature_chr_combo_store'
+                                }),
+                                fieldLabel:'Chromosome',
+                                valueField:'value',
+                                displayField:'label',
+                                tabIndex : 2,
+                                selectOnFocus:true,
+                                forceSelection : true,
+                                triggerAction : 'all',
+                                emptyText : 'Select Chr...',
+                                value : '*'
+                            },{xtype : 'numberfield',
+                                id:'feature_chr_start',
+                                name :'feature_chr_start',
+                                allowNegative: false,
+                                decimalPrecision : 0,
+                                emptyText : 'Input value...',
+                                invalidText:'This value is not valid.',
+                                maxValue: 250999999,
+                                minValue:1,
+                                tabIndex : 1,
+                                validateOnBlur : true,
+                                allowDecimals : false,
+                                fieldLabel : 'Start >=',
+                                value : ''
+                            },{xtype : 'numberfield',
+                                id:'feature_chr_stop',
+                                name :'feature_chr_stop',
+                                allowNegative: false,
+                                decimalPrecision : 0,
+                                emptyText : 'Input value...',
+                                invalidText:'This value is not valid.',
+                                maxValue: 250999999,
+                                minValue:1,
+                                tabIndex : 1,
+                                validateOnBlur : true,
+                                allowDecimals : false,
+                                fieldLabel : 'Stop <=',
+                                value : ''
+                            },
+                                        abs_value_field('Score','feature_score',2,100,-100),
+                                        abs_value_field('Correlation','feature_correlation',0.1,1,-1)
+                                   ]
+                    }]
+                },{
                     xtype: 'panel', id:'filters',
-                    title : 'Filtering',
+                    title : 'Filter Links',
                     autoScroll : true,
                     height : 250,
                     tools: [{
@@ -615,8 +637,9 @@ Ext.onReady(function() {
                             ],
                             items : [
                                 {  xtype:'fieldset',
-                                    title:'Target',
+                                    title:'Node 1',
                                     collapsible: true,
+                                    collapsed: true,
                                     defaults:{anchor:'100%'},
                                     labelWidth: 70,
                                     labelSeparator : '',
@@ -647,7 +670,7 @@ Ext.onReady(function() {
                                             triggerAction : 'all',
                                             forceSelection : true,
                                             emptyText : 'Select a Type...',
-                                            value : 'GEXP',
+                                            value : '*',
                                             listeners : {
                                                 select : function(field,record, index) {
                                                     switch(record.id)  {
@@ -743,8 +766,9 @@ Ext.onReady(function() {
                                         }
                                     ]},
                                 {  xtype:'fieldset',
-                                    title:'Predictor',
+                                    title:'Node 2',
                                     collapsible: true,
+                                    collapsed: true,
                                     defaults:{anchor:'100%'},
                                     labelWidth: 70,
                                     labelSeparator : '',
@@ -873,7 +897,6 @@ Ext.onReady(function() {
                                             fieldLabel : 'Stop <=',
                                             value : ''
                                         }
-
                                     ]},
                                 {  xtype:'fieldset',
                                     defaults:{anchor:'100%'},
@@ -883,19 +906,6 @@ Ext.onReady(function() {
                                     collapsible: true,
                                     autoHeight:true,
                                     items:[
-                                        {xtype : 'numberfield',
-                                            id:'min_importance',
-                                            name :'min_importance',
-                                            allowNegative: false,
-                                            decimalPrecision : 2,
-                                            emptyText : 'Input value...',
-                                            invalidText:'This value is not valid.',
-                                            minValue:0,
-                                            tabIndex : 1,
-                                            validateOnBlur : true,
-                                            fieldLabel : 'Importance >=',
-                                            value : 0
-                                        },
                                         {xtype : 'numberfield',
                                             id:'max_pvalue',
                                             name :'max_pvalue',
@@ -909,71 +919,8 @@ Ext.onReady(function() {
                                             fieldLabel : 'pvalue <=',
                                             value : 0.5
                                         },
-                                        {
-                        xtype : 'compositefield',
-                        anchor: '-20',
-                        msgTarget: 'side',
-                        fieldLabel: 'Correlation',
-                        items : [
-                            {
-                                //the width of this field in the HBox layout is set directly
-                                //the other 2 items are given flex: 1, so will share the rest of the space
-                                width:          50,
-                                id:'correlation_fn',
-                                name :'correlation_fn',
-                                xtype:          'combo',
-                                mode:           'local',
-                                value:          'Abs',
-                                triggerAction:  'all',
-                                forceSelection: true,
-                                editable:       false,
-                                fieldLabel:     'Fn',
-                                displayField:   'name',
-                                valueField:     'value',
-                                store:          new Ext.data.JsonStore({
-                                    fields : ['name', 'value'],
-                                    data   : [
-                                        {name : '>=',   value: '>='},
-                                        {name : '<=',  value: '<='},
-                                        {name : 'Abs', value: 'Abs'},
-                    {name : 'Btw', value: 'Btw'}
-                                    ]
-                                }),
-                                 listeners: {
-                                            render: function(c) {
-                                                Ext.QuickTips.register({
-                                                target: c,
-                                                title: '',
-                                                text: 'Implies if corr value (x)=.5, Abs is a filtering of (x >= .5 OR x <= -.5) <br>Btw is a filtering of (x >= -.5 AND x <= .5)'
-                                            });
-                                                }
-                                          }
-                            },
-                            {xtype : 'numberfield',
-                                            id:'min_correlation',
-                                            name :'min_correlation',
-                                            allowNegative: true,
-                                            decimalPrecision : 2,
-                                            emptyText : 'Input value...',
-                                            invalidText:'This value is not valid.',
-                                            minValue:-1.0,
-                                            maxValue:1.0,
-                                            width: 40,
-                                            tabIndex : 1,
-                                            validateOnBlur : true,
-                                            fieldLabel : 'Range(Corr)',
-                                            value : 0.1,
-                                            listeners: {
-                                            render: function(c) {
-                                                Ext.QuickTips.register({
-                                                target: c,
-                                                title: '',
-                                                text: 'Numeric field with 2 decimal precision'
-                                            });
-                                                }
-                                          }
-                          }
-            ]},
+                                        abs_value_field('Score','score',2,100,-100),
+                                        abs_value_field('Correlation','correlation',0.1,1,-1),
                                         { xtype:'combo', name:'order_combo',id:'order_combo',
                                             mode:'local',
                                             allowBlank : true,
@@ -991,7 +938,7 @@ Ext.onReady(function() {
                                             typeAhead : true,
                                             selectOnFocus:true,
                                             triggerAction : 'all',
-                                            value : 'importance'
+                                            value : 'floorlogged_pvalue'
                                         },
                                         { xtype:'combo', name:'limit_combo',id:'limit_combo',
                                             mode:'local',
@@ -1016,7 +963,7 @@ Ext.onReady(function() {
                                 }
                             ]
                         }]}]
-            }]
+                            }]
             });
 
     new Ext.Viewport({
@@ -1042,9 +989,6 @@ Ext.onReady(function() {
                        text:'Data',
                         labelStyle: 'font-weight:bold;',
                        menu:[{
-                              text:'Select',
-                            handler:loadDataDialog
-                            },{
                             text:'Export',
                            menu:[{
                            text:'CSV',
@@ -1078,13 +1022,42 @@ Ext.onReady(function() {
                                     group:'color_group',
                                     id:'inter_check',
                                     text:'Interestingness'
-//                                },
-//                                {
-//                                    text:'Association'
                                 }]
 
                         }]
+            },{
+                        id:'modalMenu',
+                        text:'Mode',
+                        labelStyle: 'font-weight:bold;',
+                        menu:[{
+                                text:'Circular Plot',
+                                menu:[{
+                                            xtype:'menucheckitem',
+                                            handler: modeHandler,
+                                            checked:true,
+                                            id:'explore_check',
+                                            group:'mode_group',
+                                            text:'Explore',
+                                            value: 'explore'
+                                        },
+                                            {
+                                                xtype:'menucheckitem',
+                                                handler: modeHandler,
+                                                group:'mode_group',
+                                                id:'nav_check',
+                                                text:'Navigate',
+                                                value: 'navigate'
+                                            }, {
+                                                xtype:'menucheckitem',
+                                                handler: modeHandler,
+                                                group:'mode_group',
+                                                disabled:true,
+                                                id:'select_check',
+                                                text:'Select',
+                                                value: 'Select'
                     }]
+                                    }]
+                            }]
         },
             { region:'center',
             id:'center-panel', name:'center-panel',
@@ -1111,6 +1084,16 @@ Ext.onReady(function() {
             default:
                 setStrokeStyleAttribute('white'); renderCircleData();
         }
+    }
+  function modeHandler(item){
+        switch(item.getId()) {
+           case('nav_check'):
+                 vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:true,zoom_enable:true}));
+             break;
+            case('explore_check'):
+                default:
+                    vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:false,zoom_enable:false}));
+           }
     }
 
 export_window = new Ext.Window( {
@@ -1143,371 +1126,80 @@ export_window = new Ext.Window( {
                 });
     export_window.hide();
 
-      var loadListener = function(store,records) {
-                                store.removeListener('load',loadListener) ;
-                                var e = new vq.events.Event('data_request','annotations',{});
-                                e.dispatch();
-                            };
-
-    dataset_window =
-                new Ext.Window({
-                id          : 'dataset-window',
-                renderTo    : 'view-region',
-                modal       : false,
-                closeAction : 'hide',
-                layout      : 'fit',
-                width       : 600,
-                height      : 300,
-                title       : "Load Dataset",
-                closable    : true,
-                layoutConfig : {
-                    animate : true
-                },
-                maximizable : false,
-                items: {
-                            xtype:'grid',
-                           id:'dataset_grid',
-                            autoScroll:true,
-                            loadMask:true,
-                            monitorResize: true,
-                            autoWidth : true,
-                            height: 250,
-                            viewConfig: {
-                                        forceFit : true
-                            },
-                            cm : new Ext.grid.ColumnModel({
-                                columns: [
-                                    {header : "Label", width:120, id:'label', dataIndex:'label'},
-                                    { header: "Method", width: 70,  id:'method', dataIndex:'method'},
-                                    { header: "Source", width: 70, id: 'source',dataIndex:'source'},
-                                    { header: "Contact", width:200 , id:'contact', dataIndex:'contact'},
-                                    { header: "Comments", width:100, id:'comments',dataIndex:'comments'}
-                                ],
-                                defaults: {
-                                    sortable: true,
-                                    width: 100
-                                }
-                            }),
-                            store : new Ext.data.JsonStore({
-                                autoLoad:true,
-                                storeId:'dataset_grid_store',
-                                        idProperty:'label',
-                                        proxy: new Ext.data.HttpProxy({
-                                    url: '/google-dsapi-svc/addama/datasources/tcga/regulome_explorer_dataset/query?' +
-                                        'tq=select `label`, `method`, `source`, `contact`, `comments`' +
-                                        ' order by default_display DESC&tqx=out:json_array'
-                                }),
-                                fields : ['label','method','source','contact','comments'],
-                                          listeners : {
-                            load :  loadListener
-                    }
-                            })
-                                },
-                            bbar:[{
-                               text:'Load',
-                              handler: loadSelectedDataset
-                          },
-                              {text:'Cancel',
-                                  handler: hideDatasetWindow
-                              }
-                          ]
-                        });
-    dataset_window.hide();
-
-    var medlineStore= new Ext.data.JsonStore({
-                                  root: 'response.docs',
-                                  totalProperty:'response.numFound',
-                                  idProperty:'pmid',
-                                  remoteSort: true,
-                                  storeId:'dataDocument_grid_store',
-                                  fields : ['pmid','article_title','abstract_text','pub_date_month','pub_date_year'],
-                                  proxy: new Ext.data.HttpProxy({
-                                      url: '/solr/select/?'
-                                  })
-                              });
-
-    var targetPathwayStore= new Ext.data.JsonStore({
-                                  idProperty:'pathway',
-                                  remoteSort: false,
-                                  storeId:'target_pathways_grid_store',
-                                  fields : ['pathway_name','pathway_type','pvalue'],
-                                  proxy: new Ext.data.HttpProxy({
-                                      url: '/addama/datasources/?'
-                                  })
-                              });
-    var predictorPathwayStore= new Ext.data.JsonStore({
-                                  idProperty:'pathway',
-                                  remoteSort: false,
-                                  storeId:'predictor_pathways_grid_store',
-                                  fields : ['pathway_name','pathway_type','pvalue'],
-                                  proxy: new Ext.data.HttpProxy({
-                                      url: '/addama/datasources/?'
-                                  })
-                              });
-
-    function openPathwayLink(grid,rowIndex,event) {
-                                        var record = grid.getStore().getAt(rowIndex);
-                                        var type = record.json.pathway_type; var title = record.json.pathway_name;
-                                        switch (type) {
-                                            case('WIKIPW'):
-                                               window.open(wikipw_url + title,'_blank');
-                                                break;
-                                            case('BIOCARTA'):
-                                                    var position = title.indexOf('_',1);
-                                                    title_url = title.slice(1,position)+'Pathway.asp';
-                                                    window.open(biocarta_url+title_url,'_blank');
-                                                    break;
-                                            case('KEGG'):
-                                                window.open(kegg_url+title.replace(new RegExp('[_]', 'g'),' '),'_blank');
-                                                break;
-                                            case(''):
-                                                window.open(pw_commons_url + title.replace(new RegExp('[_]', 'g'),'+'),'_blank');
-                                               break;
-                                        }
-                                        return;
-                                    }
-
-details_window =
-            new Ext.Window({
-                id          : 'details-window',
-                renderTo    : 'view-region',
-                modal       : false,
-                closeAction : 'hide',
-                layout      : 'fit',
-                width       : 600,
-                height      : 500,
-                title       : "Details",
-                closable    : true,
-                layoutConfig : {
-                    animate : true
-                },
-                maximizable : false,
-                        items:[{
-                            xtype:'tabpanel',
-                            id: 'details-tabpanel',
-                            name: 'details-tabpanel',
-                            activeTab : 'scatterplot_parent',
-                            layoutOnCardChange: true,
-                items : [{
-                    xtype:'panel',
-                    id:'scatterplot_parent',
-                    name:'scatterplot_parent',
-                    title:'Data Plot',
-                    layout : 'anchor',
-                    margins: '3 0 3 3',
-                    height : 500,
-                    width : 600,
-                    frame:true,
-                    items: [{
-                          xtype:'panel',
-                           id:'scatterplot_panel',
-                         name:'scatterplot_panel',
-                          anchor: '100% -100'
-                    },
-                        {
-                            xtype:'panel',
-                            id:'scatterplot_controls',
-                            name:'scatterplot_controls',
-                            layout: 'form',
-                            items:[{
-                                xtype:'radiogroup',
-                                id:'scatterplot_regression_radiogroup',
-                                fieldLabel:'Regression',
-                               items:[{
-                                   checked:true,
-                                   boxLabel:'None',
-                                   inputValue : 'none',
-                                   name :'sp_rb'
-                              },
-                               {
-                                   boxLabel:'Linear' ,
-                                   inputValue : 'linear',
-                                   name :'sp_rb'
-                               }],
-                                listeners: {
-                                    change : function(checked_radio) {
-                                        renderScatterPlot();
-                                    }
-                                }
-                            },{ xtype:'compositefield',
-                                defaultMargins:'0 20 0 0',
-                                items:[
-                                {
-                                    xtype:'checkbox',
-                                    id:'scatterplot_axes_checkbox',
-                                    boxLabel:'Reverse Axes',
-                                    listeners:{
-                                        check : function(checked) {
-                                            renderScatterPlot();
-                                        }
-                                    }
-                                },
-                                {
-                                xtype:'checkbox',
-                                id:'scatterplot_discrete_x_checkbox',
-                                boxLabel:'Discretize Target',
-                                listeners:{
-                                    check : function(checked) {
-                                        renderScatterPlot();
-                                    }
-                                }
-                            },
-                             {
-                                xtype:'checkbox',
-                                id:'scatterplot_discrete_y_checkbox',
-                                boxLabel:'Discretize Predictor',
-                                listeners:{
-                                    check : function(checked) {
-                                        renderScatterPlot();
-                                    }
-                                }
-                            }]
-                            }]
-                    }]
-                },
-                {
-                        xtype:'panel',
-                        id:'medline_parent',
-                        name:'medline_parent',
-                        title:'MEDLINE',
-                        layout: 'anchor',
-                        margins:'3 0 3 3',
-                        height : 500,
-                        width: 600,
-                        frame : true,
-                        items:[  {
-                            id:'dataDocument-panel',
-                            name : 'dataDocument-panel',
-                            layout : 'fit',
-                            height: 425,
-                            width:600,
-                            collapsible : false,
-                            items : [
-                                    {
-                                    xtype:'grid',
-                                    id : 'dataDocument_grid',
-                                    name : 'dataDocument_grid',
-                                    autoScroll:true,
-                                    autoWidth : true,
-                                    height: 425,
-                                    loadMask: true,
-                                    store: medlineStore,
-                                    viewConfig: {
-                                        forceFit : true,
-                                        enableRowBody:true,
-                                        showPreview:true,
-                                        getRowClass: function(record, rowIndex, p, store) {
-                                            var jsonData = store.reader.jsonData;
-                                            if (jsonData.highlighting[record.id] != undefined && jsonData.highlighting[record.id].abstract_text != undefined) {
-                                                p.body = '<p>' + jsonData.highlighting[record.id].abstract_text[0] + '</p>';
-                                            }
-                                            else
-                                                p.body = '<p>' + record.data.abstract_text + '</p>';
-                                            return 'x-grid3-row-expanded';
-                                        }
-                                    },
-                                    cm : new Ext.grid.ColumnModel({
-                                                columns: [
-                                                    {header : "PMID", width:50,  id:'pmid', dataIndex:'pmid', groupName: 'Documents',renderer:renderPMID},
-                                                    { header: "Title", width: 300,  id:'article_title', dataIndex:'article_title',groupName:'Documents', renderer: renderTitle},
-                                                    { header: "Month", width:75 , id:'pub_date_month', dataIndex:'pub_date_month',groupName:'Documents'},
-                                                    { header: "Year", width:75, id:'pub_date_year',dataIndex:'pub_date_year',groupName:'Documents'}
-                                                ],
-                                                defaults: {
-                                                    sortable: true
-                                                }
-                                            }),
-                                    bbar: new Ext.PagingToolbar({
-                                                pageSize: 20,
-                                                store: medlineStore,
-                                                displayInfo: true,
-                                                displayMsg: 'Displaying documents {0} - {1} of {2}',
-                                                emptyMsg: "No documents",
-                                                items:[
-                                                    '-',{
-                                                        pressed:true,
-                                                        enableToggle:true,
-                                                        text: 'Show Preview',
-                                                        cls: 'x-btn-text-icon details',
-                                                        toggleHandler: function(btn,pressed){
-                                                            var view = Ext.getCmp('dataDocument_grid').getView();
-                                                            view.showPreview = pressed;
-                                                            view.refresh();
-                                                        }
-                                                    }]
-                                            })
-                                }]
-                        }]
-                    },{  xtype:'panel',
-                        id:'pathways_parent',
-                        name:'pathways_parent',
-                        title:'Pathways',
-                        layout: 'anchor',
-                        margins:'3 0 3 3',
-                        height : 500,
-                        width: 600,
-                        frame : true,
-                        items:[  {  id:'target_pathways-panel',
-                            name : 'target_pathways-panel',
-                            layout : 'fit',
-                            anchor : '100% 50%',
-                            collapsible : false,
-                            items : [{xtype:'grid',
-                                    id:'target_pathways_grid',
-                                    autoScroll:true,
-                                    anchor : '100% 100%',
-                                    loadMask: true,
-                                    title :'Target',
-                                    store: targetPathwayStore,
-                                    viewConfig: {
-                                        forceFit : true
-                                    },
-                                    cm : new Ext.grid.ColumnModel({
-                                                columns: [
-                                                    {header : "Pathway", width:350,  id:'pathway', dataIndex:'pathway_name'},
-                                                    { header: "Type", width:75 , id:'pathway_type', dataIndex:'pathway_type'},
-                                                    { header: "p-value", width:75, id:'pvalue',dataIndex:'pvalue'}
-                                                ],
-                                                defaults: {
-                                                    sortable: true
-                                                }
-                                            }),
-                                listeners : {
-                                    rowclick: openPathwayLink
-                                }
-                    }]
-                        },{  id:'predictor_pathways-panel',
-                            name : 'predictor_pathways-panel',
-                            layout : 'fit',
-                            anchor : '100% 50%',
-                            collapsible : false,
-                            items : [{xtype:'grid',
-                                    id:'predictor_pathways_grid',
-                                    autoScroll:true,
-                                    anchor : '100% 100%',
-                                    loadMask: true,
-                                    store: predictorPathwayStore,
-                                    title: 'Predictor',
-                                    viewConfig: {
-                                        forceFit : true
-                                    },
-                                    cm : new Ext.grid.ColumnModel({
-                                                columns: [
-                                                    {header : "Pathway", width:350,  id:'pathway', dataIndex:'pathway_name'},
-                                                    { header: "Type", width:75 , id:'pathway_type', dataIndex:'pathway_type'},
-                                                    { header: "p-value", width:75, id:'pvalue',dataIndex:'pvalue'}
-                                                ],
-                                                defaults: {
-                                                    sortable: true
-                                                }
-                                            }),
-                                   listeners : {
-                                    rowclick: openPathwayLink
-                                }
-                    }]
-                        }]
-                    }]}]
-            });
-    details_window.hide();
+    var e = new vq.events.Event('data_request','annotations',{});
+    e.dispatch();
+    var e = new vq.events.Event('data_request','features',{});
+    e.dispatch();
 
 });
+
+function abs_value_field(label,id, default_val,max, min) {
+        var default_value = default_val || 0;
+        var min_value = min || -1;
+        var max_value = max || 1;
+                          return {
+                        xtype : 'compositefield',
+                        anchor: '-20',
+                        msgTarget: 'side',
+                        fieldLabel: label,
+                        items : [
+                            {
+                                //the width of this field in the HBox layout is set directly
+                                //the other 2 items are given flex: 1, so will share the rest of the space
+                                width:          50,
+                                id:id + '_fn',
+                                name :id + '_fn',
+                                xtype:          'combo',
+                                mode:           'local',
+                                value:          'Abs',
+                                triggerAction:  'all',
+                                forceSelection: true,
+                                editable:       false,
+                                fieldLabel:     'Fn',
+                                displayField:   'name',
+                                valueField:     'value',
+                                store:          new Ext.data.JsonStore({
+                                    fields : ['name', 'value'],
+                                    data   : [
+                                        {name : '>=',   value: '>='},
+                                        {name : '<=',  value: '<='},
+                                        {name : 'Abs', value: 'Abs'},
+                                        {name : 'Btw', value: 'Btw'}
+                                    ]
+                                }),
+                                 listeners: {
+                                            render: function(c) {
+                                                Ext.QuickTips.register({
+                                                target: c,
+                                                title: '',
+                                                text: 'Implies if ' + label +' value (x)=.5, Abs is a filtering of (x >= .5 OR x <= -.5) <br>Btw is a filtering of (x >= -.5 AND x <= .5)'
+                                            });
+                                                }
+                                          }
+                            },
+                            {xtype : 'numberfield',
+                                            id:id,
+                                            name :id,
+                                            allowNegative: true,
+                                            decimalPrecision : 2,
+                                            emptyText : 'Input value...',
+                                            invalidText:'This value is not valid.',
+                                            minValue:min_value,
+                                            maxValue:max_value,
+                                            width: 40,
+                                            tabIndex : 1,
+                                            validateOnBlur : true,
+                                            fieldLabel : 'Range('+ label + ')',
+                                            value : default_value,
+                                            listeners: {
+                                            render: function(c) {
+                                                Ext.QuickTips.register({
+                                                target: c,
+                                                title: '',
+                                                text: 'Numeric field with 2 decimal precision'
+                                            });
+                                                }
+                                          }
+                          }
+            ]};
+            }
