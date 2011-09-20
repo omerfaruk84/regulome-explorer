@@ -25,7 +25,7 @@ var d = vq.events.Dispatcher;
         renderLinearFeatureData(obj);
         renderLinearLegend();
     });
-     d.addListener('data_ready','filtered_features',function(obj){
+     d.addListener('data_ready','filteredfeatures',function(obj){
          generateColorMaps(obj);
             renderCircleFeatureData(obj);
          renderCircleLegend();
@@ -107,12 +107,12 @@ function modifyCircle(object) {
 
 function legend_draw(div) {
     var source_map = pv.numerate(feature_types);
-    var current_locatable_data = locatable_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
-    var current_data = all_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
-    var current_map = pv.numerate(current_data);
+    var current_locatable_data = locatable_source_list;
+    var current_data = all_source_list;
+    var current_map = label_map;
 
-    node_colors = function(source) { return source_color_scale(current_map[source]);};
-    link_sources_colors = function(link) { return link_sources_array[current_map[link[0]] * current_data.length + current_map[link[1]]];}
+//    node_colors = function(source) { return source_color_scale(current_map[source]);};
+//    link_sources_colors = function(link) { return link_sources_array[current_map[link[0]] * current_data.length + current_map[link[1]]];}
 
     var vis= new pv.Panel()
             .width(150)
@@ -193,7 +193,7 @@ function plotFilteredFeatureData(feature_array,filter,div) {
     var features = vq.utils.VisUtils.clone(feature_array);
     var ticks = vq.utils.VisUtils.clone(features);
     ticks.forEach(function(f) { f.value = f.label;});
-    features.forEach(function(f){ f.value = Math.min(Math.max(parseInt(f.agg) * f.score,-8),8);});
+    features.forEach(function(f){ f.value = Math.min(Math.max(f.score,-8),8);});
 
 
 
@@ -237,7 +237,7 @@ function plotFilteredFeatureData(feature_array,filter,div) {
             container : div,
             enable_pan : false,
             enable_zoom : false,
-            show_legend: true,
+            show_legend: false,
             legend_include_genome : true,
             legend_corner : 'ne',
             legend_radius  : width / 15
@@ -276,9 +276,10 @@ function plotFilteredFeatureData(feature_array,filter,div) {
                                     Node : function(node) {
                                         return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                                         '-' + node.end;},
-                                    Score :function(node) { return node.value;},
-                                    'Clinical Feature':function(node) { return node.clin;},
-                                    'Aggressiveness':function(node) { return node.agg;}
+                                    'Logged pvalue' :'pvalue',
+                                    'Score' : 'score',
+                                    'Clinical Feature': 'clin',
+                                    'Sign':'sign'
                                     },
                                 listener : wedge_listener
                           }
@@ -307,13 +308,14 @@ function plotFilteredFeatureData(feature_array,filter,div) {
                     fill_style :  function (feature) {
                           return score_color_scale(feature.value);
                     },
-                    tooltip_items : {
+                          tooltip_items : {
                                     Node : function(node) {
                                         return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                                         '-' + node.end;},
-                                    Score :function(node) { return node.value;},
-                                    'Clinical Feature':function(node) { return node.clin;},
-                                    'Aggressiveness':function(node) { return node.agg;}
+                                    'Logged pvalue' :'pvalue',
+                                    'Score' : 'score',
+                                    'Clinical Feature': 'clin',
+                                    'Sign':'sign'
                                     },
                     listener : wedge_listener
                 }
@@ -460,26 +462,16 @@ function wedge_plot(parsed_data,div) {
                     radius : 4,
                     draw_axes : false,
                     shape:'dot',
-                    stroke_style : function (feature) {
-                         if (feature_map[feature.id]) {
-                          return score_color_scale(feature_map[feature.id].score * feature_map[feature.id].agg);
-                         }
-                         return stroke_style_fn(feature);
-                    },
-                    fill_style :  function (feature) {
-                        if (feature_map[feature.id]) {
-                          return score_color_scale(feature_map[feature.id].score * feature_map[feature.id].agg);
-                         } else {
-                         return stroke_style_fn(feature);
-                         }
-                    },
+                    stroke_style :  stroke_style_fn,
+                    fill_style :  stroke_style_fn,
                     tooltip_items : {
                                     Node : function(node) {
                                         return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                                         '-' + node.end;},
-                                    Score :function(node) { return feature_map[node.id] ? feature_map[node.id].score : 'NA';},
-                                    'Clinical Feature':function(node) { return feature_map[node.id] ? feature_map[node.id].clin : 'NA';},
-                                    'Aggressiveness':function(node) { return feature_map[node.id] ? feature_map[node.id].agg : 'NA';}
+                                 Pvalue : 'pvalue',
+                                    Score : 'score',
+                                    'Clinical Feature':'clin',
+                                    'Sign':'sign'
                                     },
                     listener : wedge_listener
                 }
@@ -803,12 +795,14 @@ function plotFeatureDataLinear(obj) {
               };
      var stroke_style_fn = getStrokeStyleAttribute();
      var located_tooltip_items = {
-                Feature : function(node) {
-                                        return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + mbpToBp(node.start) +
-                                        '-' + mbpToBp(node.end);},
-                                    Score :function(node) { return node.score;},
-                                    'Clinical Feature':function(node) { return node.clin;},
-                                    'Aggressiveness':function(node) { return node.agg;}
+                                    Node : function(node) {
+                                        return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
+                                        '-' + node.end;},
+                                 Pvalue : 'pvalue',
+                                    Score : 'score',
+                                    'Clinical Feature':'clin',
+                                    'Sign':'sign'
+
         };
 
     var  tooltip_links = {

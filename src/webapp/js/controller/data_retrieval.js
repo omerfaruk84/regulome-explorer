@@ -43,8 +43,8 @@ function registerDataRetrievalListeners() {
     network_uri = '/'+set_label+'/query';
     //feature_uri = '/v_clinical_tumor_aggressiveness/query';
     clin_uri = '/v_brca_pairwise_clinical_0914/query';
-    tumor_uri =  '/pv10_brca_pairwise_associations_0914/query';
-    feature_data_uri =  '/pv10_brca_pairwise_associations_0914/query';
+    tumor_uri =  '/brca_pairwise_associations_0914/query';
+    feature_data_uri =  '/brca_pairwise_associations_0914/query';
     pathway_uri = '/' + set_label + '_feature_pathways/query';
 }
 
@@ -252,22 +252,20 @@ function buildGQLFeatureQuery(args) {
         where2 += 'source2 = \'' +args['type']+ '\'';
     }
     if (args['label'] != '' && args['label'] != '*') {
+        if (args['clin'] != '' && args['clin'] != '*') { // label and clinical feature both selected
         where1 += (where1.length > 2 ? ' and ' : ' ');
-        where1 += '`label1` ' + parseLabel(args['label']);
-        if (args['clin'] != '' && args['clin'] != '*') {
-             where1 += ' or `label1` ' + parseLabel(args['clin']);
+            where2 += (where2.length > 2 ? ' and ' : ' ');
+        where1 += '`label1` ' + parseLabel(args['label']) + ' and ' + '`label2` ' + parseLabel(args['clin']);
+        where2 += '`label2` ' + parseLabel(args['label']) + ' and ' + '`label1` ' + parseLabel(args['clin']);
         }
-        where2 += (where2.length > 2 ? ' and ' : ' ');
-        where2 += '`label2` ' + parseLabel(args['label']);
-           if (args['clin'] != '' && args['clin'] != '*') {
-             where1 += ' or `label1` ' + parseLabel(args['clin']);
-        }
-    } else {
+    } else {    //just clinical selected
          if (args['clin'] != '' && args['clin'] != '*') {
               where1 += (where1.length > 2 ? ' and ' : ' ');
-            where1 += '`label1` ' + parseLabel(args['clin']);
+            where1 += '`label2` ' + parseLabel(args['clin']);
+             where1 += ' and `chr1` != \'\'';
               where2 += (where2.length > 2 ? ' and ' : ' ');
-             where2 += '`label2` ' + parseLabel(args['clin']);
+             where2 += '`label1` ' + parseLabel(args['clin']);
+             where2 += ' and `chr2` != \'\'';
         }
     }
 

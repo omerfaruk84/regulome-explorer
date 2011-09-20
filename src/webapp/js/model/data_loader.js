@@ -29,25 +29,27 @@ function parseAnnotations(data) {
         vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','annotations', data));
 }
 
-function parseFeatures(objs) {
+function parseFeatures(obj) {
         var features = obj.data;
     var filter = obj.filter;
-    var feature_map = {};
-    features['data'].forEach(function(point){
-        feature_map[point.alias] = point;
-    });
+//    var feature_map = {};
+//    features['data'].forEach(function(point){
+//        feature_map[point.alias] = point;
+//    });
+
+    features = features.filter(function(row) { return row.alias1.split(':')[3] !== '' || row.alias2.split(':')[3] !== '';});
     var feature_array = features.map(function(row) {
        var f1 = row.alias1.split(':');
        var f2 = row.alias2.split(':');
-        var obj = {score : parseFloat(row.pvalue) * (row.sign === '-' ? -1 : 1),
+        var obj = {pvalue: row.score, score : parseFloat(row.score) * (row.sign === '-' ? -1 : 1),
             correlation: row.correlation, sign: row.sign, num_nonna: row.num_nonna};
         var feature;
         switch('CLIN') {
-            case(f1[1]) :
+            case(f2[1]) :
                 feature = { source : f1[1], label : f1[2], chr : f1[3].slice(3),
                start: parseInt(f1[4]), end:f1[5] != '' ? parseInt(f1[5]) : parseInt(f1[4]), clin : f2[2] };
             break;
-            case(f2[1]) :
+            case(f1[1]) :
                 feature = { source : f2[1], label : f2[2], chr : f2[3].slice(3),
                start: parseInt(f2[4]), end:f2[5] != '' ? parseInt(f2[5]) : parseInt(f2[4]), clin: f1[2] };
                 break;

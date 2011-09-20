@@ -26,7 +26,7 @@ function registerLayoutListeners() {
     d.addListener('render_complete','linear_features',function(linear){
         exposeLinearPlot(linear.chr, linear.start, linear.range);
     });
-    d.addListener('data_ready','filtered_features',function(obj) {
+    d.addListener('data_ready','filteredfeatures',function(obj) {
         loadDataTableStore(obj.data);
     });
 }
@@ -227,7 +227,7 @@ function loadDataTableStore(data) {
     var mapped_data = data.map(function(row) {
   return {source: row.source,label: row.label,chr: row.chr,
       start: row.start,end:row.end,
-                     score : row.score, agg : row.agg };
+                     score : row.score, sign : row.sign, pvalue:row.pvalue };
                             });
  Ext.StoreMgr.get('data_grid_store').loadData(mapped_data);
 }
@@ -393,7 +393,8 @@ Ext.onReady(function() {
                                     { header: "Start", width:70, id:'start',dataIndex:'start'},
                                     { header: "Stop", width:70, id:'end',dataIndex:'end'},
                                     { header: "Score", width:50, id:'score',dataIndex:'score'},
-                                    { header: "Aggresiveness", width:100, id:'agg',dataIndex:'agg'}
+                                    { header: "Pvalue", width:50, id:'pvalue',dataIndex:'pvalue'},
+                                    { header: "Sign", width:20, id:'sign',dataIndex:'sign'}
                                 ],
                                 defaults: {
                                     sortable: true,
@@ -403,7 +404,7 @@ Ext.onReady(function() {
                             store : new Ext.data.JsonStore({
                                 autoLoad:false,
                                 storeId:'data_grid_store',
-                                fields : ['source','label','chr','start','end','score','agg']
+                                fields : ['source','label','chr','start','end','score','pvalue','sign']
                             })
 //                            listeners: {
 //                                rowclick : function(grid,rowIndex,event) {
