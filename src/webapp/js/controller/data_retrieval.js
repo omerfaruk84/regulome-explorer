@@ -25,7 +25,7 @@ function registerDataRetrievalListeners() {
     var d = vq.events.Dispatcher;
     d.addListener('dataset_selected',function(obj){
         selectDataset(obj);
-       // loadDatasetLabels();
+        loadDatasetLabels();
     });
     d.addListener('data_request','associations',function(obj){
         loadNetworkData(obj.filter);
@@ -33,8 +33,8 @@ function registerDataRetrievalListeners() {
     d.addListener('data_request','annotations', function(obj){
         loadAnnotations();
     });
-    d.addListener('data_request','features',function() {
-        loadFeatureData();
+    d.addListener('data_request','filteredfeatures',function(obj) {
+        loadFeatureData(obj.filter);
     });
 }
 
@@ -42,19 +42,15 @@ function registerDataRetrievalListeners() {
     current_data = set_label;
     network_uri = '/'+set_label+'/query';
     //feature_uri = '/v_clinical_tumor_aggressiveness/query';
-    clin_uri = '/v_'+set_label+'_feature_clinlabel/query';
-    tumor_uri =  '/v_clinical_tumor_aggressiveness/query';
-    feature_data_uri =  '/v_clinical_tumor_aggressiveness/query';
+    clin_uri = '/v_brca_pairwise_clinical_0914/query';
+    tumor_uri =  '/pv10_brca_pairwise_associations_0914/query';
+    feature_data_uri =  '/pv10_brca_pairwise_associations_0914/query';
     pathway_uri = '/' + set_label + '_feature_pathways/query';
 }
 
 
 
 function loadDatasetLabels() {
-
-    function loadComplete() {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','dataset_labels',dataset_labels));
-    }
 
     function loadFailed() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','dataset_labels',{msg:'Retrieval Timeout'}));
@@ -64,10 +60,9 @@ function loadDatasetLabels() {
     var clin_label_query_str = query_param + 'select `label`' + json_out_param;
     var clin_label_query = base_query_url + tcga_base_query_uri + clin_uri+clin_label_query_str;
 
-    var timer = new vq.utils.SyncDatasources(200,40,loadComplete,dataset_labels,loadFailed);
-
     function clinicalLabelQueryHandler(response) {
         dataset_labels['clin_labels'] = Ext.decode(response.responseText);
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','dataset_labels',dataset_labels));
     }
 
     function queryFailed(response) {
@@ -76,34 +71,31 @@ function loadDatasetLabels() {
 
     Ext.Ajax.request({url:clin_label_query,success:clinicalLabelQueryHandler,failure: queryFailed});
 
-    var sources_query_str = query_param + 'select source' + json_out_param;
-    var sources_query = base_query_url + tcga_base_query_uri + feature_uri + sources_query_str;
+//    var sources_query_str = query_param + 'select source' + json_out_param;
+//    var sources_query = base_query_url + tcga_base_query_uri + feature_uri + sources_query_str;
+//
+//    function featureSourceQueryHandler(response) {
+//        dataset_labels['feature_sources'] = Ext.decode(response.responseText);
+//    }
+//
+//    Ext.Ajax.request({url:sources_query,success:featureSourceQueryHandler,failure: queryFailed});
 
-    function featureSourceQueryHandler(response) {
-        dataset_labels['feature_sources'] = Ext.decode(response.responseText);
-    }
-
-    Ext.Ajax.request({url:sources_query,success:featureSourceQueryHandler,failure: queryFailed});
-
-    timer.start_poll();
-
-
+  
 }
 
-function loadFeatureData() {
+function loadFeatureData(query_params) {
 
     function loadComplete() {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','features',features));
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','filteredfeatures',features));
     }
 
     function loadFailed() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','features',{msg:'Retrieval Timeout'}));
     }
 
-    var features = {data : null};
+    var features = {data : null,filter : query_params};
+    var query_str = buildGQLFeatureQuery(query_params)
 
-    var query_str = 'select chr,start,end,source,`label`,alias,floorlogged_pvalue, clinical_associate, agressiveness ' +
-            ' label `clinical_associate` \'clin\', `agressiveness` \'agg\', `floorlogged_pvalue` \'score\'';
     var feature_query_str = query_param + query_str + json_out_param;
     var feature_query = base_query_url + tcga_base_query_uri + feature_data_uri + feature_query_str;
 
@@ -159,7 +151,7 @@ function loadNetworkData(query_params) {
 
     var responses = {network : null, params:query_params};
 
-    var network_query=buildGQLQuery(query_params);
+    var network_query=buildGQLNetworkQuery(query_params);
 
     function handleNetworkQuery(response) {
             responses['network'] = Ext.decode(response.responseText);
@@ -179,7 +171,7 @@ function loadNetworkData(query_params) {
 /*
 Utility functions
  */
-function buildGQLQuery(args) {
+function buildGQLNetworkQuery(args) {
       var query = 'select alias1, alias2, clinical_associate1, num_nonna, correlation, pvalue, floorlogged_pvalue';
     var whst = ' where',
     where = whst;
@@ -243,6 +235,77 @@ function buildGQLQuery(args) {
     query += ' limit '+args['limit'] + ' label `floorlogged_pvalue` \'score\', `clinical_associate1` \'clin\'';
 
     return query;
+}
+
+function buildGQLFeatureQuery(args) {
+
+    var query = 'select alias1, alias2, logged_pvalue, sign, num_nonna ';
+
+    var whst = ' where ';
+    var where1 = ' (';
+    var where2 = ' (';
+
+    if (args['type'] != '' && args['type'] != '*') {
+        where1 += (where1.length > 2 ? ' and ' : ' ');
+        where1 += 'source1 = \'' +args['type']+ '\'';
+        where2 += (where2.length > 2 ? ' and ' : ' ');
+        where2 += 'source2 = \'' +args['type']+ '\'';
+    }
+    if (args['label'] != '' && args['label'] != '*') {
+        where1 += (where1.length > 2 ? ' and ' : ' ');
+        where1 += '`label1` ' + parseLabel(args['label']);
+        if (args['clin'] != '' && args['clin'] != '*') {
+             where1 += ' or `label1` ' + parseLabel(args['clin']);
+        }
+        where2 += (where2.length > 2 ? ' and ' : ' ');
+        where2 += '`label2` ' + parseLabel(args['label']);
+           if (args['clin'] != '' && args['clin'] != '*') {
+             where1 += ' or `label1` ' + parseLabel(args['clin']);
+        }
+    } else {
+         if (args['clin'] != '' && args['clin'] != '*') {
+              where1 += (where1.length > 2 ? ' and ' : ' ');
+            where1 += '`label1` ' + parseLabel(args['clin']);
+              where2 += (where2.length > 2 ? ' and ' : ' ');
+             where2 += '`label2` ' + parseLabel(args['clin']);
+        }
+    }
+
+    if (args['chr'] != '' && args['chr'] != '*') {
+        where1 += (where1.length > 2 ? ' and ' : ' ');
+        where1 += 'chr1 = \'' +args['chr']+'\'';
+        where2 += (where2.length > 2 ? ' and ' : ' ');
+        where2 += 'chr2 = \'' +args['chr']+'\'';
+    }
+    if (args['start'] != '') {
+        where1 += (where1.length > 2 ? ' and ' : ' ');
+        where1 += 'start1 >= ' +args['start'];
+        where2 += (where2.length > 2 ? ' and ' : ' ');
+        where2 += 'start2 >= ' +args['start'];
+    }
+    if (args['stop'] != '') {
+        where1 += (where1.length > 2 ? ' and ' : ' ');
+        where1 += 'end1 <= ' +args['stop'];
+        where2 += (where2.length > 2 ? ' and ' : ' ');
+        where2 += 'end2 <= ' +args['stop'];
+    }
+  
+    if ((args['start'] != '') && (args['stop'] != '')) {
+           where1 += ' and end1 >= ' +args['start'];
+           where2 += ' and end2 >= ' +args['start'];
+           }
+
+    var stat_where = (where1.length > 2 ? ' and ' : ' ') + flex_field_query('correlation',args['correlation'],args['correlation_fn']);
+    stat_where += (stat_where.length > 2 ? ' and ' : ' ') + flex_field_query('logged_pvalue',args['score'], args['score_fn']);
+
+    query += whst + (where1.length > 2 ?  where1 +')': '');
+    query += (where2.length > 2 ? ' or' + where2 +')': '');
+    query += stat_where;
+
+    query += ' label `logged_pvalue` \'score\'';
+
+    return query;
+
 }
 
 function flex_field_query(label, value, fn) {

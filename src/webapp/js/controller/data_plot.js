@@ -288,7 +288,8 @@ function plotFilteredFeatureData(feature_array,filter,div) {
                     type :   'scatterplot'
                 },
                 DATA:{
-                    data_array : features
+                    data_array : features,
+                    data_key : 'score'
                 },
                 OPTIONS: {
                     legend_label : 'Clinical Correlates' ,

@@ -14,54 +14,77 @@ var d = vq.events.Dispatcher;
      d.addListener('query_complete','features',function(data) {
         parseFeatures(data);
     });
-    d.addListener('data_request','filteredfeatures',function(data) {
-        filterFeatures(data);
+    d.addListener('query_complete','filteredfeatures',function(obj) {
+        parseFeatures(obj);
+        
     });
 };
 
 function parseDatasetLabels(data) {
         setDatasetLabels(data);
-        vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','dataset_labels', data));
+        vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','dataset_labels', {clin: data.clin_labels, types: pv.entries(label_map)}));
 }
 
 function parseAnnotations(data) {
         vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','annotations', data));
 }
 
-function parseFeatures(features) {
+function parseFeatures(objs) {
+        var features = obj.data;
+    var filter = obj.filter;
     var feature_map = {};
     features['data'].forEach(function(point){
         feature_map[point.alias] = point;
     });
-    feature_array = features['data'];
-    var feature_types = pv.uniq(features['data'],function(f) { return f.source;});
-        vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','features', {types: feature_types, map:feature_map,array:features['data']}));
-        vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','dataset_labels', {types: feature_types}));
+    var feature_array = features.map(function(row) {
+       var f1 = row.alias1.split(':');
+       var f2 = row.alias2.split(':');
+        var obj = {score : parseFloat(row.pvalue) * (row.sign === '-' ? -1 : 1),
+            correlation: row.correlation, sign: row.sign, num_nonna: row.num_nonna};
+        var feature;
+        switch('CLIN') {
+            case(f1[1]) :
+                feature = { source : f1[1], label : f1[2], chr : f1[3].slice(3),
+               start: parseInt(f1[4]), end:f1[5] != '' ? parseInt(f1[5]) : parseInt(f1[4]), clin : f2[2] };
+            break;
+            case(f2[1]) :
+                feature = { source : f2[1], label : f2[2], chr : f2[3].slice(3),
+               start: parseInt(f2[4]), end:f2[5] != '' ? parseInt(f2[5]) : parseInt(f2[4]), clin: f1[2] };
+                break;
+        }
+        return vq.utils.VisUtils.extend(obj,feature);
+
+    });
+    
+        vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','filteredfeatures', {data:feature_array,filter:filter}));
+
 }
 
 function filterFeatures(obj) {
-    var features = vq.utils.VisUtils.clone(feature_array);
+    var features = obj.data;
     var filter = obj.filter;
-
-    if (filter.chr != '*') { features = features.filter(function(f) { return f.chr == filter.chr;});  }
-    if (filter.label != '') { features = features.filter(function(f) { return f.label == filter.label;});}
-    if (filter.type != '*') { features = features.filter(function(f) { return f.source == filter.type;});}
-    if (filter.start != ''){ features = features.filter(function(f) { return f.start >= parseInt(filter.start);});}
-    if (filter.stop != ''){ features = features.filter(function(f) { return f.end >= parseInt(filter.stop);});}
-    switch(filter.score_fn) {
-        case('>='):
-                features = features.filter(function(f){ return (f.score * parseInt(f.agg)) >= parseFloat(filter.score);});
-                break;
-        case('<='):
-                features = features.filter(function(f){ return (f.score * parseInt(f.agg)) <= parseFloat(filter.score);});
-                break;
-        case('Btw'):
-                features = features.filter(function(f){ return ((f.score * parseInt(f.agg)) <= parseFloat(filter.score)) && ((f.score * parseInt(f.agg))>= parseFloat(filter.score)* -1);});
-                break;
-        case('Abs'):
-        default:
-                features = features.filter(function(f){ return ((f.score * parseInt(f.agg)) >= parseFloat(filter.score)) || ((f.score* parseInt(f.agg)) <= parseFloat(filter.score)* -1);});
-    }
+//
+//    if (filter.chr != '*') { features = features.filter(function(f) { return f.chr == filter.chr;});  }
+//    if (filter.label != '') { features = features.filter(function(f) { return f.label == filter.label;});}
+//    if (filter.type != '*') { features = features.filter(function(f) { return f.source == filter.type;});}
+//    if (filter.start != ''){ features = features.filter(function(f) { return f.start >= parseInt(filter.start);});}
+//    if (filter.stop != ''){ features = features.filter(function(f) { return f.end >= parseInt(filter.stop);});}
+//    var score = (f.sign === '-' ? -1 : 1) * f.score;
+//    var filter_score = parseFloat(filter.score);
+//    switch(filter.score_fn) {
+//        case('>='):
+//                features = features.filter(function(f){ return score >= filter_score;});
+//                break;
+//        case('<='):
+//                features = features.filter(function(f){ return score <= filter_score;});
+//                break;
+//        case('Btw'):
+//                features = features.filter(function(f){ return score <= filter_score && score >= filter_score * -1;});
+//                break;
+//        case('Abs'):
+//        default:
+//                features = features.filter(function(f){ return score >= filter_score || score <= filter_score * -1;});
+//    }
 
     vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','filtered_features', {data: features,filter:filter}));
 }

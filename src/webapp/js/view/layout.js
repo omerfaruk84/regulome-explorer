@@ -3,12 +3,12 @@
 function registerLayoutListeners() {
      var d = vq.events.Dispatcher;
     d.addListener('data_ready','dataset_labels',function(obj){
-        loadListStores(obj.types);
+        loadListStores(obj);
          resetFormPanel();
-        requestFeatureFilteredData();
+     //   requestFeatureFilteredData();
     });
     d.addListener('data_ready','annotations',function(obj){
-        vq.events.Dispatcher.dispatch(new vq.events.Event('dataset_selected','main','v_pv20_clinical_correlate_pairwise'));
+        vq.events.Dispatcher.dispatch(new vq.events.Event('dataset_selected','main','pv10_brca_pairwise_associations_0914'));
      });
     d.addListener('render_complete','circvis',function(circvis_plot){
        exposeCirclePlot();
@@ -100,18 +100,12 @@ function requestFeatureFilteredData() {
 
 function getFeatureFilterSelections() {
     var type = Ext.getCmp('feature_type_combo').getValue();
-    var label;
-    switch(type) {
-        case('CLIN'):
-            label = Ext.getCmp('feature_clin_label').getValue();
-            break;
-        default :
-            label = Ext.getCmp('feature_label_field').getValue();
-    }
-
+    var label = Ext.getCmp('feature_label_field').getValue();
+    
     return {
         type:type,
         label: label,
+        clin: Ext.getCmp('feature_clin_label').getValue(),
         chr: Ext.getCmp('feature_chr_combo').getValue(),
         start: Ext.getCmp('feature_chr_start').getValue(),
         stop: Ext.getCmp('feature_chr_stop').getValue(),
@@ -209,8 +203,8 @@ function resetFormPanel() {
   should be called by an event listener
  */
 function loadListStores(dataset_labels) {
-    var label_list = dataset_labels.map(function(row) {
-        return {value:row, label: label_map[row] || row};
+    var label_list = dataset_labels.types.map(function(row) {
+        return {value:row.key, label: row.value};
         });
         label_list.unshift({value:'*',label:'All'});
     Ext.StoreMgr.get('feature_type_combo_store').loadData(label_list);
@@ -219,6 +213,14 @@ function loadListStores(dataset_labels) {
         Ext.getCmp('f1_type_combo').setValue('*');
         Ext.StoreMgr.get('f2_type_combo_store').loadData(label_list);
         Ext.getCmp('f2_type_combo').setValue('*');
+
+    var clin_list = dataset_labels.clin.map(function(row) {
+        return {value: row.label, label: row.label};
+    });
+     Ext.StoreMgr.get('feature_clin_list_store').loadData(clin_list);
+    Ext.StoreMgr.get('f1_clin_list_store').loadData(clin_list);
+    Ext.StoreMgr.get('f2_clin_list_store').loadData(clin_list);
+     
 }
 
 function loadDataTableStore(data) {
@@ -496,21 +498,8 @@ Ext.onReady(function() {
                                 selectOnFocus:true,
                                 triggerAction : 'all',
                                 forceSelection : true,
-                                emptyText : 'Select a Type...',
-                                value : '*',
-                                listeners : {
-                                    select : function(field,record, index) {
-                                        switch(record.id)  {
-                                            case('CLIN'):
-                                                Ext.getCmp('feature_label_field').setVisible(false);
-                                                Ext.getCmp('feature_clin_label').setVisible(true);
-                                                break;
-                                            default:
-                                                Ext.getCmp('feature_label_field').setVisible(true);
-                                                Ext.getCmp('feature_clin_label').setVisible(false);
-                                        }
-                                    }
-                                }
+                                emptyText : 'Clinical Correlate',
+                                value : '*'
                             }, {
                                 name:'feature_label_field',
                                 id:'feature_label_field',
@@ -524,7 +513,8 @@ Ext.onReady(function() {
                                 id:'feature_clin_label',
                                 xtype:'combo',
                                 allowBlank : false,
-                                hidden:true,
+                                autoSelect : true,
+                                hidden:false,
                                 store: new Ext.data.JsonStore({
                                     autoLoad : false,
                                     data: [],
@@ -539,8 +529,7 @@ Ext.onReady(function() {
                                 triggerAction : 'all',
                                 valueField:'value',
                                 displayField:'label',
-                                emptyText:'CLIN Feature...',
-                                value:'*'
+                                emptyText:'CLIN Feature...'
                             },
                             {
                                 xtype:'combo', name:'feature_chr_combo',id:'feature_chr_combo',
@@ -698,6 +687,7 @@ Ext.onReady(function() {
                                             xtype:'combo',
                                             allowBlank : false,
                                             hidden:true,
+                                            autoSelect : true,
                                             store: new Ext.data.JsonStore({
                                                 autoLoad : false,
                                                 data: [],
@@ -832,6 +822,7 @@ Ext.onReady(function() {
                                             xtype:'combo',
                                             allowBlank : false,
                                             hidden:true,
+                                            autoSelect : true,
                                             store: new Ext.data.JsonStore({
                                                 autoLoad : false,
                                                 data: [],
@@ -1127,8 +1118,6 @@ export_window = new Ext.Window( {
     export_window.hide();
 
     var e = new vq.events.Event('data_request','annotations',{});
-    e.dispatch();
-    var e = new vq.events.Event('data_request','features',{});
     e.dispatch();
 
 });
