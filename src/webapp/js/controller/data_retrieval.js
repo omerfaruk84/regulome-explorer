@@ -42,7 +42,7 @@ function selectDataset(set_label) {
     current_data = set_label;
     network_uri = '/'+set_label+'/query';
     //feature_uri = '/v_clinical_tumor_aggressiveness/query';
-    clin_uri = '/v_brca_0914_02_feature_clinlabel/query';
+    clin_uri = '/v_brca_pairwise_clinical_0914/query';
     tumor_uri =  '/brca_pairwise_clinical_associations_0914/query';
     feature_data_uri =  '/brca_pairwise_clinical_associations_0914/query';
     pathway_uri = '/' + set_label + '_feature_pathways/query';
