@@ -12,6 +12,12 @@ Import this before MVC scripts.
 *           value: - String - id to be passed to controller
 *           label - String - id to be used by UI
 */
+
+var pairwise = {
+    display_options : {}
+};
+
+var circvis_obj;
 var chrom_list = [];
 chrom_list.push({value:'*',label:'All'});
 for(var i =1;i <= 22; i++) {

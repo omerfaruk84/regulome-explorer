@@ -26,11 +26,16 @@ var d = vq.events.Dispatcher;
         renderLinearLegend();
     });
      d.addListener('data_ready','filteredfeatures',function(obj){
-         generateColorMaps(obj);
-            renderCircleFeatureData(obj);
-         renderCircleLegend();
+         circvis_obj.data = obj.data;
+         circvis_obj.filter = obj.filter;
+        new vq.events.Event('draw_circvis','filteredfeatures',circvis_obj);
     });
 
+    d.addListener('draw_circvis','filteredfeatures',function(obj){
+         generateColorMaps(obj);
+         renderCircleFeatureData(obj);
+         renderCircleLegend();
+    });
     d.addListener('modify_circvis', function(obj){
         modifyCircle(obj);
     });

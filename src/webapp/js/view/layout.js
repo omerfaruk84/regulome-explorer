@@ -1016,7 +1016,26 @@ Ext.onReady(function() {
                                     text:'Interestingness'
                                 }]
 
-                        }]
+                        },
+                            {
+                            text:'Rings:',
+                            menu:[{
+                                xtype:'menucheckitem',
+                                 handler: ringHandler,
+                                checked:true,
+                                id:'cnvr_ring_displayed',
+                                text:'CNVR tiles'
+                                },
+                                {
+                                    xtype:'menucheckitem',
+                                    handler: ringHandler,
+                                    checked:true,
+                                    id:'score_ring_displayed',
+                                    text:'Score'
+                                }]
+
+                        }
+                        ]
             },{
                         id:'modalMenu',
                         text:'Mode',
@@ -1077,6 +1096,15 @@ Ext.onReady(function() {
                 setStrokeStyleAttribute('white'); renderCircleData();
         }
     }
+
+    function ringHandler(item){
+
+        item.setChecked(~item.checked);
+        var ring_config = {};
+        ring[item.getId()] = item.checked;
+        vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',ring_config));
+}
+
   function modeHandler(item){
         switch(item.getId()) {
            case('nav_check'):
