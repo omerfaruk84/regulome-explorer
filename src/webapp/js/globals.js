@@ -82,6 +82,10 @@ var limit_list = [{value:10,label:'10'},{value:20,label:'20'},{value:40, label:'
             {value:1000, label:'1000'},{value:2000, label:'2000'}];
 
 
+
+var max_score = 20;
+var min_score = 1;
+
 var dataset_labels;
 
 function getDatasetLabels () {

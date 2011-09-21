@@ -51,7 +51,7 @@ var locatable_source_list = ['GEXP','METH','CNVR','MIRN','GNAB'],
     chrome_length = [],
     feature_map = {},
     feature_types = [],
-    score_color_scale = pv.Scale.linear(-8,-1,1,8).range('blue','white','white','red'),
+    score_color_scale = pv.Scale.linear(max_score * -1, min_score * -1, min_score, max_score).range('blue','lightblue','lightpink','red'),
     source_color_scale=  pv.Colors.category10(),
     circvis = null;
 
@@ -193,7 +193,7 @@ function plotFilteredFeatureData(feature_array,filter,div) {
     var features = vq.utils.VisUtils.clone(feature_array);
     var ticks = vq.utils.VisUtils.clone(features);
     ticks.forEach(function(f) { f.value = f.label;});
-    features.forEach(function(f){ f.value = Math.min(Math.max(f.score,-8),8);});
+    features.forEach(function(f){ f.value = Math.min(Math.max(f.score,max_score * -1),max_score);});
 
 
 
@@ -297,8 +297,8 @@ function plotFilteredFeatureData(feature_array,filter,div) {
                     legend_description : 'Clinical Correlates',
                     outer_padding : 10,
                     base_value : 0,
-                    min_value : -9,
-                    max_value : 9,
+                    min_value : -1.1 * max_score,
+                    max_value : 1.1* max_score,
                     radius : 2,
                     draw_axes : true,
                     shape:'dot',
@@ -879,8 +879,8 @@ function plotFeatureDataLinear(obj) {
                     track_fill_style : pv.color('#EEEEEE'),
                     track_height : 200,           //required
                     track_padding: 20,             //required
-                    min_value : -10,
-                    max_value : 10,
+                    min_value : -1.1 * max_score,
+                    max_value : max_score * 1.1,
                     base_value : 0,
                     num_y_rule_lines: 5,
                     shape:'circle',
