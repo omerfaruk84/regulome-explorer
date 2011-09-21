@@ -5,7 +5,7 @@ function registerLayoutListeners() {
     d.addListener('data_ready','dataset_labels',function(obj){
         loadListStores(obj.types);
          resetFormPanel();
-        requestFeatureFilteredData();
+   //     requestFeatureFilteredData();
     });
     d.addListener('data_ready','annotations',function(obj){
         vq.events.Dispatcher.dispatch(new vq.events.Event('dataset_selected','main','v_pv20_clinical_correlate_pairwise'));
@@ -28,6 +28,9 @@ function registerLayoutListeners() {
     });
     d.addListener('data_ready','filtered_features',function(obj) {
         loadDataTableStore(obj.data);
+    });
+    d.addListener('data_ready','features',function(obj) {
+        requestFeatureFilteredData();
     });
 }
 
@@ -93,7 +96,7 @@ function requestFilteredData() {
 function requestFeatureFilteredData() {
     prepareVisPanels();
     var task = new Ext.util.DelayedTask(function(){
-        vq.events.Dispatcher.dispatch(new vq.events.Event('data_request','filteredfeatures',{filter:getFeatureFilterSelections()}));
+        vq.events.Dispatcher.dispatch(new vq.events.Event('data_request','filtered_features',{filter:getFeatureFilterSelections()}));
     });
     task.delay(300);
 }
@@ -1024,6 +1027,23 @@ Ext.onReady(function() {
                                     text:'Interestingness'
                                 }]
 
+                        },    {
+                            text:'Rings:',
+                            menu:[{
+                                xtype:'menucheckitem',
+                                 handler: ringHandler,
+                                checked:true,
+                                id:'cnvr_ring_displayed',
+                                text:'CNVR tiles'
+                                },
+                                {
+                                    xtype:'menucheckitem',
+                                    handler: ringHandler,
+                                    checked:true,
+                                    id:'score_ring_displayed',
+                                    text:'Score'
+                                }]
+
                         }]
             },{
                         id:'modalMenu',
@@ -1095,6 +1115,13 @@ Ext.onReady(function() {
                     vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:false,zoom_enable:false}));
            }
     }
+    function ringHandler(item){
+        item.setChecked(~item.checked);
+        var ring_config = {};
+        ring[item.getId()] = item.checked;
+        vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',ring_config));
+}
+
 
 export_window = new Ext.Window( {
                          id          : 'export-window',

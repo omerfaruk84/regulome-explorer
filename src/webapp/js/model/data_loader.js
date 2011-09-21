@@ -14,7 +14,7 @@ var d = vq.events.Dispatcher;
      d.addListener('query_complete','features',function(data) {
         parseFeatures(data);
     });
-    d.addListener('data_request','filteredfeatures',function(data) {
+    d.addListener('data_request','filtered_features',function(data) {
         filterFeatures(data);
     });
 };
@@ -35,8 +35,8 @@ function parseFeatures(features) {
     });
     feature_array = features['data'];
     var feature_types = pv.uniq(features['data'],function(f) { return f.source;});
+    vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','dataset_labels', {types: feature_types}));
         vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','features', {types: feature_types, map:feature_map,array:features['data']}));
-        vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','dataset_labels', {types: feature_types}));
 }
 
 function filterFeatures(obj) {
