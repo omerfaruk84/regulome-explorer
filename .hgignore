@@ -2,10 +2,5 @@
 
 syntax: glob
 
-*.png
-*.jpg
-*.ico
-*.gif
-*.pom
 .idea*
 
