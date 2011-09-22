@@ -42,8 +42,8 @@ function parseFeatures(features) {
 function filterFeatures(obj) {
     var features = vq.utils.VisUtils.clone(feature_array);
     var filter = obj.filter;
-
-    if (filter.chr != '*') { features = features.filter(function(f) { return f.chr == filter.chr;});  }
+    var filter_chr = filter.chr.split(',');
+    if (filter.chr != '*') { features = features.filter(function(f) { return filter_chr.some(function(key) { return key == f.chr;});});}
     if (filter.label != '') { features = features.filter(function(f) { return f.label == filter.label;});}
     if (filter.type != '*') { features = features.filter(function(f) { return f.source == filter.type;});}
     if (filter.start != ''){ features = features.filter(function(f) { return f.start >= parseInt(filter.start);});}

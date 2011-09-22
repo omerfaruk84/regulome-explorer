@@ -101,6 +101,16 @@ function requestFeatureFilteredData() {
     task.delay(300);
 }
 
+function requestFeatureFilteredRedraw() {
+    prepareVisPanels();
+    var task = new Ext.util.DelayedTask(function(){
+        vq.events.Dispatcher.dispatch(new vq.events.Event('draw_circvis','filtered_features',{}));
+    });
+    task.delay(300);
+    
+}
+
+
 function getFeatureFilterSelections() {
     var type = Ext.getCmp('feature_type_combo').getValue();
     var label;
@@ -561,7 +571,7 @@ Ext.onReady(function() {
                                 displayField:'label',
                                 tabIndex : 2,
                                 selectOnFocus:true,
-                                forceSelection : true,
+                                forceSelection : false,
                                 triggerAction : 'all',
                                 emptyText : 'Select Chr...',
                                 value : '*'
@@ -1033,15 +1043,21 @@ Ext.onReady(function() {
                                 xtype:'menucheckitem',
                                  handler: ringHandler,
                                 checked:true,
-                                id:'cnvr_ring_displayed',
+                                id:'karyotype',
+                                text:'Karyotype Bands'
+                                },{
+                                xtype:'menucheckitem',
+                                 handler: ringHandler,
+                                checked:true,
+                                id:'cnvr',
                                 text:'CNVR tiles'
                                 },
                                 {
                                     xtype:'menucheckitem',
                                     handler: ringHandler,
                                     checked:true,
-                                    id:'score_ring_displayed',
-                                    text:'Score'
+                                    id:'pairwise_scores',
+                                    text:'Pairwise Scores'
                                 }]
 
                         }]
@@ -1116,10 +1132,9 @@ Ext.onReady(function() {
            }
     }
     function ringHandler(item){
-        item.setChecked(~item.checked);
-        var ring_config = {};
-        ring[item.getId()] = item.checked;
-        vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',ring_config));
+          
+        pairwise.setRingHidden(item.getId(),item.checked);  //hidden if true!
+             requestFeatureFilteredRedraw();
 }
 
 

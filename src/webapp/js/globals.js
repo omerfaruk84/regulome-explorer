@@ -13,9 +13,35 @@ Import this before MVC scripts.
 *           label - String - id to be used by UI
 */
 var pairwise = {
-    display_options : {}
+    display_options : {
+        circvis : {
+        rings:{
+            karyotype: {
+                hidden :false
+            },
+            cnvr : {
+                hidden : false
+            },
+            pairwise_scores : {
+                hidden : false
+            }
+        },
+            width : 800,
+            height : 800,
+            ring_radius : 55,
+            chrom_keys : ["1","2","3","4","5","6","7","8","9","10",
+        "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"]
+        }
+    },
+    circvis_obj : {}
 };
-var circvis_obj = {};
+pairwise.setRingHidden = function(ring,value) {
+    pairwise.display_options.circvis.rings[ring].hidden = value;
+};
+
+pairwise.isRingHidden = function(ring) {
+    return pairwise.display_options.circvis.rings[ring]['hidden'];
+};
 
 var chrom_list = [];
 chrom_list.push({value:'*',label:'All'});

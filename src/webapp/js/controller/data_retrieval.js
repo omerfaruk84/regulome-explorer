@@ -86,8 +86,6 @@ function loadDatasetLabels() {
     Ext.Ajax.request({url:sources_query,success:featureSourceQueryHandler,failure: queryFailed});
 
     timer.start_poll();
-
-
 }
 
 function loadFeatureData() {
@@ -103,6 +101,7 @@ function loadFeatureData() {
     var features = {data : null};
 
     var query_str = 'select chr,start,end,source,`label`,alias,floorlogged_pvalue, clinical_associate, agressiveness ' +
+         'where agressiveness != \'NA\'' +
             ' label `clinical_associate` \'clin\', `agressiveness` \'agg\', `floorlogged_pvalue` \'score\'';
     var feature_query_str = query_param + query_str + json_out_param;
     var feature_query = base_query_url + tcga_base_query_uri + feature_data_uri + feature_query_str;
