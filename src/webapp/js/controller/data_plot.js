@@ -297,7 +297,7 @@ function wedge_plot(parsed_data,display_options,div) {
                {
                    PLOT : {
                        height : ring_radius/4,
-                       type :   'tile'
+                       type :   'band'
                    },
                    DATA:{
                        data_array :[
