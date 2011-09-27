@@ -39,7 +39,7 @@ function parseFeatures(obj) {
        var f2 = row.alias2.split(':');
         var label_mod1 = f1.length >= 8 ? f1[7] : '';
         var label_mod2 = f2.length >= 8 ? f2[7] : '';
-        var obj = {pvalue: row.score, score : parseFloat(row.score) * (row.sign === '-' ? -1 : 1),
+        var obj = {score: row.score, logged_pvalue : row.logged_pvalue,
             correlation: row.correlation, sign: row.sign, num_nonna: row.num_nonna};
         var feature;
         switch('CLIN') {
@@ -116,7 +116,7 @@ function parseNetwork(responses) {
             node2: {id: row.alias2, source : node2[1], label : node2[2], chr : node2[3].slice(3),
                 start: parseInt(node2[4]), end:node2[5] != '' ? parseInt(node2[5]) : parseInt(node2[4]),
              label_mod: label_mod2},
-            pvalue : row.pvalue,score : row.score, correlation:row.correlation, clin: row.clin};
+            logged_pvalue : row.logged_pvalue,score : row.score, correlation:row.correlation, clin: row.clin};
             });
 
         var located_responses = whole_net.filter(function(feature) {

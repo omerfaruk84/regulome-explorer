@@ -281,7 +281,7 @@ function plotFilteredFeatureData(feature_array,filter,div) {
                         Node : function(node) {
                             return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                                 '-' + node.end + ' ' + node.label_mod;},
-                        'Logged pvalue' :'pvalue',
+                        'Logged pvalue' :'logged_pvalue',
                         'Score' : 'score',
                         'Clinical Feature': 'clin',
                         'Sign':'sign'
@@ -317,7 +317,7 @@ function plotFilteredFeatureData(feature_array,filter,div) {
                         Node : function(node) {
                             return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                                 '-' + node.end + ' ' + node.label_mod;},
-                        'Logged pvalue' :'pvalue',
+                        'Logged pvalue' :'logged_pvalue',
                         'Score' : 'score',
                         'Clinical Feature': 'clin',
                         'Sign':'sign'
@@ -452,7 +452,7 @@ function wedge_plot(parsed_data,div) {
                         Node : function(node) {
                             return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                                 '-' + node.end;},
-                        Pvalue : 'pvalue',
+                        'Logged Pvalue' : 'logged_pvalue',
                         Score : 'score',
                         'Clinical Feature':'clin',
                         'Sign':'sign'
@@ -490,10 +490,11 @@ function wedge_plot(parsed_data,div) {
 
                     'Predictor' : function(link) { return link.targetNode.label+ ' ' + link.targetNode.source + ' Chr' + link.targetNode.chr + ' ' + link.targetNode.start +
                         '-' + link.targetNode.end + ' ' + link.targetNode.label_mod;},
+                    'Logged Pvalue' : 'logged_pvalue',
                     Score : 'score',
                     Correlation : 'correlation',
-                    pvalue : 'pvalue',
-                    'Clinical Associate': 'clin'
+                    'Clinical Associate': 'clin',
+                    Sign : 'sign'
                 }
             }
         }};
@@ -547,7 +548,7 @@ function linear_plot(obj) {
             return tie.targetNode.label + ' ' + tie.targetNode.source },
         'Importance' : 'importance',
         Correlation : 'correlation',
-        pvalue : 'pvalue'
+        'Logged Pvalue' : 'logged_pvalue'
 
     },
         located_tooltip_items = {
@@ -573,14 +574,14 @@ function linear_plot(obj) {
 
     var hit_map = parsed_data['unlocated'].filter(function(link) { return  link.node1.chr == chrom;})
         .map(function(link) {
-            var node1_clone = vq.utils.VisUtils.extend({pvalue:link.pvalue,importance:link.importance, correlation:link.correlation},link.node1);
+            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,score:link.score,importance:link.importance, correlation:link.correlation},link.node1);
             node1_clone.start = bpToMb(node1_clone.start); node1_clone.end = bpToMb(node1_clone.end);
             node1_clone.sourceNode = vq.utils.VisUtils.extend({},link.node1);
             node1_clone.targetNode = vq.utils.VisUtils.extend({},link.node2);
             return node1_clone;
         }).concat(parsed_data['unlocated'].filter(function(link) { return  link.node2.chr == chrom;})
         .map(function(link) {
-            var node1_clone = vq.utils.VisUtils.extend({pvalue:link.pvalue,importance:link.importance, correlation:link.correlation},link.node2);
+            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,score:link.score,importance:link.importance, correlation:link.correlation},link.node2);
             node1_clone.start = bpToMb(node1_clone.start); node1_clone.end = bpToMb(node1_clone.end);
             node1_clone.sourceNode = vq.utils.VisUtils.extend({},link.node1);
             node1_clone.targetNode = vq.utils.VisUtils.extend({},link.node2);
@@ -592,7 +593,7 @@ function linear_plot(obj) {
         return link.node1.chr == chrom && link.node2.chr == chrom &&
             Math.abs(link.node1.start - link.node2.start) > proximal_distance;})
         .map(function(link) {
-            var node1_clone = vq.utils.VisUtils.extend({pvalue:link.pvalue,importance:link.importance, correlation:link.correlation},link.node1);
+            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,score:link.score,importance:link.importance, correlation:link.correlation},link.node1);
             node1_clone.start = link.node1.start <= link.node2.start ?
                 link.node1.start : link.node2.start;
             node1_clone.end = link.node1.start <= link.node2.start ? link.node2.start : link.node1.start;
@@ -600,7 +601,8 @@ function linear_plot(obj) {
             node1_clone.sourceNode = vq.utils.VisUtils.extend({},link.node1);
             node1_clone.targetNode = vq.utils.VisUtils.extend({},link.node2);
             node1_clone.importance = link.importance,node1_clone.correlation = link.correlation;
-            node1_clone.pvalue = link.pvalue;
+            node1_clone.logged_pvalue = link.logged_pvalue;
+            node1_clone.score = link.score;
             return node1_clone;
         });
 
@@ -608,7 +610,7 @@ function linear_plot(obj) {
         return link.node1.chr == chrom && link.node2.chr == chrom &&
             Math.abs(link.node1.start - link.node2.start) < proximal_distance;})
         .map(function(link) {
-            var node1_clone = vq.utils.VisUtils.extend({pvalue:link.pvalue,importance:link.importance, correlation:link.correlation},link.node1),
+            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,score:link.score,importance:link.importance, correlation:link.correlation},link.node1),
                 node2_clone = vq.utils.VisUtils.extend({},link.node2);
             node1_clone.start = bpToMb(node1_clone.start);node1_clone.end = bpToMb(node1_clone.end);
             node1_clone.sourceNode = vq.utils.VisUtils.extend({},link.node1);
@@ -782,7 +784,7 @@ function plotFeatureDataLinear(obj) {
         Node : function(node) {
             return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                 '-' + node.end + ' ' + node.label_mod;},
-        Pvalue : 'pvalue',
+        'Logged Pvalue' : 'logged_pvalue',
         Score : 'score',
         'Clinical Feature':'clin',
         'Sign':'sign'

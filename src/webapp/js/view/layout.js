@@ -227,7 +227,7 @@ function loadDataTableStore(data) {
     var mapped_data = data.map(function(row) {
         return {source: row.source,label: row.label,chr: row.chr,
             start: row.start,end:row.end,
-            score : row.score, sign : row.sign, pvalue:row.pvalue };
+            score : row.score, sign : row.sign, score:row.score };
     });
     Ext.StoreMgr.get('data_grid_store').loadData(mapped_data);
 }
@@ -393,7 +393,6 @@ Ext.onReady(function() {
                                     { header: "Start", width:70, id:'start',dataIndex:'start'},
                                     { header: "Stop", width:70, id:'end',dataIndex:'end'},
                                     { header: "Score", width:50, id:'score',dataIndex:'score'},
-                                    { header: "Pvalue", width:50, id:'pvalue',dataIndex:'pvalue'},
                                     { header: "Sign", width:20, id:'sign',dataIndex:'sign'}
                                 ],
                                 defaults: {
@@ -404,7 +403,7 @@ Ext.onReady(function() {
                             store : new Ext.data.JsonStore({
                                 autoLoad:false,
                                 storeId:'data_grid_store',
-                                fields : ['source','label','chr','start','end','score','pvalue','sign']
+                                fields : ['source','label','chr','start','end','score','sign']
                             })
 //                            listeners: {
 //                                rowclick : function(grid,rowIndex,event) {
@@ -940,7 +939,7 @@ Ext.onReady(function() {
                                             typeAhead : true,
                                             selectOnFocus:true,
                                             triggerAction : 'all',
-                                            value : 'floorlogged_pvalue'
+                                            value : 'score'
                                         },
                                         { xtype:'combo', name:'limit_combo',id:'limit_combo',
                                             mode:'local',

@@ -75,7 +75,7 @@ var details_window,details_window_mask, helpWindowReference = null;
 *               value: - String - id to be passed to controller
 *               label - String - id to be used by UI
  */
-var order_list = [{value:'correlation',label:'Correlation'},{value:'floorlogged_pvalue',label:'Score'},{value:'pvalue',label:'pvalue'}];
+var order_list = [{value:'correlation',label:'Correlation'},{value:'score',label:'Score'},{value:'logged_pvalue',label:'Logged pvalue'}];
 
 /*
 *        Limit combo list

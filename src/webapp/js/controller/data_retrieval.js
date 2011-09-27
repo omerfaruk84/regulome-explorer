@@ -172,7 +172,7 @@ function loadNetworkData(query_params) {
  Utility functions
  */
 function buildGQLNetworkQuery(args) {
-    var query = 'select alias1, alias2, clinical_associate1, num_nonna, correlation, pvalue, floorlogged_pvalue';
+    var query = 'select alias1, alias2, clinical_associate1, num_nonna, correlation, score, floorlogged_pvalue';
     var whst = ' where',
         where = whst;
 
@@ -222,24 +222,20 @@ function buildGQLNetworkQuery(args) {
     if ((args['f1_start'] != '') && (args['f1_stop'] != '')) {
         where += ' and end1 >= ' +args['f1_start'];
     }
-    if (args['pvalue'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'pvalue <= ' +args['pvalue'];
-    }
 
     where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('correlation',args['correlation'],args['correlation_fn']);
-    where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('floorlogged_pvalue',args['score'], args['score_fn']);
+    where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('score',args['score'], args['score_fn']);
 
     query += (where.length > whst.length ? where : '');
     query += ' order by '+args['order'] + (args['order'] == 'pvalue' ? ' ASC' : ' DESC');
-    query += ' limit '+args['limit'] + ' label `floorlogged_pvalue` \'score\', `clinical_associate1` \'clin\'';
+    query += ' limit '+args['limit'] + ' label `clinical_associate1` \'clin\'';
 
     return query;
 }
 
 function buildGQLFeatureQuery(args) {
 
-    var query = 'select alias1, alias2, logged_pvalue, sign, num_nonna ';
+    var query = 'select alias1, alias2, logged_pvalue, sign, num_nonna, score ';
 
     var whst = ' where ';
     var where1 = ' (';
@@ -248,55 +244,55 @@ function buildGQLFeatureQuery(args) {
     if (args['type'] != '' && args['type'] != '*') {
         where1 += (where1.length > 2 ? ' and ' : ' ');
         where1 += 'source1 = \'' +args['type']+ '\'';
-        where2 += (where2.length > 2 ? ' and ' : ' ');
-        where2 += 'source2 = \'' +args['type']+ '\'';
+//        where2 += (where2.length > 2 ? ' and ' : ' ');
+//        where2 += 'source2 = \'' +args['type']+ '\'';
     }
     if (args['label'] != '' && args['label'] != '*') {
         where1 += (where1.length > 2 ? ' and ' : ' ');
         where1 += '`label1` ' + parseLabel(args['label']);
         where1 += ' and `label2` ' + parseLabel(args['clin']);
-        where2 += (where2.length > 2 ? ' and ' : ' ');
-        where2 += '`label2` ' + parseLabel(args['label']);
-        where2 += ' and `label1` ' + parseLabel(args['clin']);
+//        where2 += (where2.length > 2 ? ' and ' : ' ');
+//        where2 += '`label2` ' + parseLabel(args['label']);
+//        where2 += ' and `label1` ' + parseLabel(args['clin']);
     } else {
         where1 += (where1.length > 2 ? ' and ' : ' ');
         where1 += '`label2` ' + parseLabel(args['clin']);
-        where2 += (where2.length > 2 ? ' and ' : ' ');
-        where2 += '`label1` ' + parseLabel(args['clin']);
+//        where2 += (where2.length > 2 ? ' and ' : ' ');
+//        where2 += '`label1` ' + parseLabel(args['clin']);
     }
 
     if (args['chr'] != '' && args['chr'] != '*') {
         where1 += (where1.length > 2 ? ' and ' : ' ');
         where1 += 'chr1 = \'' +args['chr']+'\'';
-        where2 += (where2.length > 2 ? ' and ' : ' ');
-        where2 += 'chr2 = \'' +args['chr']+'\'';
+//        where2 += (where2.length > 2 ? ' and ' : ' ');
+//        where2 += 'chr2 = \'' +args['chr']+'\'';
     }
     if (args['start'] != '') {
         where1 += (where1.length > 2 ? ' and ' : ' ');
         where1 += 'start1 >= ' +args['start'];
-        where2 += (where2.length > 2 ? ' and ' : ' ');
-        where2 += 'start2 >= ' +args['start'];
+//        where2 += (where2.length > 2 ? ' and ' : ' ');
+//        where2 += 'start2 >= ' +args['start'];
     }
     if (args['stop'] != '') {
         where1 += (where1.length > 2 ? ' and ' : ' ');
         where1 += 'end1 <= ' +args['stop'];
-        where2 += (where2.length > 2 ? ' and ' : ' ');
-        where2 += 'end2 <= ' +args['stop'];
+//        where2 += (where2.length > 2 ? ' and ' : ' ');
+//        where2 += 'end2 <= ' +args['stop'];
     }
 
     if ((args['start'] != '') && (args['stop'] != '')) {
         where1 += ' and end1 >= ' +args['start'];
-        where2 += ' and end2 >= ' +args['start'];
+//        where2 += ' and end2 >= ' +args['start'];
     }
 
     var stat_where = (where1.length > 2 ? ' and ' : ' ') + flex_field_query('correlation',args['correlation'],args['correlation_fn']);
-    stat_where += (stat_where.length > 2 ? ' and ' : ' ') + flex_field_query('logged_pvalue',args['score'], args['score_fn']);
+    stat_where += (stat_where.length > 2 ? ' and ' : ' ') + flex_field_query('score',args['score'], args['score_fn']);
 
     query += whst + (where1.length > 2 ?  where1 +')': '');
-    query += (where2.length > 2 ? ' or' + where2 +')': '');
+    //query += (where2.length > 2 ? ' or' + where2 +')': '');
     query += stat_where;
 
-    query += ' label `logged_pvalue` \'score\'';
+//    query += ' label `logged_pvalue` \'score\'';
 
     return query;
 
