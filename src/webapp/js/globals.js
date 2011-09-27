@@ -17,7 +17,7 @@ var pairwise = {
     display_options : {}
 };
 
-var circvis_obj;
+var circvis_obj = {data:[],filter:{}};
 var chrom_list = [];
 chrom_list.push({value:'*',label:'All'});
 for(var i =1;i <= 22; i++) {
