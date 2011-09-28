@@ -14,8 +14,38 @@ Import this before MVC scripts.
 */
 
 var pairwise = {
-    display_options : {}
+    display_options : {
+        circvis : {
+        rings:{
+            karyotype: {
+                hidden :false
+            },
+            cnvr : {
+                hidden : false
+            },
+            pairwise_scores : {
+                hidden : false
+            }
+        },
+            width : 800,
+            height : 800,
+            ring_radius : 55,
+            chrom_keys : ["1","2","3","4","5","6","7","8","9","10",
+        "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"]
+        }
+    },
+    circvis_obj : {}
 };
+
+pairwise.setRingHidden = function(ring,value) {
+    pairwise.display_options.circvis.rings[ring].hidden = value;
+};
+
+pairwise.isRingHidden = function(ring) {
+    return pairwise.display_options.circvis.rings[ring]['hidden'];
+};
+
+
 
 var circvis_obj = {data:[],filter:{}};
 var chrom_list = [];
@@ -85,7 +115,7 @@ var order_list = [{value:'correlation',label:'Correlation'},{value:'score',label
  */
 
 var limit_list = [{value:10,label:'10'},{value:20,label:'20'},{value:40, label:'40'},{value:100, label:'100'},{value:200, label:'200'},
-            {value:1000, label:'1000'},{value:2000, label:'2000'}];
+            {value:1000, label:'1000'},{value:2000, label:'2000'},{value:4000, label:'4000'},{value:8000, label:'8000'}];
 
 
 

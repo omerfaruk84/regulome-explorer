@@ -14,7 +14,7 @@ var d = vq.events.Dispatcher;
      d.addListener('query_complete','features',function(data) {
         parseFeatures(data);
     });
-    d.addListener('query_complete','filteredfeatures',function(obj) {
+    d.addListener('query_complete','filtered_features',function(obj) {
         parseFeatures(obj);
         
     });
@@ -58,7 +58,7 @@ function parseFeatures(obj) {
 
     });
     
-        vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','filteredfeatures', {data:feature_array,filter:filter}));
+        vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','filtered_features', {data:feature_array,filter:filter}));
 
 }
 

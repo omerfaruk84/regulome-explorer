@@ -33,7 +33,7 @@ function registerDataRetrievalListeners() {
     d.addListener('data_request','annotations', function(obj){
         loadAnnotations();
     });
-    d.addListener('data_request','filteredfeatures',function(obj) {
+    d.addListener('data_request','filtered_features',function(obj) {
         loadFeatureData(obj.filter);
     });
 }
@@ -86,7 +86,7 @@ function loadDatasetLabels() {
 function loadFeatureData(query_params) {
 
     function loadComplete() {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','filteredfeatures',features));
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','filtered_features',features));
     }
 
     function loadFailed() {
@@ -235,7 +235,7 @@ function buildGQLNetworkQuery(args) {
 
 function buildGQLFeatureQuery(args) {
 
-    var query = 'select alias1, alias2, logged_pvalue, sign, num_nonna, score ';
+    var query = 'select alias1, alias2, logged_pvalue, sign, num_nonna, correlation, score ';
 
     var whst = ' where ';
     var where1 = ' (';
@@ -291,6 +291,7 @@ function buildGQLFeatureQuery(args) {
     query += whst + (where1.length > 2 ?  where1 +')': '');
     //query += (where2.length > 2 ? ' or' + where2 +')': '');
     query += stat_where;
+    query += ' order by logged_pvalue DESC' + ' limit '+args['limit'];
 
 //    query += ' label `logged_pvalue` \'score\'';
 

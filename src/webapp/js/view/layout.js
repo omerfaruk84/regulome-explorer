@@ -26,7 +26,7 @@ function registerLayoutListeners() {
     d.addListener('render_complete','linear_features',function(linear){
         exposeLinearPlot(linear.chr, linear.start, linear.range);
     });
-    d.addListener('data_ready','filteredfeatures',function(obj) {
+    d.addListener('data_ready','filtered_features',function(obj) {
         loadDataTableStore(obj.data);
     });
 }
@@ -93,9 +93,18 @@ function requestFilteredData() {
 function requestFeatureFilteredData() {
     prepareVisPanels();
     var task = new Ext.util.DelayedTask(function(){
-        vq.events.Dispatcher.dispatch(new vq.events.Event('data_request','filteredfeatures',{filter:getFeatureFilterSelections()}));
+        vq.events.Dispatcher.dispatch(new vq.events.Event('data_request','filtered_features',{filter:getFeatureFilterSelections()}));
     });
     task.delay(300);
+}
+
+function requestFeatureFilteredRedraw() {
+    prepareVisPanels();
+    var task = new Ext.util.DelayedTask(function(){
+        vq.events.Dispatcher.dispatch(new vq.events.Event('draw_circvis','filtered_features',{}));
+    });
+    task.delay(300);
+
 }
 
 function getFeatureFilterSelections() {
@@ -112,7 +121,8 @@ function getFeatureFilterSelections() {
         score: Ext.getCmp('feature_score').getValue(),
         score_fn: Ext.getCmp('feature_score_fn').getValue(),
         correlation: Ext.getCmp('feature_correlation').getValue(),
-        correlation_fn : Ext.getCmp('feature_correlation_fn').getValue()
+        correlation_fn : Ext.getCmp('feature_correlation_fn').getValue(),
+        limit : Ext.getCmp('feature_limit_combo').getValue()
 
     };
 }
@@ -171,32 +181,32 @@ function resetFeatureFormPanel() {
         Ext.getCmp('feature_chr_stop').reset(),
         Ext.getCmp('feature_score').reset(),
         Ext.getCmp('feature_score_fn').reset(),
-        Ext.getCmp('feature_max_pvalue').reset(),
+        Ext.getCmp('feature_correlation_').reset(),
         Ext.getCmp('feature_correlation_fn').reset(),
-        Ext.getCmp('feature_order_combo').reset(),
+        //Ext.getCmp('feature_order_combo').reset(),
         Ext.getCmp('feature_limit_combo').reset()
 }
 
 function resetFormPanel() {
-    Ext.getCmp('f1_type_combo').reset(),
-        Ext.getCmp('f1_label_field').reset(),
-        Ext.getCmp('f1_chr_combo').reset(),
-        Ext.getCmp('f1_clin_label').reset(),
-        Ext.getCmp('f1_chr_start').reset(),
-        Ext.getCmp('f1_chr_stop').reset(),
-        Ext.getCmp('f2_type_combo').reset(),
-        Ext.getCmp('f2_label_field').reset(),
-        Ext.getCmp('f2_chr_combo').reset(),
-        Ext.getCmp('f2_clin_label').reset(),
-        Ext.getCmp('f2_chr_start').reset(),
-        Ext.getCmp('f2_chr_stop').reset(),
-        Ext.getCmp('score').reset(),
-        Ext.getCmp('score_fn').reset(),
-        Ext.getCmp('max_pvalue').reset(),
-        Ext.getCmp('correlation').reset(),
-        Ext.getCmp('correlation_fn').reset(),
-        Ext.getCmp('order_combo').reset(),
-        Ext.getCmp('limit_combo').reset()
+//    Ext.getCmp('f1_type_combo').reset(),
+//        Ext.getCmp('f1_label_field').reset(),
+//        Ext.getCmp('f1_chr_combo').reset(),
+//        Ext.getCmp('f1_clin_label').reset(),
+//        Ext.getCmp('f1_chr_start').reset(),
+//        Ext.getCmp('f1_chr_stop').reset(),
+//        Ext.getCmp('f2_type_combo').reset(),
+//        Ext.getCmp('f2_label_field').reset(),
+//        Ext.getCmp('f2_chr_combo').reset(),
+//        Ext.getCmp('f2_clin_label').reset(),
+//        Ext.getCmp('f2_chr_start').reset(),
+//        Ext.getCmp('f2_chr_stop').reset(),
+//        Ext.getCmp('score').reset(),
+//        Ext.getCmp('score_fn').reset(),
+//        Ext.getCmp('max_pvalue').reset(),
+//        Ext.getCmp('correlation').reset(),
+//        Ext.getCmp('correlation_fn').reset(),
+//        Ext.getCmp('order_combo').reset(),
+//        Ext.getCmp('limit_combo').reset()
 }
 
 /*
@@ -207,19 +217,19 @@ function loadListStores(dataset_labels) {
         return {value:row.key, label: row.value};
     });
     label_list.unshift({value:'*',label:'All'});
-    Ext.StoreMgr.get('feature_type_combo_store').loadData(label_list);
-    Ext.getCmp('feature_type_combo').setValue('*');
-    Ext.StoreMgr.get('f1_type_combo_store').loadData(label_list);
-    Ext.getCmp('f1_type_combo').setValue('*');
-    Ext.StoreMgr.get('f2_type_combo_store').loadData(label_list);
-    Ext.getCmp('f2_type_combo').setValue('*');
+//    Ext.StoreMgr.get('feature_type_combo_store').loadData(label_list);
+//    Ext.getCmp('feature_type_combo').setValue('*');
+//    Ext.StoreMgr.get('f1_type_combo_store').loadData(label_list);
+//    Ext.getCmp('f1_type_combo').setValue('*');
+//    Ext.StoreMgr.get('f2_type_combo_store').loadData(label_list);
+//    Ext.getCmp('f2_type_combo').setValue('*');
 
     var clin_list = dataset_labels.clin.map(function(row) {
         return {value: row.label, label: row.label};
     });
     Ext.StoreMgr.get('feature_clin_list_store').loadData(clin_list);
-    Ext.StoreMgr.get('f1_clin_list_store').loadData(clin_list);
-    Ext.StoreMgr.get('f2_clin_list_store').loadData(clin_list);
+//    Ext.StoreMgr.get('f1_clin_list_store').loadData(clin_list);
+//    Ext.StoreMgr.get('f2_clin_list_store').loadData(clin_list);
 
 }
 
@@ -392,7 +402,7 @@ Ext.onReady(function() {
                                     { header: "Chr", width:30 , id:'chr', dataIndex:'chr'},
                                     { header: "Start", width:70, id:'start',dataIndex:'start'},
                                     { header: "Stop", width:70, id:'end',dataIndex:'end'},
-                                    { header: "Score", width:50, id:'score',dataIndex:'score'},
+                                    { header: "Sgn(log(p))", width:50, id:'score',dataIndex:'score'},
                                     { header: "Sign", width:20, id:'sign',dataIndex:'sign'}
                                 ],
                                 defaults: {
@@ -405,15 +415,6 @@ Ext.onReady(function() {
                                 storeId:'data_grid_store',
                                 fields : ['source','label','chr','start','end','score','sign']
                             })
-//                            listeners: {
-//                                rowclick : function(grid,rowIndex,event) {
-//                                    var record = grid.getStore().getAt(rowIndex);
-//                                    var link = {};link.sourceNode = {};link.targetNode = {};
-//                                    link.sourceNode.id = record.get('target_id');
-//                                    link.targetNode.id = record.get('source_id');
-//                                    vq.events.Dispatcher.dispatch(new vq.events.Event('click_association','associations_table',link));
-//                                }
-//                            }
                         }]
                 }]},
             {region: 'east',
@@ -423,9 +424,12 @@ Ext.onReady(function() {
                 split: true,
                 width: 280,
                 title: 'Tools',
-                layout: {
-                    type: 'accordion'
-                },
+                items:[{
+                    xtype:'container',
+//                layout: {
+//                    type: 'accordion'
+//                },
+//                    height: 600,
                 tools: [{
                     id: 'help',
                     handler: function(event, toolEl, panel){
@@ -435,7 +439,6 @@ Ext.onReady(function() {
                     xtype: 'panel', id:'filter_features_panel',
                     title : 'Filter Features',
                     autoScroll : true,
-                    height : 250,
                     tools: [{
                         id: 'help',
                         handler: function(event, toolEl, panel){
@@ -469,11 +472,6 @@ Ext.onReady(function() {
                                 }
                             }
                         ],
-                        tools: [{
-                            id: 'help',
-                            handler: function(event, toolEl, panel){
-                                openHelpWindow('Filtering',filteringHelpString);
-                            }}],
                         items :[  {  xtype:'fieldset',
                             title:'Feature',
                             collapsible: true,
@@ -589,359 +587,9 @@ Ext.onReady(function() {
                                     fieldLabel : 'Stop <=',
                                     value : ''
                                 },
-                                abs_value_field('Score','feature_score',2,100,-100),
-                                abs_value_field('Correlation','feature_correlation',0.1,1,-1)
-                            ]
-                        }]
-                    }]
-                },{
-                    xtype: 'panel', id:'filters',
-                    title : 'Filter Links',
-                    autoScroll : true,
-                    height : 250,
-                    tools: [{
-                        id: 'help',
-                        handler: function(event, toolEl, panel){
-                            openHelpWindow('Filtering',filteringHelpString);
-                        }}],
-                    items :[
-                        { xtype:'form',
-                            id :'filter_panel',
-                            name :'filter_panel',
-                            bodyStyle:'padding:5px 5px 5px 5px',
-                            defaults:{anchor:'100%'},
-                            border : false,
-                            labelAlign : 'right',
-                            labelWidth: 70,
-                            labelSeparator : '',
-                            defaultType:'textfield',
-                            monitorValid : true,
-                            buttons : [
-                                {
-                                    text: 'Filter',
-                                    formBind : true,
-                                    listeners : {
-                                        click : function(button,e) {
-                                            requestFilteredData();
-                                        }
-                                    }
-                                },
-                                { text: 'Reset',
-                                    listeners : {
-                                        click : function(button,e) {
-                                            resetFormPanel();
-                                        }
-                                    }
-                                }
-                            ],
-                            items : [
-                                {  xtype:'fieldset',
-                                    title:'Node 1',
-                                    collapsible: true,
-                                    collapsed: true,
-                                    defaults:{anchor:'100%'},
-                                    labelWidth: 70,
-                                    labelSeparator : '',
-                                    defaultType:'textfield',
-                                    autoHeight:true,
-                                    items:[
-                                        {
-                                            xtype:'combo',
-                                            name:'f1_type_combo',
-                                            id:'f1_type_combo',
-                                            mode:'local',
-                                            allowBlank : true,
-                                            store: new Ext.data.JsonStore({
-                                                autoLoad : false,
-                                                fields : ['value','label'],
-                                                idProperty:'value',
-                                                data: [
-                                                    {value: '*',label:'All'}
-                                                ],
-                                                storeId:'f1_type_combo_store'
-                                            }),
-                                            fieldLabel:'Type',
-                                            valueField:'value',
-                                            displayField:'label',
-                                            tabIndex : 0,
-                                            typeAhead : true,
-                                            selectOnFocus:true,
-                                            triggerAction : 'all',
-                                            forceSelection : true,
-                                            emptyText : 'Select a Type...',
-                                            value : '*',
-                                            listeners : {
-                                                select : function(field,record, index) {
-                                                    switch(record.id)  {
-                                                        case('CLIN'):
-                                                            Ext.getCmp('f1_label_field').setVisible(false);
-                                                            Ext.getCmp('f1_clin_label').setVisible(true);
-                                                            break;
-                                                        default:
-                                                            Ext.getCmp('f1_label_field').setVisible(true);
-                                                            Ext.getCmp('f1_clin_label').setVisible(false);
-                                                    }
-                                                }
-                                            }
-                                        }, {
-                                            name:'f1_label_field',
-                                            id:'f1_label_field',
-                                            emptyText : 'Input Label...',
-                                            tabIndex: 1,
-                                            selectOnFocus:true,
-                                            fieldLabel:'Label'
-                                        }, {
-                                            name:'f1_clin_label',
-                                            mode:'local',
-                                            id:'f1_clin_label',
-                                            xtype:'combo',
-                                            allowBlank : false,
-                                            hidden:true,
-                                            autoSelect : true,
-                                            store: new Ext.data.JsonStore({
-                                                autoLoad : false,
-                                                data: [],
-                                                fields : ['value','label'],
-                                                idProperty:'value',
-                                                storeId:'f1_clin_list_store'
-                                            }),
-                                            listWidth:200,
-                                            fieldLabel:'Clinical Feature',
-                                            selectOnFocus:true,
-                                            forceSelection : true,
-                                            triggerAction : 'all',
-                                            valueField:'value',
-                                            displayField:'label',
-                                            emptyText:'CLIN Feature...',
-                                            value:'*'
-                                        },
-                                        {
-                                            xtype:'combo', name:'f1_chr_combo',id:'f1_chr_combo',
-                                            mode:'local',
-                                            allowBlank : false,
-                                            store: new Ext.data.JsonStore({
-                                                autoLoad : true,
-                                                fields : ['value','label'],
-                                                idProperty:'value',
-                                                data: chrom_list,
-                                                storeId:'f1_chr_combo_store'
-                                            }),
-                                            fieldLabel:'Chromosome',
-                                            valueField:'value',
-                                            displayField:'label',
-                                            tabIndex : 2,
-                                            selectOnFocus:true,
-                                            forceSelection : true,
-                                            triggerAction : 'all',
-                                            emptyText : 'Select Chr...',
-                                            value : '*'
-                                        },{xtype : 'numberfield',
-                                            id:'f1_chr_start',
-                                            name :'f1_chr_start',
-                                            allowNegative: false,
-                                            decimalPrecision : 0,
-                                            emptyText : 'Input value...',
-                                            invalidText:'This value is not valid.',
-                                            maxValue: 250999999,
-                                            minValue:1,
-                                            tabIndex : 1,
-                                            validateOnBlur : true,
-                                            allowDecimals : false,
-                                            fieldLabel : 'Start >=',
-                                            value : ''
-                                        },{xtype : 'numberfield',
-                                            id:'f1_chr_stop',
-                                            name :'f1_chr_stop',
-                                            allowNegative: false,
-                                            decimalPrecision : 0,
-                                            emptyText : 'Input value...',
-                                            invalidText:'This value is not valid.',
-                                            maxValue: 250999999,
-                                            minValue:1,
-                                            tabIndex : 1,
-                                            validateOnBlur : true,
-                                            allowDecimals : false,
-                                            fieldLabel : 'Stop <=',
-                                            value : ''
-                                        }
-                                    ]},
-                                {  xtype:'fieldset',
-                                    title:'Node 2',
-                                    collapsible: true,
-                                    collapsed: true,
-                                    defaults:{anchor:'100%'},
-                                    labelWidth: 70,
-                                    labelSeparator : '',
-                                    defaultType:'textfield',
-                                    autoHeight:true,
-                                    items:[
-                                        {
-                                            xtype:'combo',
-                                            name:'f2_type_combo',
-                                            id:'f2_type_combo',
-                                            mode:'local',
-                                            allowBlank : true,
-                                            store: new Ext.data.JsonStore({
-                                                autoLoad : false,
-                                                fields : ['value','label'],
-                                                idProperty:'value',
-                                                data: [
-                                                    {value: '*',label:'All'}
-                                                ],
-                                                storeId:'f2_type_combo_store'
-                                            }),
-                                            fieldLabel:'Type',
-                                            valueField:'value',
-                                            displayField:'label',
-                                            tabIndex : 0,
-                                            typeAhead : true,
-                                            selectOnFocus:true,
-                                            triggerAction : 'all',
-                                            forceSelection : true,
-                                            emptyText : 'Select a Type...',
-                                            value : '*',
-                                            listeners : {
-                                                select : function(field,record, index) {
-                                                    switch(record.id)  {
-                                                        case('CLIN'):
-                                                            var label_cmp = Ext.getCmp('f2_label_field'),
-                                                                clin_cmp = Ext.getCmp('f2_clin_label');
-                                                            label_cmp.setVisible(false);
-                                                            clin_cmp.setVisible(true);
-                                                            break;
-                                                        default:
-                                                            var label_cmp = Ext.getCmp('f2_label_field'),
-                                                                clin_cmp = Ext.getCmp('f2_clin_label');
-                                                            label_cmp.setVisible(true);
-                                                            clin_cmp.setVisible(false);
-                                                    }
-                                                }
-                                            }
-                                        }, {
-                                            name:'f2_label_field',
-                                            id:'f2_label_field',
-                                            emptyText : 'Input Label...',
-                                            tabIndex: 1,
-                                            selectOnFocus:true,
-                                            fieldLabel:'Label'
-                                        },  {
-
-                                            mode:'local',
-                                            name:'f2_clin_label',
-                                            id:'f2_clin_label',
-                                            xtype:'combo',
-                                            allowBlank : false,
-                                            hidden:true,
-                                            autoSelect : true,
-                                            store: new Ext.data.JsonStore({
-                                                autoLoad : false,
-                                                data: [],
-                                                fields : ['value','label'],
-                                                idProperty:'value',
-                                                storeId:'f2_clin_list_store'
-                                            }),
-                                            listWidth:200,
-                                            fieldLabel:'Clinical Feature',
-                                            selectOnFocus:true,
-                                            forceSelection : true,
-                                            triggerAction : 'all',
-                                            valueField:'value',
-                                            displayField:'label',
-                                            emptyText:'CLIN Feature...',
-                                            value:'*'
-                                        },
-                                        { xtype:'combo', name:'f2_chr_combo',id:'f2_chr_combo',
-                                            mode:'local',
-                                            allowBlank : true,
-                                            store: new Ext.data.JsonStore({
-                                                autoLoad : true,
-                                                fields : ['value','label'],
-                                                idProperty:'value',
-                                                data: chrom_list,
-                                                storeId:'f2_chr_combo_store'
-                                            }),
-                                            fieldLabel:'Chromosome',
-                                            valueField:'value',
-                                            displayField:'label',
-                                            tabIndex : 2,
-                                            selectOnFocus:true,
-                                            forceSelection : true,
-                                            triggerAction : 'all',
-                                            emptyText : 'Select Chr...',
-                                            value : '*'
-                                        },{xtype : 'numberfield',
-                                            id:'f2_chr_start',
-                                            name :'f2_chr_start',
-                                            allowNegative: false,
-                                            decimalPrecision : 0,
-                                            emptyText : 'Input value...',
-                                            invalidText:'This value is not valid.',
-                                            maxValue: 250999999,
-                                            minValue:1,
-                                            tabIndex : 1,
-                                            validateOnBlur : true,
-                                            allowDecimals : false,
-                                            fieldLabel : 'Start >=',
-                                            value : ''
-                                        },{xtype : 'numberfield',
-                                            id:'f2_chr_stop',
-                                            name :'f2_chr_stop',
-                                            allowNegative: false,
-                                            decimalPrecision : 0,
-                                            emptyText : 'Input value...',
-                                            invalidText:'This value is not valid.',
-                                            maxValue: 250999999,
-                                            minValue:1,
-                                            tabIndex : 1,
-                                            validateOnBlur : true,
-                                            allowDecimals : false,
-                                            fieldLabel : 'Stop <=',
-                                            value : ''
-                                        }
-                                    ]},
-                                {  xtype:'fieldset',
-                                    defaults:{anchor:'100%'},
-                                    labelWidth : 90,
-                                    labelSeparator : '',
-                                    title:'Association',
-                                    collapsible: true,
-                                    autoHeight:true,
-                                    items:[
-                                        {xtype : 'numberfield',
-                                            id:'max_pvalue',
-                                            name :'max_pvalue',
-                                            allowNegative: false,
-                                            decimalPrecision : 8,
-                                            emptyText : 'Input value...',
-                                            invalidText:'This value is not valid.',
-                                            minValue:0,
-                                            tabIndex : 1,
-                                            validateOnBlur : true,
-                                            fieldLabel : 'pvalue <=',
-                                            value : 0.5
-                                        },
-                                        abs_value_field('Score','score',2,100,-100),
-                                        abs_value_field('Correlation','correlation',0.1,1,-1),
-                                        { xtype:'combo', name:'order_combo',id:'order_combo',
-                                            mode:'local',
-                                            allowBlank : true,
-                                            store: new Ext.data.JsonStore({
-                                                autoLoad : true,
-                                                fields : ['value','label'],
-                                                idProperty:'value',
-                                                data: order_list,
-                                                storeId:'order_combo_store'
-                                            }),
-                                            fieldLabel:'Order By',
-                                            valueField:'value',
-                                            displayField:'label',
-                                            tabIndex : 2,
-                                            typeAhead : true,
-                                            selectOnFocus:true,
-                                            triggerAction : 'all',
-                                            value : 'score'
-                                        },
-                                        { xtype:'combo', name:'limit_combo',id:'limit_combo',
+                                abs_value_field('Sgn(log(p))','feature_score',2,100,-100),
+                                abs_value_field('Sp Corr','feature_correlation',0.1,1,-1),
+                                   { xtype:'combo', name:'feature_limit_combo',id:'feature_limit_combo',
                                             mode:'local',
                                             allowBlank : true,
                                             store: new Ext.data.JsonStore({
@@ -958,12 +606,384 @@ Ext.onReady(function() {
                                             typeAhead : true,
                                             selectOnFocus:true,
                                             triggerAction : 'all',
-                                            value : 200
+                                            value : 2000
                                         }
-                                    ]
+                            ]
+                        }]
+
+                }]
+//                },{
+//                    xtype: 'panel', id:'filters',
+//                    title : 'Filter Links',
+//                    autoScroll : true,
+//                    height : 250,
+//                    tools: [{
+//                        id: 'help',
+//                        handler: function(event, toolEl, panel){
+//                            openHelpWindow('Filtering',filteringHelpString);
+//                        }}],
+//                    items :[
+//                        { xtype:'form',
+//                            id :'filter_panel',
+//                            name :'filter_panel',
+//                            bodyStyle:'padding:5px 5px 5px 5px',
+//                            defaults:{anchor:'100%'},
+//                            border : false,
+//                            labelAlign : 'right',
+//                            labelWidth: 70,
+//                            labelSeparator : '',
+//                            defaultType:'textfield',
+//                            monitorValid : true,
+//                            buttons : [
+//                                {
+//                                    text: 'Filter',
+//                                    formBind : true,
+//                                    listeners : {
+//                                        click : function(button,e) {
+//                                            requestFilteredData();
+//                                        }
+//                                    }
+//                                },
+//                                { text: 'Reset',
+//                                    listeners : {
+//                                        click : function(button,e) {
+//                                            resetFormPanel();
+//                                        }
+//                                    }
+//                                }
+//                            ],
+//                            items : [
+//                                {  xtype:'fieldset',
+//                                    title:'Node 1',
+//                                    collapsible: true,
+//                                    collapsed: true,
+//                                    defaults:{anchor:'100%'},
+//                                    labelWidth: 70,
+//                                    labelSeparator : '',
+//                                    defaultType:'textfield',
+//                                    autoHeight:true,
+//                                    items:[
+//                                        {
+//                                            xtype:'combo',
+//                                            name:'f1_type_combo',
+//                                            id:'f1_type_combo',
+//                                            mode:'local',
+//                                            allowBlank : true,
+//                                            store: new Ext.data.JsonStore({
+//                                                autoLoad : false,
+//                                                fields : ['value','label'],
+//                                                idProperty:'value',
+//                                                data: [
+//                                                    {value: '*',label:'All'}
+//                                                ],
+//                                                storeId:'f1_type_combo_store'
+//                                            }),
+//                                            fieldLabel:'Type',
+//                                            valueField:'value',
+//                                            displayField:'label',
+//                                            tabIndex : 0,
+//                                            typeAhead : true,
+//                                            selectOnFocus:true,
+//                                            triggerAction : 'all',
+//                                            forceSelection : true,
+//                                            emptyText : 'Select a Type...',
+//                                            value : '*',
+//                                            listeners : {
+//                                                select : function(field,record, index) {
+//                                                    switch(record.id)  {
+//                                                        case('CLIN'):
+//                                                            Ext.getCmp('f1_label_field').setVisible(false);
+//                                                            Ext.getCmp('f1_clin_label').setVisible(true);
+//                                                            break;
+//                                                        default:
+//                                                            Ext.getCmp('f1_label_field').setVisible(true);
+//                                                            Ext.getCmp('f1_clin_label').setVisible(false);
+//                                                    }
+//                                                }
+//                                            }
+//                                        }, {
+//                                            name:'f1_label_field',
+//                                            id:'f1_label_field',
+//                                            emptyText : 'Input Label...',
+//                                            tabIndex: 1,
+//                                            selectOnFocus:true,
+//                                            fieldLabel:'Label'
+//                                        }, {
+//                                            name:'f1_clin_label',
+//                                            mode:'local',
+//                                            id:'f1_clin_label',
+//                                            xtype:'combo',
+//                                            allowBlank : false,
+//                                            hidden:true,
+//                                            autoSelect : true,
+//                                            store: new Ext.data.JsonStore({
+//                                                autoLoad : false,
+//                                                data: [],
+//                                                fields : ['value','label'],
+//                                                idProperty:'value',
+//                                                storeId:'f1_clin_list_store'
+//                                            }),
+//                                            listWidth:200,
+//                                            fieldLabel:'Clinical Feature',
+//                                            selectOnFocus:true,
+//                                            forceSelection : true,
+//                                            triggerAction : 'all',
+//                                            valueField:'value',
+//                                            displayField:'label',
+//                                            emptyText:'CLIN Feature...',
+//                                            value:'*'
+//                                        },
+//                                        {
+//                                            xtype:'combo', name:'f1_chr_combo',id:'f1_chr_combo',
+//                                            mode:'local',
+//                                            allowBlank : false,
+//                                            store: new Ext.data.JsonStore({
+//                                                autoLoad : true,
+//                                                fields : ['value','label'],
+//                                                idProperty:'value',
+//                                                data: chrom_list,
+//                                                storeId:'f1_chr_combo_store'
+//                                            }),
+//                                            fieldLabel:'Chromosome',
+//                                            valueField:'value',
+//                                            displayField:'label',
+//                                            tabIndex : 2,
+//                                            selectOnFocus:true,
+//                                            forceSelection : true,
+//                                            triggerAction : 'all',
+//                                            emptyText : 'Select Chr...',
+//                                            value : '*'
+//                                        },{xtype : 'numberfield',
+//                                            id:'f1_chr_start',
+//                                            name :'f1_chr_start',
+//                                            allowNegative: false,
+//                                            decimalPrecision : 0,
+//                                            emptyText : 'Input value...',
+//                                            invalidText:'This value is not valid.',
+//                                            maxValue: 250999999,
+//                                            minValue:1,
+//                                            tabIndex : 1,
+//                                            validateOnBlur : true,
+//                                            allowDecimals : false,
+//                                            fieldLabel : 'Start >=',
+//                                            value : ''
+//                                        },{xtype : 'numberfield',
+//                                            id:'f1_chr_stop',
+//                                            name :'f1_chr_stop',
+//                                            allowNegative: false,
+//                                            decimalPrecision : 0,
+//                                            emptyText : 'Input value...',
+//                                            invalidText:'This value is not valid.',
+//                                            maxValue: 250999999,
+//                                            minValue:1,
+//                                            tabIndex : 1,
+//                                            validateOnBlur : true,
+//                                            allowDecimals : false,
+//                                            fieldLabel : 'Stop <=',
+//                                            value : ''
+//                                        }
+//                                    ]},
+//                                {  xtype:'fieldset',
+//                                    title:'Node 2',
+//                                    collapsible: true,
+//                                    collapsed: true,
+//                                    defaults:{anchor:'100%'},
+//                                    labelWidth: 70,
+//                                    labelSeparator : '',
+//                                    defaultType:'textfield',
+//                                    autoHeight:true,
+//                                    items:[
+//                                        {
+//                                            xtype:'combo',
+//                                            name:'f2_type_combo',
+//                                            id:'f2_type_combo',
+//                                            mode:'local',
+//                                            allowBlank : true,
+//                                            store: new Ext.data.JsonStore({
+//                                                autoLoad : false,
+//                                                fields : ['value','label'],
+//                                                idProperty:'value',
+//                                                data: [
+//                                                    {value: '*',label:'All'}
+//                                                ],
+//                                                storeId:'f2_type_combo_store'
+//                                            }),
+//                                            fieldLabel:'Type',
+//                                            valueField:'value',
+//                                            displayField:'label',
+//                                            tabIndex : 0,
+//                                            typeAhead : true,
+//                                            selectOnFocus:true,
+//                                            triggerAction : 'all',
+//                                            forceSelection : true,
+//                                            emptyText : 'Select a Type...',
+//                                            value : '*',
+//                                            listeners : {
+//                                                select : function(field,record, index) {
+//                                                    switch(record.id)  {
+//                                                        case('CLIN'):
+//                                                            var label_cmp = Ext.getCmp('f2_label_field'),
+//                                                                clin_cmp = Ext.getCmp('f2_clin_label');
+//                                                            label_cmp.setVisible(false);
+//                                                            clin_cmp.setVisible(true);
+//                                                            break;
+//                                                        default:
+//                                                            var label_cmp = Ext.getCmp('f2_label_field'),
+//                                                                clin_cmp = Ext.getCmp('f2_clin_label');
+//                                                            label_cmp.setVisible(true);
+//                                                            clin_cmp.setVisible(false);
+//                                                    }
+//                                                }
+//                                            }
+//                                        }, {
+//                                            name:'f2_label_field',
+//                                            id:'f2_label_field',
+//                                            emptyText : 'Input Label...',
+//                                            tabIndex: 1,
+//                                            selectOnFocus:true,
+//                                            fieldLabel:'Label'
+//                                        },  {
+//
+//                                            mode:'local',
+//                                            name:'f2_clin_label',
+//                                            id:'f2_clin_label',
+//                                            xtype:'combo',
+//                                            allowBlank : false,
+//                                            hidden:true,
+//                                            autoSelect : true,
+//                                            store: new Ext.data.JsonStore({
+//                                                autoLoad : false,
+//                                                data: [],
+//                                                fields : ['value','label'],
+//                                                idProperty:'value',
+//                                                storeId:'f2_clin_list_store'
+//                                            }),
+//                                            listWidth:200,
+//                                            fieldLabel:'Clinical Feature',
+//                                            selectOnFocus:true,
+//                                            forceSelection : true,
+//                                            triggerAction : 'all',
+//                                            valueField:'value',
+//                                            displayField:'label',
+//                                            emptyText:'CLIN Feature...',
+//                                            value:'*'
+//                                        },
+//                                        { xtype:'combo', name:'f2_chr_combo',id:'f2_chr_combo',
+//                                            mode:'local',
+//                                            allowBlank : true,
+//                                            store: new Ext.data.JsonStore({
+//                                                autoLoad : true,
+//                                                fields : ['value','label'],
+//                                                idProperty:'value',
+//                                                data: chrom_list,
+//                                                storeId:'f2_chr_combo_store'
+//                                            }),
+//                                            fieldLabel:'Chromosome',
+//                                            valueField:'value',
+//                                            displayField:'label',
+//                                            tabIndex : 2,
+//                                            selectOnFocus:true,
+//                                            forceSelection : true,
+//                                            triggerAction : 'all',
+//                                            emptyText : 'Select Chr...',
+//                                            value : '*'
+//                                        },{xtype : 'numberfield',
+//                                            id:'f2_chr_start',
+//                                            name :'f2_chr_start',
+//                                            allowNegative: false,
+//                                            decimalPrecision : 0,
+//                                            emptyText : 'Input value...',
+//                                            invalidText:'This value is not valid.',
+//                                            maxValue: 250999999,
+//                                            minValue:1,
+//                                            tabIndex : 1,
+//                                            validateOnBlur : true,
+//                                            allowDecimals : false,
+//                                            fieldLabel : 'Start >=',
+//                                            value : ''
+//                                        },{xtype : 'numberfield',
+//                                            id:'f2_chr_stop',
+//                                            name :'f2_chr_stop',
+//                                            allowNegative: false,
+//                                            decimalPrecision : 0,
+//                                            emptyText : 'Input value...',
+//                                            invalidText:'This value is not valid.',
+//                                            maxValue: 250999999,
+//                                            minValue:1,
+//                                            tabIndex : 1,
+//                                            validateOnBlur : true,
+//                                            allowDecimals : false,
+//                                            fieldLabel : 'Stop <=',
+//                                            value : ''
+//                                        }
+//                                    ]},
+//                                {  xtype:'fieldset',
+//                                    defaults:{anchor:'100%'},
+//                                    labelWidth : 90,
+//                                    labelSeparator : '',
+//                                    title:'Association',
+//                                    collapsible: true,
+//                                    autoHeight:true,
+//                                    items:[
+//                                        {xtype : 'numberfield',
+//                                            id:'max_pvalue',
+//                                            name :'max_pvalue',
+//                                            allowNegative: false,
+//                                            decimalPrecision : 8,
+//                                            emptyText : 'Input value...',
+//                                            invalidText:'This value is not valid.',
+//                                            minValue:0,
+//                                            tabIndex : 1,
+//                                            validateOnBlur : true,
+//                                            fieldLabel : 'pvalue <=',
+//                                            value : 0.5
+//                                        },
+//                                        abs_value_field('Sgn(log(p))','score',2,100,-100),
+//                                        abs_value_field('Sp Corr','correlation',0.1,1,-1),
+//                                        { xtype:'combo', name:'order_combo',id:'order_combo',
+//                                            mode:'local',
+//                                            allowBlank : true,
+//                                            store: new Ext.data.JsonStore({
+//                                                autoLoad : true,
+//                                                fields : ['value','label'],
+//                                                idProperty:'value',
+//                                                data: order_list,
+//                                                storeId:'order_combo_store'
+//                                            }),
+//                                            fieldLabel:'Order By',
+//                                            valueField:'value',
+//                                            displayField:'label',
+//                                            tabIndex : 2,
+//                                            typeAhead : true,
+//                                            selectOnFocus:true,
+//                                            triggerAction : 'all',
+//                                            value : 'score'
+//                                        },
+//                                        { xtype:'combo', name:'limit_combo',id:'limit_combo',
+//                                            mode:'local',
+//                                            allowBlank : true,
+//                                            store: new Ext.data.JsonStore({
+//                                                autoLoad : true,
+//                                                fields : ['value','label'],
+//                                                idProperty:'value',
+//                                                data: limit_list,
+//                                                storeId:'limit_combo_store'
+//                                            }),
+//                                            fieldLabel:'Max Results',
+//                                            valueField:'value',
+//                                            displayField:'label',
+//                                            tabIndex : 2,
+//                                            typeAhead : true,
+//                                            selectOnFocus:true,
+//                                            triggerAction : 'all',
+//                                            value : 200
+//                                        }
+//                                    ]
                                 }
                             ]
-                        }]}]
+                        }]
+//                }]
+//            }]
             }]
     });
 
@@ -1032,15 +1052,21 @@ Ext.onReady(function() {
                                     xtype:'menucheckitem',
                                     handler: ringHandler,
                                     checked:true,
-                                    id:'cnvr_ring_displayed',
+                                    id:'karyotype',
+                                    text:'Karyotype Bands'
+                                },{
+                                    xtype:'menucheckitem',
+                                    handler: ringHandler,
+                                    checked:true,
+                                    id:'cnvr',
                                     text:'CNVR tiles'
                                 },
                                     {
                                         xtype:'menucheckitem',
                                         handler: ringHandler,
                                         checked:true,
-                                        id:'score_ring_displayed',
-                                        text:'Score'
+                                        id:'pairwise_scores',
+                                        text:'Scores'
                                     }]
 
                             }
@@ -1107,12 +1133,9 @@ Ext.onReady(function() {
     }
 
     function ringHandler(item){
-
-        item.setChecked(~item.checked);
-        var ring_config = {};
-        ring[item.getId()] = item.checked;
-        vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',ring_config));
-    }
+        pairwise.setRingHidden(item.getId(),item.checked);  //hidden if true!
+             requestFeatureFilteredRedraw();
+}
 
     function modeHandler(item){
         switch(item.getId()) {

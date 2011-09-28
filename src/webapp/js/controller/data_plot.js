@@ -25,15 +25,15 @@ function registerPlotListeners() {
         renderLinearFeatureData(obj);
         renderLinearLegend();
     });
-    d.addListener('data_ready','filteredfeatures',function(obj){
-        circvis_obj.data = obj.data;
-        circvis_obj.filter = obj.filter;
-        vq.events.Dispatcher.dispatch( new vq.events.Event('draw_circvis','filteredfeatures',circvis_obj));
+    d.addListener('data_ready','filtered_features',function(obj){
+        pairwise.circvis_obj.data = obj.data;
+        pairwise.circvis_obj.filter = obj.filter;
+        var e = new vq.events.Event('draw_circvis','filtered_features');
+        e.dispatch();
     });
-
-    d.addListener('draw_circvis','filteredfeatures',function(obj){
-        generateColorMaps(obj);
-        renderCircleFeatureData(obj);
+    d.addListener('draw_circvis','filtered_features',function(){
+        generateColorMaps(pairwise.circvis_obj);
+        renderCircleFeatureData(pairwise.circvis_obj);
         renderCircleLegend();
     });
     d.addListener('modify_circvis', function(obj){
@@ -75,7 +75,7 @@ function getStrokeStyleAttribute() {
 
 function setStrokeStyleToSource() {
     setStrokeStyleAttribute(function(feature) {
-        return source_color_scale(all_source_map[feature.source]);
+        return source_color_scale(locatable_source_map[feature.source]);
     });
 }
 
@@ -163,170 +163,9 @@ function legend_draw(div) {
 }
 
 function plotFilteredFeatureData(feature_array,filter,div) {
-    var width=800, height=800;
-    var	ring_radius = width / 14;
-    var chrom_keys = ["1","2","3","4","5","6","7","8","9","10",
-        "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"];
-    var stroke_style_fn = getStrokeStyleAttribute();
 
+    var data = processCircvisObject(feature_array,filter,div);
 
-    function genome_listener(chr) {
-        var e = new vq.events.Event('render_linearbrowser','feature_circvis',{data:features,chr:chr});
-        e.dispatch();
-    }
-
-    function wedge_listener(feature) {
-        var chr = feature.chr;
-        var start = bpToMb(feature.start) - 2.5;
-        var range_length = bpToMb(feature.end) - start + 2.5;
-        var e = new vq.events.Event('render_linearbrowser','feature_circvis',{data:features,chr:chr,start:start,range:range_length});
-        e.dispatch();
-    }
-    var ucsc_genome_url = 'http://genome.ucsc.edu/cgi-bin/hgTracks';
-
-    var karyotype_tooltip_items = {
-        'Karyotype Label' : function(feature) { return  vq.utils.VisUtils.options_map(feature)['label'];},
-        Location :  function(feature) { return 'Chr' + feature.chr + ' ' + feature.start + '-' + feature.end;}
-    };
-    var chrom_leng = vq.utils.VisUtils.clone(chrome_length);
-
-    if (filter.chr !="*") {
-        chrom_keys=chrom_keys.filter(function(f) { return f==filter.chr; });
-        chrom_leng=chrom_leng.filter(function(f) { return f.chr_name ==filter.chr;});
-    }
-
-    var features = vq.utils.VisUtils.clone(feature_array);
-    var ticks = vq.utils.VisUtils.clone(features);
-    ticks.forEach(function(f) { f.value = f.label;});
-    features.forEach(function(f){ f.value = Math.min(Math.max(f.score,max_score * -1),max_score);});
-
-
-
-    var data = {
-        GENOME: {
-            DATA:{
-                key_order : chrom_keys,
-                key_length : chrom_leng
-            },
-            OPTIONS: {
-                radial_grid_line_width: 1,
-                label_layout_style : 'clock',
-                listener : genome_listener,
-                label_font_style : '18pt helvetica'
-            }
-        },
-        TICKS : {
-            DATA : {
-                data_array : ticks
-            },
-            OPTIONS :{
-                display_legend : false,
-                listener : wedge_listener,
-                //stroke_style :stroke_style_fn,
-                fill_style : function(tick) {return node_colors(tick.source); },
-                tooltip_items : {Tick : function(node) { return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
-                    '-' + node.end + ' ' + node.label_mod;}},
-                tooltip_links : {
-                    'UCSC Genome Browser' :  function(feature){
-                        return  ucsc_genome_url + '?position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
-                    'Ensemble' : function(feature) {
-                        return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + ':' +  feature.start +'-'+ feature.end;  }
-                }
-            }
-        },
-        PLOT: {
-            width : width,
-            height :  height,
-            horizontal_padding : 30,
-            vertical_padding : 30,
-            container : div,
-            enable_pan : false,
-            enable_zoom : false,
-            show_legend: false,
-            legend_include_genome : true,
-            legend_corner : 'ne',
-            legend_radius  : width / 15
-        },
-        WEDGE:[
-            {
-                PLOT : {
-                    height : ring_radius/2,
-                    type :   'karyotype'
-                },
-                DATA:{
-                    data_array : cytoband
-                },
-                OPTIONS: {
-                    legend_label : 'Karyotype Bands' ,
-                    legend_description : 'Chromosomal Karyotype',
-                    outer_padding : 10,
-                    tooltip_items : karyotype_tooltip_items
-                }
-            },{
-                PLOT : {
-                    height : ring_radius /2,
-                    type : 'tile'
-                },
-                DATA:{data_array:vq.utils.VisUtils.clone(features).filter(function(f) { return f.source == 'CNVR';})},
-                OPTIONS: {
-                    legend_description: 'Copy Number Variation Regions',
-                    legend_label :'Copy Number Variation Regions',
-                    outer_padding : 10,
-                    tile_height : 5,
-                    tile_padding : 2,
-                    tile_overlap_distance : 100000,
-                    tile_show_all_tiles : true,
-                    fill_style : stroke_style_fn,
-                    tooltip_items : {
-                        Node : function(node) {
-                            return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
-                                '-' + node.end + ' ' + node.label_mod;},
-                        'Logged pvalue' :'logged_pvalue',
-                        'Score' : 'score',
-                        'Clinical Feature': 'clin',
-                        'Sign':'sign'
-                    },
-                    listener : wedge_listener
-                }
-            },{
-                PLOT : {
-                    height : ring_radius,
-                    type :   'scatterplot'
-                },
-                DATA:{
-                    data_array : features,
-                    data_key : 'score'
-                },
-                OPTIONS: {
-                    legend_label : 'Clinical Correlates' ,
-                    legend_description : 'Clinical Correlates',
-                    outer_padding : 10,
-                    base_value : 0,
-                    min_value : -1.1 * max_score,
-                    max_value : 1.1* max_score,
-                    radius : 2,
-                    draw_axes : true,
-                    shape:'dot',
-                    stroke_style : function (feature) {
-                        return score_color_scale(feature.value);
-                    },
-                    fill_style :  function (feature) {
-                        return score_color_scale(feature.value);
-                    },
-                    tooltip_items : {
-                        Node : function(node) {
-                            return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
-                                '-' + node.end + ' ' + node.label_mod;},
-                        'Logged pvalue' :'logged_pvalue',
-                        'Score' : 'score',
-                        'Clinical Feature': 'clin',
-                        'Sign':'sign'
-                    },
-                    listener : wedge_listener
-                }
-            }
-        ]
-    };
     circvis = new vq.CircVis();
     var dataObject ={DATATYPE : "vq.models.CircVisData", CONTENTS : data };
     circvis.draw(dataObject);
@@ -335,7 +174,7 @@ function plotFilteredFeatureData(feature_array,filter,div) {
     e.dispatch();
 
     return circvis;
-}
+}                   
 
 function wedge_plot(parsed_data,div) {
     var width=800, height=800;
@@ -557,7 +396,7 @@ function linear_plot(obj) {
                     '-' + node.end + ' ' + node.label_mod;},
             Score :function(node) { return feature_map[node.id] ? feature_map[node.id].score : 'NA';},
             'Clinical Feature':function(node) { return feature_map[node.id] ? feature_map[node.id].clin : 'NA';},
-            'Aggressiveness':function(node) { return feature_map[node.id] ? feature_map[node.id].agg : 'NA';}
+            'Sign':function(node) { return feature_map[node.id] ? feature_map[node.id].sign : 'NA';}
         },
         inter_tooltip_items = {
             'Node 1' : function(tie) {
@@ -781,14 +620,13 @@ function plotFeatureDataLinear(obj) {
     };
     var stroke_style_fn = getStrokeStyleAttribute();
     var located_tooltip_items = {
-        Node : function(node) {
+        Feature : function(node) {
             return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                 '-' + node.end + ' ' + node.label_mod;},
-        'Logged Pvalue' : 'logged_pvalue',
-        Score : 'score',
-        'Clinical Feature':'clin',
-        'Sign':'sign'
-
+                            'Clinical Feature':'clin',
+                                'Sgn(log(p))' :'slp',
+                                'Sp Corr' : 'correlation',
+                                'Count':'num_nonna'
     };
 
     var  tooltip_links = {
@@ -860,12 +698,12 @@ function plotFeatureDataLinear(obj) {
                 label : 'Feature Scores',
                 description : 'Clinical Scores of Features',
                 CONFIGURATION: {
-                    fill_style : function (feature) {  return score_color_scale(feature.value);  },          //required
+                    fill_style : function (feature) {  return score_color_scale(feature.score);  },          //required
                     stroke_style : function (feature) { return 'grey';},//return score_color_scale(feature.value);  },          //required
                     track_fill_style : pv.color('#EEEEEE'),
                     track_height : 200,           //required
                     track_padding: 20,             //required
-                    min_value : -1.1 * max_score,
+                    min_value : 1.1 * neg_score,
                     max_value : max_score * 1.1,
                     base_value : 0,
                     num_y_rule_lines: 5,
@@ -881,7 +719,8 @@ function plotFeatureDataLinear(obj) {
                     var node =location;
                     node.start = bpToMb(node.start);node.end = bpToMb(node.end);
                     return node;
-                })
+                }),
+                value_key: 'score'
             }]
     }
     };
@@ -904,3 +743,194 @@ function plotFeatureDataLinear(obj) {
 
     return lin_browser;
 }
+
+function processCircvisObject(data,filter,div) {
+    var width=pairwise.display_options.circvis.width, height=pairwise.display_options.circvis.height;
+    var ring_radius = pairwise.display_options.circvis.ring_radius;
+    var chrom_keys = pairwise.display_options.circvis.chrom_keys;
+    var stroke_style_fn = getStrokeStyleAttribute();
+
+    var chrom_leng = vq.utils.VisUtils.clone(chrome_length);
+
+    try {
+    if (filter.chr !="*") {
+        var filter_chr = filter.chr.split(',');
+        chrom_keys=chrom_keys.filter(function(f) { return filter_chr.some(function(key) {return key == f;}); });
+        chrom_leng=chrom_leng.filter(function(f) { return filter_chr.some(function(key) {return key == f.chr_name;});});
+    }
+    } catch(e) {
+
+    }
+    var ticks = vq.utils.VisUtils.clone(data);
+    ticks.forEach(function(f) { f.value = f.label;});
+    var features = vq.utils.VisUtils.clone(data);
+    var pos_data = features.filter(function(r) { return r.score >= 0;}).map(function(row) { return row.score;});
+    var neg_data = features.filter(function(r) { return r.score <= 0;}).map(function(row) { return row.score;});
+    max_score = Math.ceil(2* pv.deviation(pos_data) + pv.mean(pos_data));
+    neg_score =  Math.floor(pv.mean(neg_data) - 2* pv.deviation(neg_data));
+    features.forEach(function(f) {f.slp = f.score; f.score=Math.max(neg_score,Math.min(max_score,f.score));});
+
+    
+        var karyotype_tooltip_items = {
+        'Karyotype Label' : function(feature) { return  vq.utils.VisUtils.options_map(feature)['label'];},
+        Location :  function(feature) { return 'Chr' + feature.chr + ' ' + feature.start + '-' + feature.end;}
+    };
+
+        function feature_circvis_wedge_listener(feature) {
+        var chr = feature.chr;
+        var start = bpToMb(feature.start) - 2.5;
+        var range_length = bpToMb(feature.end) - start + 2.5;
+        vq.events.Dispatcher.dispatch(new vq.events.Event('render_linearbrowser','feature_circvis',{data:features,chr:chr,start:start,range:range_length}));
+    }
+
+      function genome_listener(chr) {
+        var e = new vq.events.Event('render_linearbrowser','feature_circvis',{data:features,chr:chr});
+        e.dispatch();
+      }
+
+         var ucsc_genome_url = 'http://genome.ucsc.edu/cgi-bin/hgTracks';
+
+         var data = {
+             GENOME: {
+                 DATA:{
+                     key_order : chrom_keys,
+                     key_length : chrom_leng
+                 },
+                 OPTIONS: {
+                     radial_grid_line_width: 1,
+                     label_layout_style : 'clock',
+                     listener : genome_listener,
+                     label_font_style : '18pt helvetica'
+                 }
+             },
+             TICKS : {
+                 DATA : {
+                     data_array : ticks
+                 },
+                 OPTIONS :{
+                     display_legend : false,
+                     listener : feature_circvis_wedge_listener,
+                     fill_style : function(tick) {return node_colors(tick.source); },
+                     tooltip_items : {Feature : function(node) { return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
+                         '-' + node.end;},
+                              'Clinical Feature':'clin',
+                                'Sgn(log(p))' :'slp',
+                                'Sp Corr' : 'correlation',
+                                'Count':'num_nonna'
+                     },
+                     tooltip_links : {
+                         'UCSC Genome Browser' :  function(feature){
+                             return  ucsc_genome_url + '?position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
+                         'Ensemble' : function(feature) {
+                             return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + ':' +  feature.start +'-'+ feature.end;  }
+                     }
+                 }
+             },
+             PLOT: {
+                 width : width,
+                 height :  height,
+                 horizontal_padding : 30,
+                 vertical_padding : 30,
+                 container : div,
+                 enable_pan : false,
+                 enable_zoom : false,
+                 show_legend: true,
+                 legend_include_genome : true,
+                 legend_corner : 'ne',
+                 legend_radius  : width / 15
+             },
+             WEDGE:[
+
+             ]
+         };
+
+         if (!pairwise.isRingHidden('karyotype')) {
+             data.WEDGE.push(   {
+                 PLOT : {
+                      height : ring_radius/2,
+                      type :   'karyotype'
+                  },
+                  DATA:{
+                      data_array : cytoband
+                  },
+                  OPTIONS: {
+                      legend_label : 'Karyotype Bands' ,
+                      legend_description : 'Chromosomal Karyotype',
+                      outer_padding : 10,
+                      tooltip_items : karyotype_tooltip_items
+                  }
+              });
+          }
+
+          if (!pairwise.isRingHidden('cnvr')) {
+              data.WEDGE.push(   {
+                  PLOT : {
+                      height : ring_radius /2,
+                      type : 'tile'
+                  },
+                  DATA:{data_array:features.filter(function(f) { return f.source == 'CNVR';})},
+                  OPTIONS: {
+                      legend_description: 'Copy Number Variation Regions',
+                      legend_label :'Copy Number Variation Regions',
+                      outer_padding : 10,
+                      tile_height : 5,
+                      tile_padding : 2,
+                      tile_overlap_distance : 100000,
+                      tile_show_all_tiles : true,
+                      fill_style : stroke_style_fn,
+                      stroke_style: stroke_style_fn,
+                      tooltip_items : {
+                          Feature : function(node) {
+                              return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
+                                  '-' + node.end;},
+                                       'Clinical Feature':'clin',
+                                'Sgn(log(p))' :'slp',
+                                'Sp Corr' : 'correlation',
+                                'Count':'num_nonna'
+                      }
+                  },
+                  listener : feature_circvis_wedge_listener
+              });
+          }
+
+          if (!pairwise.isRingHidden('pairwise_scores')) {
+              data.WEDGE.push(    {
+                  PLOT : {
+                      height : ring_radius,
+                      type :   'scatterplot'
+                  },
+                  DATA:{
+                      data_array : features,
+                      value_key : 'score'
+                  },
+                  OPTIONS: {
+                      legend_label : 'Clinical Correlates' ,
+                      legend_description : 'Clinical Correlates',
+                            outer_padding : 10,
+                            base_value : 0,
+                            min_value : neg_score,
+                            max_value : max_score,
+                            radius : 2,
+                            draw_axes : true,
+                            shape:'dot',
+                            stroke_style : function (feature) {
+                                return score_color_scale(feature.score);
+                            },
+                            fill_style :  function (feature) {
+                                return score_color_scale(feature.score);
+                            },
+                            tooltip_items : {
+                                Feature : function(node) {
+                                    return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
+                                        '-' + node.end;},
+                                       'Clinical Feature':'clin',
+                                'Sgn(log(p))' :'slp',
+                                'Sp Corr' : 'correlation',
+                                'Count':'num_nonna'
+                            },
+                            listener : feature_circvis_wedge_listener
+                        }
+                    });
+                }
+                return data;
+            }
