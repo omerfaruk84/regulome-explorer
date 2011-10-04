@@ -3,18 +3,26 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge"/>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <title>jQuery UI Explorer</title>
-    <link rel="stylesheet" type="text/css" href="http://vis.systemsbiology.net/jquery/1.6.2/css/isb_theme/jq.isb.css"  />
+    <!--<link rel="stylesheet" type="text/css" href="http://vis.systemsbiology.net/jquery/1.6.2/css/isb_theme/jq.isb.css"  />-->
+    <link rel="stylesheet" type="text/css" href="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/themes/base/jquery.ui.all.css"  />
     <link rel="stylesheet" type="text/css" href="css/icons.css" />
 
     <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/1.6.2/js/jquery.min.js"></script>
-    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/1.6.2/js/jquery-ui.isb.js"></script>
+    <!--<script type="text/javascript" src="http://vis.systemsbiology.net/jquery/1.6.2/js/jquery-ui.isb.js"></script>-->
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.core.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.widget.js"></script>
+    \<script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.position.js"></script>
+    \<script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.menu.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.tabs.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.menubar.js"></script>
 
     <script type="text/javascript" src="http://vis.systemsbiology.net/js/visquick/data/cytoband.hg18.json"></script>
     <script type="text/javascript" src="http://vis.systemsbiology.net/js/protovis/protovis-r3.3.1.js"></script>
     <script type="text/javascript" src="http://vis.systemsbiology.net/js/visquick/vq.min.js"></script>
     <script type="text/javascript" src="http://vis.systemsbiology.net/js/visquick/vq.linear_browser.min.js"></script>
     <script type="text/javascript" src="http://vis.systemsbiology.net/js/visquick/vq.circvis.min.js"></script>
-<!-- 
+
+<!--
     <script type="text/javascript" src="js/globals.js"></script>
     <script type="text/javascript" src="js/controller/data_retrieval.js"></script>
     <script type="text/javascript" src="js/controller/data_plot.js"></script>
@@ -74,8 +82,13 @@
                 ui.close();
                 return false;
             }
-            $(".menubar-icons").menu({
-                menuItemMaxWidth: 180
+            $(".menubar").menubar({
+                select : function(evt, ui) {
+                    return;
+                },
+                my : "left top",
+                at:"right center",
+                collision:"none none"
             });
             $("#tab_menu").tabs();
         }
@@ -94,36 +107,36 @@
 
         <div id="nav">
             <div class="left"></div>
-            <ul id="top_menu_icons" class="menubar-icons">
+            <ul id="top_menu_icons" class="menubar">
                 <li><a href="#Data">Data</a>
                     <ul>
-                        <li><a href="#Select">Select</a></li>
-                        <li><a href="#Export">Export</a></li>
+                        <li><a href="#">Select</a></li>
+                        <li><a href="#">Export</a></li>
                     </ul>
                 </li>
-                <li><a href="#Display">Display</a>
+                <li><a href="#">Display</a>
                     <ul>
-                        <li><a href="#Circular">Circular</a>
+                        <li><a href="#">Circular</a>
                         <ul>
                             <li>
-                                <a href="#Rings">Rings</a>
+                                <a href="#">Rings</a>
                                 <ul>
-                                    <li><a href="#KaryotypeBands">Karyotype Bands</a></li>
-                                    <li><a href="#CNVRTiles">Copy Number Variation Tiles</a></li>
-                                    <li><a href="#UnmappedAssociations">Unmapped Associations</a></li>
+                                    <li><a href="#">Karyotype Bands</a></li>
+                                    <li><a href="#">Copy Number Variation Tiles</a></li>
+                                    <li><a href="#">Unmapped Associations</a></li>
                                 </ul>
                             </li>
                         </ul></li>
-                        <li><a href="#Linear">Linear</a></li>
-                        <li><a href="#Scatter">Scatter</a></li>
-                        <li><a href="#AllPlots">All</a></li>
+                        <li><a href="#">Linear</a></li>
+                        <li><a href="#">Scatter</a></li>
+                        <li><a href="#">All</a></li>
                     </ul>
                 </li>
                 <li>
-                    <a href="#Mode">Mode</a>
+                    <a href="#">Mode</a>
                     <ul>
-                        <li><a href="#Explore">Explore</a></li>
-                        <li><a href="#Navigate">Navigate</a></li>
+                        <li><a href="#">Explore</a></li>
+                        <li><a href="#">Navigate</a></li>
                     </ul>
                 </li>
             </ul>
