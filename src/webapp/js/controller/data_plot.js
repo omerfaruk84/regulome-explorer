@@ -670,23 +670,25 @@ function plotFeatureDataLinear(obj) {
                 CONFIGURATION: {
                     fill_style : stroke_style_fn,
                     stroke_style : stroke_style_fn,
-                    shape : function(feature) {
+                  shape : function(feature) {
                         switch(feature.source) {
-                            case('GEXP') :
-                                return 'circle';
-                                break;
-                            case('METH') :
-                                return 'diamond';
-                                break;
-                            case('MIRN') :
-                                return 'triangle';
-                                break;
-                            case('GNAB') :
-                                return 'cross';
-                                break;
-                            case('CNVR') :
+//                            case('GEXP') :
+//                                return 'circle';
+//                                break;
+//                            case('METH') :
+//                                return 'diamond';
+//                                break;
+//                            case('MIRN') :
+//                                return 'triangle';
+//                                break;
+//                            case('GNAB') :
+//                                return 'cross';
+//                                break;
+//                            case('CNVR') :
+//                                return 'square';
+//                                break;
+                            default:
                                 return 'square';
-                                break;
                         }
                     },
                     track_height : 290,           //required
@@ -726,21 +728,23 @@ function plotFeatureDataLinear(obj) {
                     num_y_rule_lines: 5,
                    shape : function(feature) {
                         switch(feature.source) {
-                            case('GEXP') :
+//                            case('GEXP') :
+//                                return 'circle';
+//                                break;
+//                            case('METH') :
+//                                return 'diamond';
+//                                break;
+//                            case('MIRN') :
+//                                return 'triangle';
+//                                break;
+//                            case('GNAB') :
+//                                return 'cross';
+//                                break;
+//                            case('CNVR') :
+//                                return 'square';
+//                                break;
+                            default:
                                 return 'circle';
-                                break;
-                            case('METH') :
-                                return 'diamond';
-                                break;
-                            case('MIRN') :
-                                return 'triangle';
-                                break;
-                            case('GNAB') :
-                                return 'cross';
-                                break;
-                            case('CNVR') :
-                                return 'square';
-                                break;
                         }
                     },
                     radius:4,
