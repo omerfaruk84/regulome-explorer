@@ -182,6 +182,12 @@ function wedge_plot(parsed_data,div) {
         var chrom_keys = pairwise.display_options.circvis.chrom_keys;
         var stroke_style_fn = getStrokeStyleAttribute();
 
+    var tile_nodes= pairwise.display_options.circvis.network.tile_nodes,
+    node_overlap_distance = pairwise.display_options.circvis.network.node_overlap_distance;
+
+    var tile_ticks = pairwise.display_options.circvis.ticks.tile_ticks_manually,
+    tick_overlap_distance = pairwise.display_options.circvis.ticks.tick_overlap_distance;
+
     function genome_listener(chr) {
         var e = new vq.events.Event('render_linearbrowser','circvis',{data:parsed_data,chr:chr});
         e.dispatch();
@@ -319,7 +325,8 @@ function wedge_plot(parsed_data,div) {
                 link_line_width : 2,
                 node_key : function(node) { return node['label'];},
                 node_listener : wedge_listener,
-                //link_listener: initiateDetailsPopup,
+                tile_nodes: tile_nodes,
+                node_overlap_distance :node_overlap_distance,
                 link_stroke_style : function(link) {
                     return link_stroke_style(link.correlation);},
                 constant_link_alpha : 0.7,
@@ -344,6 +351,11 @@ function wedge_plot(parsed_data,div) {
                 }
             }
         }};
+
+    if (pairwise.display_options.circvis.ticks.tile_ticks_manually) {
+        data.TICKS.OPTIONS.overlap_distance = pairwise.display_options.circvis.ticks.tick_overlap_distance;
+    }
+
     circvis = new vq.CircVis();
     var dataObject ={DATATYPE : "vq.models.CircVisData", CONTENTS : data };
     circvis.draw(dataObject);
@@ -774,6 +786,13 @@ function processCircvisObject(options,filter,div) {
 
     var chrom_leng = vq.utils.VisUtils.clone(chrome_length);
 
+    var tile_nodes= pairwise.display_options.circvis.network.tile_nodes,
+      node_overlap_distance = pairwise.display_options.circvis.network.node_overlap_distance;
+
+      var tile_ticks = pairwise.display_options.circvis.ticks.tile_ticks_manually,
+      tick_overlap_distance = pairwise.display_options.circvis.ticks.tick_overlap_distance;
+
+
     try {
     if (filter.chr !="*") {
         var filter_chr = filter.chr.split(',');
@@ -849,12 +868,25 @@ function processCircvisObject(options,filter,div) {
             show_legend: true,
             legend_include_genome : true,
             legend_corner : 'ne',
-            legend_radius  : width / 15
+            legend_radius  : width / 15,
+            rotate_degrees : pairwise.display_options.circvis.rotation
         },
         WEDGE:[
 
         ]
     };
+
+    if (tile_ticks) {
+        data.TICKS.OPTIONS.tile_ticks = true;
+        data.TICKS.OPTIONS.overlap_distance = tick_overlap_distance;
+    }
+    if (pairwise.display_options.circvis.ticks.wedge_width_manually) {
+        data.TICKS.OPTIONS.wedge_width = pairwise.display_options.circvis.ticks.wedge_width;
+    }
+    if (pairwise.display_options.circvis.ticks.wedge_height_manually) {
+         data.TICKS.OPTIONS.wedge_height = pairwise.display_options.circvis.ticks.wedge_height;
+     }
+
 
     if (!pairwise.isRingHidden('karyotype')) {
         data.WEDGE.push(   {

@@ -26,9 +26,22 @@ var pairwise = {
                 hidden : false
             }
         },
+            ticks : {
+                tick_overlap_distance : null,
+                tile_ticks_manually : false,
+                wedge_width: 1,
+                wedge_width_manually: false,
+                                wedge_height: 1,
+                wedge_height_manually: false
+            },
+            network : {
+        tile_nodes : false,
+        node_overlap_distance : null
+            },
             width : 800,
             height : 800,
             ring_radius : 55,
+            rotation : 0,
             chrom_keys : ["1","2","3","4","5","6","7","8","9","10",
         "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"]
         }
