@@ -12,3 +12,6 @@
         .parallel_coordinates { background-image:url(../images/control_equalizer.png) !important }
         .comparator { background-image:url(../images/contrast.png) !important }
         .feature_associations { background-image:url(../images/arrow_refresh.png) !important }
+
+
+#scatterplot_panel { background-color : #fff	!important}
