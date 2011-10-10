@@ -47,9 +47,10 @@ Ext.define('RE.view.genomicfeature.View' ,{
         }
         ];
 
-        this.buttons= [
+        this.buttons = [
             {text : 'Close',
-                action : this.close
+            scope: this,
+             handler : this.close
             }
         ];
 

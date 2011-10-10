@@ -1,11 +1,13 @@
 Ext.define('RE.store.GenomicFeatures', {
     extend: 'Ext.data.Store',
-    model:'RE.store.GenomicFeature',
+    requires: ['RE.model.GenomicFeature', 'Ext.data.proxy.LocalStorage'],
+    model:'RE.model.GenomicFeature',
 
     autoLoad: false,
 
     proxy : {
-        type:'localStorage',
+        type:'localstorage',
         id: 're-genomicfeatures'
     }
+      
 });

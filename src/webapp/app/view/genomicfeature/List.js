@@ -1,5 +1,6 @@
 Ext.define('RE.view.genomicfeature.List' ,{
     extend: 'Ext.grid.Panel',
+    requires: 'RE.store.GenomicFeatures',
     alias : 'widget.genomicfeature_list',
 
     title : 'Genomic Features',
@@ -7,13 +8,6 @@ Ext.define('RE.view.genomicfeature.List' ,{
     store:'GenomicsFeatures',
 
     initComponent: function() {
-        this.store = {
-            fields: ['label', 'chr','start','stop','strand','descriptors','reference'],
-            data  : [
-                
-            ]
-        };
-
         this.columns = [
             {header: 'Label',  dataIndex: 'label',  flex: 1},
             {header: 'Chr', dataIndex: 'chr', flex: 1},

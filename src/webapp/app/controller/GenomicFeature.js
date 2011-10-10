@@ -1,5 +1,6 @@
 Ext.define('RE.controller.GenomicFeature', {
     extend: 'Ext.app.Controller',
+    requires: ['RE.store.GenomicFeatures','RE.model.GenomicFeature'],
 
     stores: [
         'GenomicFeatures'
@@ -20,8 +21,7 @@ Ext.define('RE.controller.GenomicFeature', {
 
      viewGF: function(grid,record) {
          var view = Ext.widget('genomicfeature_view');
-
-        view.down('form').loadRecord(record);
+         view.down('form').loadRecord(record);
     }
 
 });
