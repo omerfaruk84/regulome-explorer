@@ -4,8 +4,14 @@ runtime: python
 api_version: 1
 
 handlers:
+- url: /google-dsapi-svc/.*
+  script: redirections.py
+
+- url: /solr/.*
+  script: redirections.py
+
 - url: /
-  static_dir: static_files
+  static_dir: webapp
 
 - url: .*
   script: main.py
