@@ -3,8 +3,28 @@
         <title>Pages</title>
         <script type="text/javascript" src="js/pages.js"></script>
         <link rel="stylesheet" type="text/css" href="css/stylesheet.css"/>
+        <script type="text/javascript">
+            function OpenMainDialog() {
+                alert("opening main dialog");
+            }
+        </script>
     </head>
     <body>
-        <h3>Welcome to your Pages</h3>
+        <div id="c_main">
+            <ul id="l_links">
+                <li><a href="http://systemsbiology.org" target="_blank">Institute for Systems Biology</a></li>
+                <li><a href="http://cancergenome.nih.gov/" target="_blank">TCGA Cancer Genome Atlas</a></li>
+                <li><a href="http://cancerregulome.org" target="_blank">Cancer Regulome</a></li>
+            </ul>
+            <a href="#" onclick="OpenMainDialog(); return false;"><img src="images/isblogo.png" alt="ISB" height="50px" width="50px"/></a>
+            <ul id="l_menu">
+                <li>Data</li>
+                <li>Tools</li>
+                <li>Collections</li>
+                <li>Visualizations</li>
+                <li>Admin</li>
+                <li>Help</li>
+            </ul>
+        </div>
     </body>
 </html>
