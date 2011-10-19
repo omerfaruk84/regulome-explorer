@@ -12,6 +12,7 @@ handlers:
 
 - url: /configs/
   static_dir: configs
+  mime_type: application/json
 
 - url: /
   static_dir: webapp
