@@ -30,6 +30,10 @@
                 alert("this is the main dialog");
             }
 
+            function AlertSignIn() {
+                alert("Sign in");
+            }
+
             function ShowLoadedJson(o) {
                 var json = Ext.util.JSON.decode(o.responseText);
                 if (json.items) {
@@ -50,15 +54,13 @@
                 <li><a href="http://systemsbiology.org" target="_blank">Institute for Systems Biology</a></li>
                 <li><a href="http://cancergenome.nih.gov/" target="_blank">TCGA Cancer Genome Atlas</a></li>
                 <li><a href="http://cancerregulome.org" target="_blank">Cancer Regulome</a></li>
+                <li><a href="#" onclick="AlertSignIn(); return false;">Sign In</a></li>
             </ul>
             <a href="#" onclick="OpenMainDialog(); return false;"><img src="images/isblogo.png" alt="ISB" height="50px" width="50px"/></a>
             <ul id="l_menu">
-                <li>Data</li>
-                <li>Tools</li>
-                <li>Collections</li>
-                <li>Visualizations</li>
-                <li>Admin</li>
-                <li>Help</li>
+                <li>Pages</li>
+                <li>View</li>
+                <li>Filters</li>
             </ul>
         </div>
         <div id="c_json"></div>
