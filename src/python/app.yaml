@@ -10,8 +10,8 @@ handlers:
 - url: /solr/.*
   script: redirections.py
 
+- url: /configs/.*
+  static_dir: configs
+
 - url: /
   static_dir: webapp
-
-- url: .*
-  script: main.py
