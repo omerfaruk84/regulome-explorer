@@ -2,28 +2,45 @@
     <head>
         <title>Pages</title>
 
-        <link rel="shortcut icon" href="https://informatics-apps.systemsbiology.net/addama/ui/isbfavicon.ico" type="image/x-icon"/>
+        <link rel="shortcut icon" href="http://informatics-apps.systemsbiology.net/addama/ui/isbfavicon.ico" type="image/x-icon"/>
 
-        <link rel="stylesheet" type="text/css" href="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/resources/css/ext-all.css">
-        <link rel="stylesheet" type="text/css" href="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/examples/shared/examples.css"/>
-        <link rel="stylesheet" type="text/css" href="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/resources/css/xtheme-gray.css"/>
+        <link rel="stylesheet" type="text/css" href="http://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/resources/css/ext-all.css">
+        <link rel="stylesheet" type="text/css" href="http://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/examples/shared/examples.css"/>
+        <link rel="stylesheet" type="text/css" href="http://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/resources/css/xtheme-gray.css"/>
 
-        <script type="text/javascript" src="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/adapter/ext/ext-base.js"></script>
-        <script type="text/javascript" src="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/ext-all.js"></script>
+        <script type="text/javascript" src="http://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/adapter/ext/ext-base.js"></script>
+        <script type="text/javascript" src="http://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/ext-all.js"></script>
 
         <script type="text/javascript" src="http://addama.googlecode.com/svn/tags/2.1/user-interfaces/src/main/html/addama/ui/console_handling.js"></script>
+        <script type="text/javascript" src="http://addama.googlecode.com/svn/tags/2.1/user-interfaces/src/main/html/addama/ui/query_parameters.js"></script>
 
         <script type="text/javascript" src="js/pages.js"></script>
         <link rel="stylesheet" type="text/css" href="css/stylesheet.css"/>
         <script type="text/javascript">
+            Ext.onReady(function() {
+                var url = get_parameter("URI");
+                if (url) {
+                    Ext.Ajax.request({ url: url, method: "GET", success: ShowLoadedJson });
+                } else {
+                    Ext.Ajax.request({ url: "/configs/all.json", method: "GET", success: ShowLoadedJson });
+                }
+            });
+
             function OpenMainDialog() {
-                Ext.Ajax.request({
-                    url: "/configs/all.json",
-                    method: "GET",
-                    success: function(o) {
-                        Ext.getDom("c_json").innerHTML = o.responseText;
-                    }
-                });
+                alert("this is the main dialog");
+            }
+
+            function ShowLoadedJson(o) {
+                var json = Ext.util.JSON.decode(o.responseText);
+                if (json.items) {
+                    var html = "";
+                    Ext.each(json.items, function(item) {
+                        html += '<li><a href="/index.html?URI=' + item.uri + '">' + item.label + '</a></li>';
+                    });
+                    Ext.getDom("c_json").innerHTML = "<ul>" + html + "</ul>";
+                } else {
+                    Ext.getDom("c_json").innerHTML = o.responseText;
+                }
             }
         </script>
     </head>
