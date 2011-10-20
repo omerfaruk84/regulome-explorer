@@ -17,9 +17,6 @@
         <script type="text/javascript" src="js/pages.js"></script>
         <link rel="stylesheet" type="text/css" href="css/stylesheet.css"/>
         
-        <!--TODO : Remove ; only provisional-->
-        <script type="text/javascript" src="https://cancerregulome.googlecode.com/hg/carambola/src/js/container.js"></script>
-
         <script type="text/javascript">
             Ext.onReady(function() {
                 var url = get_parameter("URI");
@@ -49,6 +46,8 @@
                 } else {
                     Ext.getDom("c_json").innerHTML = o.responseText;
                 }
+
+                org.systemsbiology.pages.apis.containers.Bootstrap(json);
             }
         </script>
     </head>
