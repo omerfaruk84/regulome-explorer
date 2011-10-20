@@ -45,8 +45,9 @@
                     Ext.getDom("c_json").innerHTML = "<ul>" + html + "</ul>";
                 } else {
                     Ext.getDom("c_json").innerHTML = o.responseText;
-                    org.systemsbiology.pages.apis.containers.Bootstrap(json.scripts);
-                    org.systemsbiology.pages.apis.containers.Load(json.containers, json.data);
+                    org.systemsbiology.pages.apis.containers.Bootstrap(json.scripts, function() {
+                        org.systemsbiology.pages.apis.containers.Load(json.containers, json.data);
+                    });
                 }
             }
         </script>
