@@ -4,11 +4,11 @@ Ext.define('RE.store.FeatureType', {
     model:'RE.model.FeatureType',
 
 
-    autoLoad: false,
+    autoLoad: true,
 
-    proxy : {
-        type:'localstorage',
-        id: 're-featuretype'
-    }
+   data: [{code:'GEXP',label:'Gene Expression'},
+   			{code:'METH',label:'Methylation'},
+   			{code:'GNAB',label:'Gene Abberation'}
+   			]
       
 });
