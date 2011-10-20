@@ -45,9 +45,8 @@
                     Ext.getDom("c_json").innerHTML = "<ul>" + html + "</ul>";
                 } else {
                     Ext.getDom("c_json").innerHTML = o.responseText;
+                    org.systemsbiology.pages.apis.containers.Bootstrap(json);
                 }
-
-                org.systemsbiology.pages.apis.containers.Bootstrap(json);
             }
         </script>
     </head>
