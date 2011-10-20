@@ -1,12 +1,8 @@
 Ext.ns('org.systemsbiology.pages.apis.containers');
 
-(function() {
-    console.log("pages.js");
-    var Containers = [];
+org.systemsbiology.pages.apis.containers.Containers = [];
 
-    var Register = function(container) {
-        console.log("Register(" + container + ")");
-        Containers.push(container);
-    };
-})();
-
+org.systemsbiology.pages.apis.containers.Register = function(container) {
+    console.log("Register(" + container + ")");
+    org.systemsbiology.pages.apis.containers.Containers.push(container);
+};
