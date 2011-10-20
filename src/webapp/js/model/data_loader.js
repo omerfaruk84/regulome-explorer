@@ -50,17 +50,17 @@ function filterFeatures(obj) {
     if (filter.stop != ''){ features = features.filter(function(f) { return f.end >= parseInt(filter.stop);});}
     switch(filter.score_fn) {
         case('>='):
-                features = features.filter(function(f){ return (f.score * parseInt(f.agg)) >= parseFloat(filter.score);});
+                features = features.filter(function(f){ return (f.score) >= parseFloat(filter.score);});
                 break;
         case('<='):
-                features = features.filter(function(f){ return (f.score * parseInt(f.agg)) <= parseFloat(filter.score);});
+                features = features.filter(function(f){ return (f.score) <= parseFloat(filter.score);});
                 break;
         case('Btw'):
-                features = features.filter(function(f){ return ((f.score * parseInt(f.agg)) <= parseFloat(filter.score)) && ((f.score * parseInt(f.agg))>= parseFloat(filter.score)* -1);});
+                features = features.filter(function(f){ return ((f.score) <= parseFloat(filter.score)) && ((f.score)>= parseFloat(filter.score)* -1);});
                 break;
         case('Abs'):
         default:
-                features = features.filter(function(f){ return ((f.score * parseInt(f.agg)) >= parseFloat(filter.score)) || ((f.score* parseInt(f.agg)) <= parseFloat(filter.score)* -1);});
+                features = features.filter(function(f){ return ((f.score) >= parseFloat(filter.score)) || ((f.score) <= parseFloat(filter.score)* -1);});
     }
 
     vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','filtered_features', {data: features,filter:filter}));
@@ -86,7 +86,7 @@ function parseNetwork(responses) {
                start: parseInt(node1[4]), end:node1[5] != '' ? parseInt(node1[5]) : parseInt(node1[4]) },
             node2: {id: row.alias2, source : node2[1], label : node2[2], chr : node2[3].slice(3),
                 start: parseInt(node2[4]), end:node2[5] != '' ? parseInt(node2[5]) : parseInt(node2[4]) },
-            pvalue : row.pvalue,score : row.score, correlation:row.correlation, clin: row.clin};
+            pvalue : row.pvalue,score : f.score * parseInt(f.agg), correlation:row.correlation, clin: row.clin};
             });
 
         var located_responses = whole_net.filter(function(feature) {

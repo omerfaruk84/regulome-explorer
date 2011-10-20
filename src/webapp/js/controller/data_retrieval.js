@@ -234,7 +234,7 @@ function buildGQLQuery(args) {
         where += 'pvalue <= ' +args['pvalue'];
     }
 
-    where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('correlation',args['correlation'],args['correlation_fn']);
+//    where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('correlation',args['correlation'],args['correlation_fn']);
     where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('floorlogged_pvalue',args['score'], args['score_fn']);
 
     query += (where.length > whst.length ? where : '');

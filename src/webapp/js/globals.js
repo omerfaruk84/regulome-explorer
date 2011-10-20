@@ -20,7 +20,7 @@ var pairwise = {
                 hidden :false
             },
             cnvr : {
-                hidden : false
+                hidden : true
             },
             pairwise_scores : {
                 hidden : false
@@ -93,11 +93,11 @@ pw_commons_url = 'http://www.pathwaycommons.org/pc/webservice.do?version=3.0&sna
 var label_map = {};
 label_map['*'] = 'All';
 label_map['GEXP'] = 'Gene Expression';
-label_map['METH'] = 'Methylation';
-label_map['CNVR'] = 'Copy # Var Region';
+label_map['METH'] = 'DNA Methylation';
+label_map['CNVR'] = 'Somatic Copy Number Alteration';
 label_map['CLIN'] = 'Clinical';
-label_map['MIRN'] = 'microRNA';
-label_map['GNAB'] = 'Gene Aberration';
+label_map['MIRN'] = 'MicroRNA Expression';
+label_map['GNAB'] = 'Somatic Mutation';
 label_map['SAMP'] = 'Tumor Sample';
 
 /*
