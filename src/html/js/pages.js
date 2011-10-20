@@ -44,10 +44,23 @@ var StringToFunction = function(str) {
 org.systemsbiology.pages.apis.containers.Bootstrap = function(scripts, callback) {
     console.log("org.systemsbiology.pages.apis.containers.Bootstrap(" + scripts + ")");
     if (scripts) {
-        var listener = new BootstrapListener(scripts, callback);
-        Ext.each(listener.scripts, function(script) {
-            var elem = Ext.DomHelper.append(Ext.getHead(), { tag: 'script', src: script,  type: "text/javascript" }, true);
-            elem.on("load", listener.Listen, listener, script);
+//        var listener = new BootstrapListener(scripts, callback);
+
+        var notLoadedYet = new Array();
+        Ext.each(scripts, function(script) {
+            if (org.systemsbiology.pages.apis.containers.Scripts.indexOf(script) == -1) {
+                notLoadedYet.push(script);
+            } else {
+                console.log("script already loaded=" + script);
+            }
+        });
+
+        org.systemsbiology.pages.util.ScriptMgr.load({
+            scripts: notLoadedYet,
+            callback: function() {
+                org.systemsbiology.pages.apis.containers.Scripts.push(script);
+                callback();
+            }
         });
     } else {
         callback();
