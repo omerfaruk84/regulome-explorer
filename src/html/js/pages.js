@@ -16,7 +16,7 @@ var StringToFunction = function(str) {
 org.systemsbiology.pages.apis.containers.Bootstrap = function(scripts, callback) {
     console.log("org.systemsbiology.pages.apis.containers.Bootstrap(" + scripts + ")");
     if (scripts && scripts.length) {
-        org.systemsbiology.pages.util.ScriptMgr.load(scripts, callback);
+        org.systemsbiology.pages.util.ScriptLoad(scripts, callback);
     } else {
         callback();
     }
