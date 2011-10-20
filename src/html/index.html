@@ -46,7 +46,7 @@
                 } else {
                     Ext.getDom("c_json").innerHTML = o.responseText;
                     org.systemsbiology.pages.apis.containers.Bootstrap(json.scripts, function() {
-                        org.systemsbiology.pages.apis.containers.Load(json.containers, json.data);
+                        org.systemsbiology.pages.apis.containers.Load("c_parentContainer", json.containers, json.data, {});
                     });
                 }
             }
@@ -67,6 +67,11 @@
                 <li>Filters</li>
             </ul>
         </div>
+
+        <h3>JSON Output</h3>
         <div id="c_json"></div>
+
+        <h3>Parent Container</h3>
+        <div id="c_parentContainer"></div>
     </body>
 </html>

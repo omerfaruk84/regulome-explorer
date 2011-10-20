@@ -1,42 +1,51 @@
 Ext.ns('org.systemsbiology.pages.apis.containers');
 
-org.systemsbiology.pages.apis.containers.Scripts = [];
+org.systemsbiology.pages.apis.containers.Scripts = new Array();
 
 var BootstrapListener = Ext.extend(Object, {
-
     constructor: function(scripts, callback) {
-        console.log("org.systemsbiology.pages.apis.containers.BootstrapListener(" + scripts + "," + callback + ")");
+        console.log("org.systemsbiology.pages.apis.containers.BootstrapListener(" + scripts + ")");
 
-        var temp = [];
+        var temp = new Array();
         Ext.each(scripts, function(script) {
-            temp.push(script);
+            if (org.systemsbiology.pages.apis.containers.Scripts.indexOf(script) == -1) {
+                temp.push(script);
+            } else {
+                console.log("script already loaded=" + script);
+            }
         });
         Ext.apply(this, { scripts: temp, callback: callback});
     },
 
-    Listen: function(event, t, o) {
-        console.log("org.systemsbiology.pages.apis.containers.BootstrapListener.Listen(" + event + "," + t + "," + o + ")");
+    Listen: function(event, t, script) {
+        console.log("org.systemsbiology.pages.apis.containers.BootstrapListener.Listen(" + script + ")");
 
-        for (var i = 0; i < this.scripts.length; i++) {
-            if (this.scripts[i] == o) {
-                this.scripts.splice(i, 1);
-            }
-        }
+        this.scripts.remove(script);
+        org.systemsbiology.pages.apis.containers.Scripts.push(script);
         if (this.scripts.length == 0) {
             this.callback();
         }
     }
 });
 
+var StringToFunction = function(str) {
+    var fn = (window || this);
+    Ext.each(str.split("."), function(a) {
+        fn = fn[a];
+    });
+
+    if (typeof fn !== "function") {
+        throw new Error("function not found");
+    }
+
+    return  fn;
+};
+
 org.systemsbiology.pages.apis.containers.Bootstrap = function(scripts, callback) {
     console.log("org.systemsbiology.pages.apis.containers.Bootstrap(" + scripts + ")");
     if (scripts) {
         var listener = new BootstrapListener(scripts, callback);
-
-        // TODO : Filter scripts that have already been loaded
-        Ext.each(scripts, function(script) {
-            console.log("org.systemsbiology.pages.apis.containers.Bootstrap(): script=" + script);
-            org.systemsbiology.pages.apis.containers.Scripts.push(script);
+        Ext.each(listener.scripts, function(script) {
             var elem = Ext.DomHelper.append(Ext.getHead(), { tag: 'script', src: script,  type: "text/javascript" }, true);
             elem.on("load", listener.Listen, listener, script);
         });
@@ -45,13 +54,15 @@ org.systemsbiology.pages.apis.containers.Bootstrap = function(scripts, callback)
     }
 };
 
-org.systemsbiology.pages.apis.containers.Load = function(containers, jsonData) {
-    console.log("org.systemsbiology.pages.apis.containers.Load(" + containers + ")");
-    if (containers) {
+org.systemsbiology.pages.apis.containers.Load = function(parentDiv, containers, data, options) {
+    console.log("org.systemsbiology.pages.apis.containers.Load(" + parentDiv + "," + containers + ")");
+    if (parentDiv && containers) {
         Ext.each(containers, function(container) {
-            console.log("org.systemsbiology.pages.apis.containers.Load(): container=" + container);
-            data = "{}";
-            eval(container + "(" + data + ")");
+            var childDiv = Ext.DomHelper.append(parentDiv, { tag: 'div' }, true);
+
+            var ContainerClass = StringToFunction(container);
+            var containerInstance = new ContainerClass(childDiv);
+            containerInstance.draw(data, options);
         })
     }
 };
