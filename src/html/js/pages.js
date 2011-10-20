@@ -2,34 +2,36 @@ Ext.ns('org.systemsbiology.pages.apis.containers');
 
 org.systemsbiology.pages.apis.containers.Scripts = [];
 
-org.systemsbiology.pages.apis.containers.BootstrapListener = {
-    _internal : [],
+var BootstrapListener = Ext.extend(Object, {
 
     constructor: function(scripts, callback) {
         console.log("org.systemsbiology.pages.apis.containers.BootstrapListener(" + scripts + "," + callback + ")");
+
+        var temp = [];
         Ext.each(scripts, function(script) {
-            _internal.push(script);
+            temp.push(script);
         });
-        Ext.apply(this, { scripts: _internal, callback: callback});
+        Ext.apply(this, { scripts: temp, callback: callback});
     },
-    
+
     Listen: function(event, t, o) {
         console.log("org.systemsbiology.pages.apis.containers.BootstrapListener.Listen(" + event + "," + t + "," + o + ")");
-        for (var i = 0; i < _internal.length; i++) {
-            if (this._internal[i] == o) {
-                this._internal.splice(i, 1);
+
+        for (var i = 0; i < this.scripts.length; i++) {
+            if (this.scripts[i] == o) {
+                this.scripts.splice(i, 1);
             }
         }
-        if (this._internal.length == 0) {
+        if (this.scripts.length == 0) {
             this.callback();
         }
     }
-};
+});
 
 org.systemsbiology.pages.apis.containers.Bootstrap = function(scripts, callback) {
     console.log("org.systemsbiology.pages.apis.containers.Bootstrap(" + scripts + ")");
     if (scripts) {
-        var listener = org.systemsbiology.pages.apis.containers.BootstrapListener(scripts, callback);
+        var listener = new BootstrapListener(scripts, callback);
 
         // TODO : Filter scripts that have already been loaded
         Ext.each(scripts, function(script) {
@@ -49,7 +51,7 @@ org.systemsbiology.pages.apis.containers.Load = function(containers, jsonData) {
         Ext.each(containers, function(container) {
             console.log("org.systemsbiology.pages.apis.containers.Load(): container=" + container);
             data = "{}";
-            // eval(container + "(" + data + ")");
+            eval(container + "(" + data + ")");
         })
     }
 };
