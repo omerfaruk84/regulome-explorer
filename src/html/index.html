@@ -46,8 +46,11 @@
                     Ext.getDom("c_json").innerHTML = "<ul>" + html + "</ul>";
                 } else {
                     Ext.getDom("c_json").innerHTML = o.responseText;
-                    org.systemsbiology.pages.apis.containers.OnReady(json.container, function() {
-                        org.systemsbiology.pages.apis.containers.Load("c_parentContainer", json.container, json.data, {});
+                    Ext.each(json.containers, function(container) {
+                        var id = container.id;
+                        org.systemsbiology.pages.apis.containers.OnReady(container.id, function() {
+                            org.systemsbiology.pages.apis.containers.Load("c_parentContainer", container.id, container.data, {});
+                        });
                     });
                     org.systemsbiology.pages.apis.containers.Bootstrap(json.scripts);
                 }
