@@ -7,5 +7,6 @@ mappings = {
     "/google-dsapi-svc/.*": {"host": "http://vis.systemsbiology.net"},
     "/solr/.*": {"host": "http://vis.systemsbiology.net"},
     "/carambola/.*": {"host": "https://cancerregulome.googlecode.com/hg"},
-    "/codefordemos/.*": {"host": "https://codeforsystemsbiology.googlecode.com/hg"}
+    "/codefordemos/.*": {"host": "https://codeforsystemsbiology.googlecode.com/hg"},
+    "/files/.*": {"host": "https://codeforsystemsbiology.googlecode.com"}
 }
