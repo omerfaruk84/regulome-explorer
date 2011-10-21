@@ -3,16 +3,16 @@ Ext.namespace('org.systemsbiology.pages.util');
 org.systemsbiology.pages.util.Scripts = [];
 
 org.systemsbiology.pages.util.ScriptLoad = function(urls) {
-    var scripts = new Array();
-    Ext.each(urls, function(s) {
-        if (org.systemsbiology.pages.util.Scripts.indexOf(s) == -1) {
-            scripts.push(s);
+    Ext.each(urls, function(url) {
+        if (org.systemsbiology.pages.util.Scripts.indexOf(url) == -1) {
+            Ext.Ajax.request({
+                url: url,
+                method: "GET",
+                success: function(o) {
+                    org.systemsbiology.pages.util.Scripts.push(url);
+                    eval(o.responseText);
+                }
+            });
         }
     });
-
-    Ext.each(scripts, function(url) {
-        Ext.DomHelper.append(Ext.getHead(), { tag: 'script', src: url, type: "text/javascript" });
-        org.systemsbiology.pages.util.Scripts.push(url);
-    });
 };
-
