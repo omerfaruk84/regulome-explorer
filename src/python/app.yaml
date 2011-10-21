@@ -19,6 +19,9 @@ handlers:
 - url: /files/.*
   script: redirections.py
 
+- url: /cytoscapeweb_v0.8/.*
+  script: redirections.py
+
 - url: /configs/
   static_dir: configs
   mime_type: application/json
