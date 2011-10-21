@@ -14,7 +14,7 @@
         <script type="text/javascript" src="https://addama.googlecode.com/svn/tags/2.1/user-interfaces/src/main/html/addama/ui/console_handling.js"></script>
         <script type="text/javascript" src="https://addama.googlecode.com/svn/tags/2.1/user-interfaces/src/main/html/addama/ui/query_parameters.js"></script>
 
-        <script type="text/javascript" src="js/ScriptLoader.js"></script>
+        <script type="text/javascript" src="js/scriptLoad.js"></script>
         <script type="text/javascript" src="js/pages.js"></script>
         <link rel="stylesheet" type="text/css" href="css/stylesheet.css"/>
         
@@ -46,9 +46,10 @@
                     Ext.getDom("c_json").innerHTML = "<ul>" + html + "</ul>";
                 } else {
                     Ext.getDom("c_json").innerHTML = o.responseText;
-                    org.systemsbiology.pages.apis.containers.Bootstrap(json.scripts, function() {
-                        org.systemsbiology.pages.apis.containers.Load("c_parentContainer", json.containers, json.data, {});
+                    org.systemsbiology.pages.apis.containers.OnReady(json.container, function() {
+                        org.systemsbiology.pages.apis.containers.Load("c_parentContainer", json.container, json.data, {});
                     });
+                    org.systemsbiology.pages.apis.containers.Bootstrap(json.scripts);
                 }
             }
         </script>
