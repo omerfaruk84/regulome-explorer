@@ -15,17 +15,19 @@ Import this before MVC scripts.
 var pairwise = {
     display_options : {
         circvis : {
-        rings:{
-            karyotype: {
-                hidden :false
-            },
-            cnvr : {
-                hidden : true
-            },
-            pairwise_scores : {
-                hidden : false
-            }
-        },
+			rings:{
+				karyotype: {
+					hidden :false
+				},
+				cnvr : {
+					hidden : true
+				},
+				pairwise_scores : {
+					hidden : false,
+					max_value : 12,
+					min_value : -12,
+				}
+			},
             ticks : {
                 tick_overlap_distance : null,
                 tile_ticks_manually : false,
@@ -35,19 +37,53 @@ var pairwise = {
                 wedge_height_manually: false
             },
             network : {
-        tile_nodes : false,
-        node_overlap_distance : null
-            },
+        		tile_nodes : false,
+        		node_overlap_distance : null
+          	},
             width : 800,
             height : 800,
             ring_radius : 55,
             rotation : 0,
             chrom_keys : ["1","2","3","4","5","6","7","8","9","10",
         "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"]
-        }
-    },
-    circvis_obj : {}
-};
+        },//circvis
+        tooltips: {
+        	items : {
+        			karyotype : {
+        					config_object : {
+			        					 'Karyotype Label' : function(feature) { return  vq.utils.VisUtils.options_map(feature)['label'];},
+        									Location :  function(feature) { return 'Chr' + feature.chr + ' ' + feature.start + '-' + feature.end;}
+        									}
+        						}
+        			},
+        	links: {
+        			ucsc_genome_browser: {
+        				label : 'UCSC Genome Browser',
+        				url : 'http://genome.ucsc.edu/cgi-bin/hgTracks',
+        				uri : '?db=hg18&position=chr',
+        				config_object :  function(feature){
+            								return  'http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg18&position=chr' + 
+								            feature.chr + ':' +  feature.start +'-'+ feature.end;  }								        
+        				},//ucsc_genome_browser
+        			ensemble : {
+        				label :'Ensemble',
+        				url : 'http://uswest.ensembl.org/Homo_sapiens/Location/View',
+        				uri : '?r=',
+        				config_object :  function(feature) {
+           									 return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + 
+           									 ':' +  feature.start +'-'+ feature.end;  }           								
+        				}//ensemble
+        			} //links
+        		}//tooltips
+        },//display_options
+    circvis_obj : {    },
+    data_options: { 
+    	scores : {
+    			max_value : 10,
+    			min_value : -10
+    		}//scores
+    	}//data_options
+};//pairwise
 pairwise.setRingHidden = function(ring,value) {
     pairwise.display_options.circvis.rings[ring].hidden = value;
 };

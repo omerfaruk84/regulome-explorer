@@ -27,9 +27,6 @@ function registerDataRetrievalListeners() {
         selectDataset(obj);
        // loadDatasetLabels();
     });
-    d.addListener('data_request','associations',function(obj){
-        loadNetworkData(obj.filter);
-    });
     d.addListener('data_request','annotations', function(obj){
         loadAnnotations();
     });
@@ -144,105 +141,8 @@ function loadAnnotations() {
 }
 
 /*
-not very good yet.  move json_array responsibility to server.. stop running cascading timers!
- */
-
-function loadNetworkData(query_params) {
-    function loadComplete() {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','associations', responses));
-    }
-
-    function loadFailed() {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','associations',{msg:'Retrieval Timeout'}));
-    }
-
-    var responses = {network : null, params:query_params};
-
-    var network_query=buildGQLQuery(query_params);
-
-    function handleNetworkQuery(response) {
-            responses['network'] = Ext.decode(response.responseText);
-            loadComplete();
-    }
-    function queryFailed(response) {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','assocations',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
-    }
-
-    var association_query_str = query_param + network_query + json_out_param;
-    var association_query = base_query_url + tcga_base_query_uri + network_uri + association_query_str;
-
-   Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: queryFailed});
-
-}
-
-/*
 Utility functions
  */
-function buildGQLQuery(args) {
-      var query = 'select alias1, alias2, clinical_associate1, num_nonna, correlation, pvalue, floorlogged_pvalue';
-    var whst = ' where',
-    where = whst;
-
-    if (args['f1_type'] != '' && args['f1_type'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'source1 = \'' +args['f1_type']+ '\'';
-    }
-    if (args['f2_type'] != '' && args['f2_type'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'source2 = \'' +args['f2_type']+ '\'';
-    }
-    if (args['f1_label'] != '' && args['f1_label'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += '`label1` ' + parseLabel(args['f1_label']);
-    }
-     if (args['f2_label'] != '' && args['f2_label'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += '`label2` ' + parseLabel(args['f2_label']);
-    }
-    if (args['f1_chr'] != '' && args['f1_chr'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'chr1 = \'' +args['f1_chr']+'\'';
-    }
-    if (args['f2_chr'] != '' && args['f2_chr'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'chr2 = \'' +args['f2_chr']+'\'';
-    }
-    if (args['f1_start'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'start2 >= ' +args['f1_start'];
-    }
-    if (args['f2_start'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'start2 >= ' +args['f2_start'];
-    }
-    if (args['f1_stop'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'end1 <= ' +args['f1_stop'];
-    }
-    if (args['f2_stop'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'end2 <= ' +args['f2_stop'];
-    }
-    if ((args['f2_start'] != '') && (args['f2_stop'] != '')) {
-           where += ' and end2 >= ' +args['f2_start'];
-           }
-    if ((args['f1_start'] != '') && (args['f1_stop'] != '')) {
-           where += ' and end1 >= ' +args['f1_start'];
-           }
-    if (args['pvalue'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'pvalue <= ' +args['pvalue'];
-    }
-
-//    where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('correlation',args['correlation'],args['correlation_fn']);
-    where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('floorlogged_pvalue',args['score'], args['score_fn']);
-
-    query += (where.length > whst.length ? where : '');
-    query += ' order by '+args['order'] + (args['order'] == 'pvalue' ? ' ASC' : ' DESC');
-    query += ' limit '+args['limit'] + ' label `floorlogged_pvalue` \'score\', `clinical_associate1` \'clin\'';
-
-    return query;
-}
 
 function flex_field_query(label, value, fn) {
       var where = '';

@@ -11,13 +11,9 @@ function registerLayoutListeners() {
     });
     d.addListener('render_complete','circvis',function(circvis_plot){
         exposeCirclePlot();
-        var nav = Ext.getCmp('nav_check').checked;
-        vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:nav,zoom_enable:nav}));
     });
     d.addListener('render_complete','circvis_features',function(circvis_plot){
         exposeCirclePlot();
-        var nav = Ext.getCmp('nav_check').checked;
-        vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:nav,zoom_enable:nav}));
     });
     d.addListener('render_complete','linear',function(linear){
         exposeLinearPlot(linear.chr, linear.start, linear.range);
@@ -84,13 +80,6 @@ function openBrowserTab(url) {
 /*
  Filters
  */
-function requestFilteredData() {
-    prepareVisPanels();
-    var task = new Ext.util.DelayedTask(function(){
-        vq.events.Dispatcher.dispatch(new vq.events.Event('data_request','associations',{filter:getFilterSelections()}));
-    });
-    task.delay(300);
-}
 
 function requestFeatureFilteredData() {
     prepareVisPanels();
@@ -108,7 +97,6 @@ function requestFeatureFilteredRedraw() {
     task.delay(300);
 
 }
-
 
 function getFeatureFilterSelections() {
     var type = Ext.getCmp('feature_type_combo').getValue();
@@ -266,8 +254,16 @@ Ext.onReady(function() {
                                 width:150,
                                 border:false,
                                 frame : false,
-                                x:880,
-                                y:20
+                                x:345,
+                                y:300
+                            },
+                            {
+                                xtype: 'panel', id:'circle-colorscale-panel',
+                                width:150,
+                                border:false,
+                                frame : false,
+                                x:345,
+                                y:450
                             }]
                     }, {
                         xtype: 'panel', id:'linear-parent',
@@ -781,16 +777,7 @@ Ext.onReady(function() {
                 setStrokeStyleAttribute('white'); renderCircleData();
         }
     }
-    function modeHandler(item){
-        switch(item.getId()) {
-            case('nav_check'):
-                vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:true,zoom_enable:true}));
-                break;
-            case('explore_check'):
-            default:
-                vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:false,zoom_enable:false}));
-        }
-    }
+   
     function ringHandler(item){
 
         pairwise.setRingHidden(item.getId(),item.checked);  //hidden if true!

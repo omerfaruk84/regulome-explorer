@@ -27,9 +27,7 @@ function registerPlotListeners() {
         generateColorMaps(pairwise.circvis_obj);
         renderCircleFeatureData(pairwise.circvis_obj);
         renderCircleLegend();
-    });
-    d.addListener('modify_circvis', function(obj){
-        modifyCircle(obj);
+        renderCircleColorscale();
     });
 }
 
@@ -48,7 +46,7 @@ link_sources_array =  [],
     chrome_length = [],
     feature_map = {},
     feature_types = [],
-    score_color_scale = pv.Scale.linear(-8,-1,1,8).range('blue','white','white','red'),
+    score_color_scale = pv.Scale.linear(pairwise.data_options.scores.min_value,-1,1,pairwise.data_options.scores.max_value).range('blue','white','white','red'),
     source_color_scale=  pv.Colors.category10(),
     circvis = null;
 
@@ -84,10 +82,51 @@ function renderCircleLegend() {
     legend_draw(document.getElementById('circle-legend-panel'));
 }
 
+function renderCircleColorscale() {
+    colorscale_draw(document.getElementById('circle-colorscale-panel'));
+}
+
 function renderCircleFeatureData(obj) {
     plotFilteredFeatureData(obj.data,obj.filter, document.getElementById('circle-panel'));
 }
 
+function colorscale_draw(div) {
+
+    var width = 180;
+    var vis= new pv.Panel()
+            .top(10)
+            .left(10)
+            .height(70)
+            .width(width)
+            .strokeStyle('black')
+            .lineWidth(1)
+            .canvas(div);
+    var x_axis = pv.Scale.linear(-10,10).range(0,width-20);
+    var legend = vis.add(pv.Panel)
+            .left(10)
+            .right(10)
+            .strokeStyle('black')
+            .lineWidth(1)
+            .bottom(30)
+            .height(30);
+    legend.add(pv.Image)
+            .image(score_color_scale.by(function(x,y){ return x_axis.invert(x);}));
+
+    legend.add(pv.Rule)
+            .data(x_axis.ticks())
+            .left(x_axis)
+            .strokeStyle('#000')
+            .lineWidth(1)
+            .anchor('bottom').add(pv.Label)
+            .font('10px bold Courier, monospace')
+            .text(x_axis.tickFormat);
+
+    vis.anchor('bottom').add(pv.Label)
+            .text('Aggresiveness Score');
+
+    vis.render();
+
+}
 
 function legend_draw(div) {
     var source_map = pv.numerate(feature_types);
@@ -100,7 +139,7 @@ function legend_draw(div) {
 
     var vis= new pv.Panel()
         .width(200)
-        .height(90 + current_data.length * 13)
+        .height(70 + current_data.length * 10)
         .left(0)
         .top(20)
         .lineWidth(1)
@@ -174,7 +213,12 @@ function plotFeatureDataLinear(obj) {
 
     features=features.filter(function(f) { return f.chr == chrom;});
 
-    var ucsc_genome_url = 'http://genome.ucsc.edu/cgi-bin/hgTracks';
+	var ucsc_genome_url = pairwise.display_options.tooltips.links.ucsc_genome_browser.url;
+	var ucsc_genome_uri = pairwise.display_options.tooltips.links.ucsc_genome_browser.uri;
+	
+	var ensemble_url = pairwise.display_options.tooltips.links.ensemble.url;
+	
+	
     var tile_listener = function(feature){
         window.open(ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' + mbpToBp(feature.start) +
             '-'+ mbpToBp(feature.end),'_blank');
@@ -185,17 +229,14 @@ function plotFeatureDataLinear(obj) {
         Feature : function(node) {
             return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + mbpToBp(node.start) +
                 '-' + mbpToBp(node.end);},
-        Score :function(node) { return node.score;},
-        'Clinical Feature':function(node) { return node.clin;},
-        'Aggressiveness':function(node) { return node.agg;}
+        'Agg. Score' :function(node) { return node.score.toFixed(2);},
+        'Clinical Feature':function(node) { return node.clin;}
     };
 
-    var  tooltip_links = {
-        'UCSC Genome Browser' :  function(feature){
-            return  ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
-        'Ensemble' : function(feature) {
-            return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + ':' +  feature.start +'-'+ feature.end;  }
-    };
+   var  tooltip_links = { };
+    tooltip_links[pairwise.display_options.tooltips.links.ucsc_genome_browser.label] = pairwise.display_options.tooltips.links.ucsc_genome_browser.config_object;
+	tooltip_links[pairwise.display_options.tooltips.links.ensemble.label] = pairwise.display_options.tooltips.links.ensemble.config_object;  
+   
 
     var data_obj = function() { return {
         PLOT :     {
@@ -214,27 +255,7 @@ function plotFeatureDataLinear(obj) {
                 CONFIGURATION: {
                     fill_style : stroke_style_fn,
                     stroke_style : stroke_style_fn,
-                  shape : function(feature) {
-                        switch(feature.source) {
-//                            case('GEXP') :
-//                                return 'circle';
-//                                break;
-//                            case('METH') :
-//                                return 'diamond';
-//                                break;
-//                            case('MIRN') :
-//                                return 'triangle';
-//                                break;
-//                            case('GNAB') :
-//                                return 'cross';
-//                                break;
-//                            case('CNVR') :
-//                                return 'square';
-//                                break;
-                            default:
-                                return 'square';
-                        }
-                    },
+                  shape :  'square',
                     track_height : 290,           //required
                     track_padding: 30,             //required
                     tile_height:12,                //required
@@ -266,31 +287,11 @@ function plotFeatureDataLinear(obj) {
                     track_fill_style : pv.color('#EEEEEE'),
                     track_height : 200,           //required
                     track_padding: 20,             //required
-                    min_value : -10,
-                    max_value : 10,
+                    min_value : pairwise.display_options.circvis.rings.pairwise_scores.min_value,
+                    max_value : pairwise.display_options.circvis.rings.pairwise_scores.max_value,
                     base_value : 0,
                     num_y_rule_lines: 5,
-                   shape : function(feature) {
-                        switch(feature.source) {
-//                            case('GEXP') :
-//                                return 'circle';
-//                                break;
-//                            case('METH') :
-//                                return 'diamond';
-//                                break;
-//                            case('MIRN') :
-//                                return 'triangle';
-//                                break;
-//                            case('GNAB') :
-//                                return 'cross';
-//                                break;
-//                            case('CNVR') :
-//                                return 'square';
-//                                break;
-                            default:
-                                return 'circle';
-                        }
-                    },
+                   shape : 'circle',
                     radius:4,
                     notifier:tile_listener
                 },//optional
@@ -339,8 +340,11 @@ function processCircvisObject(options,filter,div) {
 
       var tile_ticks = pairwise.display_options.circvis.ticks.tile_ticks_manually,
       tick_overlap_distance = pairwise.display_options.circvis.ticks.tick_overlap_distance;
-
-
+      
+    var  tooltip_links = { };
+    tooltip_links[pairwise.display_options.tooltips.links.ucsc_genome_browser.label] = pairwise.display_options.tooltips.links.ucsc_genome_browser.config_object;
+	tooltip_links[pairwise.display_options.tooltips.links.ensemble.label] = pairwise.display_options.tooltips.links.ensemble.config_object;  
+	
     try {
     if (filter.chr !="*") {
         var filter_chr = filter.chr.split(',');
@@ -350,15 +354,12 @@ function processCircvisObject(options,filter,div) {
     } catch(e) {
 
     }
-    var ticks = vq.utils.VisUtils.clone(feature_array);
+    var ticks = vq.utils.VisUtils.clone(pairwise.circvis_obj.data);
     ticks.forEach(function(f) { f.value = f.label;});
-    var features = vq.utils.VisUtils.clone(feature_array);
-    features.forEach(function(f){ f.value = Math.min(Math.max(parseInt(f.agg) * f.score,-8),8);});
+    var features = vq.utils.VisUtils.clone(pairwise.circvis_obj.data);
+    features.forEach(function(f){ f.value = Math.min(Math.max( f.score,-8),8);});
 
-        var karyotype_tooltip_items = {
-        'Karyotype Label' : function(feature) { return  vq.utils.VisUtils.options_map(feature)['label'];},
-        Location :  function(feature) { return 'Chr' + feature.chr + ' ' + feature.start + '-' + feature.end;}
-    };
+        var karyotype_tooltip_items = pairwise.display_options.tooltips.items.karyotype.config_object;
 
         function feature_circvis_wedge_listener(feature) {
         var chr = feature.chr;
@@ -395,14 +396,12 @@ function processCircvisObject(options,filter,div) {
                 display_legend : false,
                 listener : feature_circvis_wedge_listener,
                 fill_style : function(tick) {return node_colors(tick.source); },
-                tooltip_items : {Tick : function(node) { return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
-                    '-' + node.end;}},
-                tooltip_links : {
-                    'UCSC Genome Browser' :  function(feature){
-                        return  ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
-                    'Ensemble' : function(feature) {
-                        return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + ':' +  feature.start +'-'+ feature.end;  }
-                }
+                tooltip_items : {
+                	Tick : function(node) { return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
+                    				'-' + node.end;},
+                    'Agg. Score' :'score',
+                    'Clinical Feature':'clin'},
+                tooltip_links : tooltip_links
             }
         },
         PLOT: {
@@ -473,10 +472,10 @@ function processCircvisObject(options,filter,div) {
                 tooltip_items : {
                     Node : function(node) {
                         return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
-                            '-' + node.end;},
-                    Score :'value',
-                    'Clinical Feature':'clin',
-                    'Aggressiveness':'agg'}
+                            '-' + node.end;},                    
+                    'Agg. Score' : function(d) { return d['score'].toFixed(2);},
+                    'Clinical Feature':'clin'
+                    }
             },
             listener : feature_circvis_wedge_listener
         });
@@ -496,8 +495,8 @@ function processCircvisObject(options,filter,div) {
                 legend_description : 'Clinical Correlates',
                 outer_padding : 10,
                 base_value : 0,
-                min_value : -10,
-                max_value : 10,
+                min_value : pairwise.display_options.circvis.rings.pairwise_scores.min_value,
+                max_value : pairwise.display_options.circvis.rings.pairwise_scores.max_value,
                 radius : 2,
                 draw_axes : true,
                 shape:'dot',
@@ -511,10 +510,10 @@ function processCircvisObject(options,filter,div) {
                     Node : function(node) {
                         return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                             '-' + node.end;},
-                    Score :'value',
-                    'Clinical Feature':'clin',
-                    'Aggressiveness':'agg'
+                    'Agg. Score' : function(d) { return d['score'].toFixed(2);},
+                    'Clinical Feature':'clin'
                 },
+                tooltip_links : tooltip_links,
                 listener : feature_circvis_wedge_listener
             }
         });
