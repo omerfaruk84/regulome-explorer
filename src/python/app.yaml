@@ -12,7 +12,10 @@ handlers:
 
 - url: /carambola/.*
   script: redirections.py
-  
+
+- url: /codeforsystemsbiology/.*
+  script: redirections.py
+
 - url: /configs/
   static_dir: configs
   mime_type: application/json
