@@ -39,8 +39,6 @@ org.systemsbiology.pages.apis.containers.Bootstrap = function(scripts) {
     console.log("org.systemsbiology.pages.apis.containers.Bootstrap(" + scripts + ")");
     if (scripts && scripts.length) {
         org.systemsbiology.pages.util.ScriptLoad(scripts);
-    } else {
-        callback();
     }
 };
 
