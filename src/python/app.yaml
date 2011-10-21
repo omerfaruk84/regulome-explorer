@@ -13,7 +13,7 @@ handlers:
 - url: /carambola/.*
   script: redirections.py
 
-- url: /codeforsystemsbiology/.*
+- url: /codefordemos/.*
   script: redirections.py
 
 - url: /configs/
