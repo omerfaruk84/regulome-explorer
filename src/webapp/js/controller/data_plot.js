@@ -216,11 +216,11 @@ function plotFeatureDataLinear(obj) {
 	var ucsc_genome_url = pairwise.display_options.tooltips.links.ucsc_genome_browser.url;
 	var ucsc_genome_uri = pairwise.display_options.tooltips.links.ucsc_genome_browser.uri;
 	
-	var ensemble_url = pairwise.display_options.tooltips.links.ensemble.url;
+//	var ensemble_url = pairwise.display_options.tooltips.links.ensemble.url;
 	
 	
     var tile_listener = function(feature){
-        window.open(ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' + mbpToBp(feature.start) +
+        window.open(ucsc_genome_url + ucsc_genome_uri + feature.chr + ':' + mbpToBp(feature.start) +
             '-'+ mbpToBp(feature.end),'_blank');
         return false;
     };
@@ -235,7 +235,7 @@ function plotFeatureDataLinear(obj) {
 
    var  tooltip_links = { };
     tooltip_links[pairwise.display_options.tooltips.links.ucsc_genome_browser.label] = pairwise.display_options.tooltips.links.ucsc_genome_browser.config_object;
-	tooltip_links[pairwise.display_options.tooltips.links.ensemble.label] = pairwise.display_options.tooltips.links.ensemble.config_object;  
+//	tooltip_links[pairwise.display_options.tooltips.links.ensemble.label] = pairwise.display_options.tooltips.links.ensemble.config_object;  
    
 
     var data_obj = function() { return {
@@ -343,7 +343,7 @@ function processCircvisObject(options,filter,div) {
       
     var  tooltip_links = { };
     tooltip_links[pairwise.display_options.tooltips.links.ucsc_genome_browser.label] = pairwise.display_options.tooltips.links.ucsc_genome_browser.config_object;
-	tooltip_links[pairwise.display_options.tooltips.links.ensemble.label] = pairwise.display_options.tooltips.links.ensemble.config_object;  
+//	tooltip_links[pairwise.display_options.tooltips.links.ensemble.label] = pairwise.display_options.tooltips.links.ensemble.config_object;  
 	
     try {
     if (filter.chr !="*") {
@@ -372,8 +372,6 @@ function processCircvisObject(options,filter,div) {
         var e = new vq.events.Event('render_linearbrowser','feature_circvis',{data:features,chr:chr});
         e.dispatch();
     }
-
-    var ucsc_genome_url = 'http://genome.ucsc.edu/cgi-bin/hgTracks';
 
     var data = {
         GENOME: {
