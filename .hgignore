@@ -1,0 +1,6 @@
+#glob syntax
+
+syntax: glob
+
+.idea*
+

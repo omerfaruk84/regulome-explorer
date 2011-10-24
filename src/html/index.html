@@ -1,0 +1,83 @@
+<html>
+    <head>
+        <title>Pages</title>
+
+        <link rel="shortcut icon" href="https://informatics-apps.systemsbiology.net/addama/ui/isbfavicon.ico" type="image/x-icon"/>
+
+        <link rel="stylesheet" type="text/css" href="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/resources/css/ext-all.css">
+        <link rel="stylesheet" type="text/css" href="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/examples/shared/examples.css"/>
+        <link rel="stylesheet" type="text/css" href="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/resources/css/xtheme-gray.css"/>
+
+        <script type="text/javascript" src="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/adapter/ext/ext-base.js"></script>
+        <script type="text/javascript" src="https://informatics-apps.systemsbiology.net/addama/ui/ext-js-3.3.1/ext-all.js"></script>
+
+        <script type="text/javascript" src="https://addama.googlecode.com/svn/tags/2.1/user-interfaces/src/main/html/addama/ui/console_handling.js"></script>
+        <script type="text/javascript" src="https://addama.googlecode.com/svn/tags/2.1/user-interfaces/src/main/html/addama/ui/query_parameters.js"></script>
+
+        <script type="text/javascript" src="js/scriptLoad.js"></script>
+        <script type="text/javascript" src="js/pages.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/stylesheet.css"/>
+        
+        <script type="text/javascript">
+            Ext.onReady(function() {
+                var url = get_parameter("URI");
+                if (url) {
+                    Ext.Ajax.request({ url: url, method: "GET", success: ShowLoadedJson });
+                } else {
+                    Ext.Ajax.request({ url: "/configs/all.json", method: "GET", success: ShowLoadedJson });
+                }
+            });
+
+            function OpenMainDialog() {
+                alert("this is the main dialog");
+            }
+
+            function AlertSignIn() {
+                alert("Sign in");
+            }
+
+            function ShowLoadedJson(o) {
+                var json = Ext.util.JSON.decode(o.responseText);
+                if (json.items) {
+                    var html = "";
+                    Ext.each(json.items, function(item) {
+                        html += '<li><a href="/index.html?URI=' + item.uri + '">' + item.label + '</a></li>';
+                    });
+                    Ext.getDom("c_json").innerHTML = "<ul>" + html + "</ul>";
+                } else {
+                    Ext.getDom("c_json").innerHTML = o.responseText;
+                    Ext.getDom("c_label").innerHTML = "<b>" + json.label + "</b>";
+                    Ext.each(json.containers, function(container) {
+                        org.systemsbiology.pages.apis.containers.OnReady(container.id, function() {
+                            org.systemsbiology.pages.apis.containers.Load("c_parentContainer", container.id, container.data, {});
+                        });
+                    });
+                    org.systemsbiology.pages.apis.containers.Bootstrap(json.scripts);
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div id="c_main">
+            <ul id="l_links">
+                <li><a href="http://systemsbiology.org" target="_blank">Institute for Systems Biology</a></li>
+                <li><a href="http://cancergenome.nih.gov/" target="_blank">TCGA Cancer Genome Atlas</a></li>
+                <li><a href="http://cancerregulome.org" target="_blank">Cancer Regulome</a></li>
+                <li><a href="#" onclick="AlertSignIn(); return false;">Sign In</a></li>
+            </ul>
+            <a href="#" onclick="OpenMainDialog(); return false;"><img src="images/isblogo.png" alt="ISB" height="50px" width="50px"/></a>
+            <ul id="l_menu">
+                <li>Pages</li>
+                <li>View</li>
+                <li>Filters</li>
+                <li>Share</li>
+            </ul>
+        </div>
+
+        <h3>JSON Output</h3>
+        <div id="c_json"></div>
+
+        <div id="c_label"></div>
+        <div id="c_parentContainer"></div>
+    </body>
+</html>
