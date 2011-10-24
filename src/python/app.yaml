@@ -10,16 +10,7 @@ handlers:
 - url: /solr/.*
   script: redirections.py
 
-- url: /carambola/.*
-  script: redirections.py
-
-- url: /codefordemos/.*
-  script: redirections.py
-
 - url: /files/.*
-  script: redirections.py
-
-- url: /cytoscapeweb_v0.8/.*
   script: redirections.py
 
 - url: /configs/
