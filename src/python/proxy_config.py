@@ -6,5 +6,7 @@
 mappings = {
     "/google-dsapi-svc/.*": {"host": "http://vis.systemsbiology.net"},
     "/solr/.*": {"host": "http://vis.systemsbiology.net"},
-    "/files/.*": {"host": "https://codeforsystemsbiology.googlecode.com"}
+    "/files/.*": {"host": "https://codeforsystemsbiology.googlecode.com"},
+    "/html/.*": {"host": "http://regulome-explorer.googlecode.com/hg-history/pages/src"}
 }
+
