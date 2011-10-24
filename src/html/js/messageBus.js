@@ -11,13 +11,13 @@ MsgBus = Ext.extend(Ext.util.Observable, {
         this.on("publish", this.Publish, this);
     },
 
-    Publish: function(evt, elem, obj) {
-        if (obj && obj.key) {
-            var relevantSubscriptions = this.subscriptions[obj.key];
+    Publish: function(event) {
+        if (event && event.key) {
+            var relevantSubscriptions = this.subscriptions[event.key];
             if (relevantSubscriptions) {
                 Ext.each(relevantSubscriptions, function(callback) {
-                    if (obj.payload) {
-                        callback(obj.payload);
+                    if (event.payload) {
+                        callback(event.payload);
                     } else {
                         callback();
                     }

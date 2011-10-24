@@ -7,9 +7,9 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
         if (json.containers && parentDiv) {
             Ext.each(json.containers, function(container) {
                 var childDiv = Ext.DomHelper.append(parentDiv, { tag: 'div' }, true);
-                org.systemsbiology.pages.apis.events.MessageBus.Subscribe(container.id, function(payload) {
-                    if (payload) {
-                        var _newInstance = new payload(childDiv);
+                org.systemsbiology.pages.apis.events.MessageBus.Subscribe(container.id, function(_Constructor) {
+                    if (_Constructor) {
+                        var _newInstance = new _Constructor(childDiv);
                         _newInstance.draw(container.data, container.options);
                     }
                 });
