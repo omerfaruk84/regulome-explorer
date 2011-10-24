@@ -14,10 +14,6 @@
         <script type="text/javascript" src="https://addama.googlecode.com/svn/tags/2.1/user-interfaces/src/main/html/addama/ui/console_handling.js"></script>
         <script type="text/javascript" src="https://addama.googlecode.com/svn/tags/2.1/user-interfaces/src/main/html/addama/ui/query_parameters.js"></script>
 
-        <!-- Temporary Imports -->
-        <script type="text/javascript" src="https://informatics-apps.systemsbiology.net/cytoscapeweb_v0.8/js/min/AC_OETags.min.js"></script>
-        <script type="text/javascript" src="https://informatics-apps.systemsbiology.net/cytoscapeweb_v0.8/js/min/cytoscapeweb.min.js"></script>
-
         <script type="text/javascript" src="js/scriptLoad.js"></script>
         <script type="text/javascript" src="js/pages.js"></script>
         <link rel="stylesheet" type="text/css" href="css/stylesheet.css"/>
@@ -50,6 +46,7 @@
                     Ext.getDom("c_json").innerHTML = "<ul>" + html + "</ul>";
                 } else {
                     Ext.getDom("c_json").innerHTML = o.responseText;
+                    Ext.getDom("c_label").innerHTML = "<b>" + json.label + "</b>";
                     Ext.each(json.containers, function(container) {
                         org.systemsbiology.pages.apis.containers.OnReady(container.id, function() {
                             org.systemsbiology.pages.apis.containers.Load("c_parentContainer", container.id, container.data, {});
@@ -80,7 +77,7 @@
         <h3>JSON Output</h3>
         <div id="c_json"></div>
 
-        <h3>Parent Container</h3>
+        <div id="c_label"></div>
         <div id="c_parentContainer"></div>
     </body>
 </html>
