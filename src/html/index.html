@@ -42,7 +42,7 @@
                 if (json.items) {
                     var html = "";
                     Ext.each(json.items, function(item) {
-                        html += '<li><a href="/index.html?URI=' + item.uri + '">' + item.label + '</a></li>';
+                        html += '<li><a href="' + document.location + '?URI=' + item.uri + '">' + item.label + '</a></li>';
                     });
                     Ext.getDom("c_json").innerHTML = "<ul>" + html + "</ul>";
                 } else {
