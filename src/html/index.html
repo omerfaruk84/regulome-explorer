@@ -20,15 +20,6 @@
         <link rel="stylesheet" type="text/css" href="css/stylesheet.css"/>
         
         <script type="text/javascript">
-            Ext.onReady(function() {
-                var url = get_parameter("URI");
-                if (url) {
-                    Ext.Ajax.request({ url: url, method: "GET", success: ShowLoadedJson });
-                } else {
-                    Ext.Ajax.request({ url: "/configs/all.json", method: "GET", success: ShowLoadedJson });
-                }
-            });
-
             function OpenMainDialog() {
                 alert("this is the main dialog");
             }
@@ -44,13 +35,25 @@
                     Ext.each(json.items, function(item) {
                         html += '<li><a href="' + document.location + '?URI=' + item.uri + '">' + item.label + '</a></li>';
                     });
-                    Ext.getDom("c_json").innerHTML = "<ul>" + html + "</ul>";
+
+                    Ext.getDom("c_label").innerHTML = "<b>List of Configurations</b>";
+                    Ext.getDom("c_parentContainer").innerHTML = "<ul>" + html + "</ul>";
                 } else {
-                    Ext.getDom("c_json").innerHTML = o.responseText;
                     Ext.getDom("c_label").innerHTML = "<b>" + json.label + "</b>";
                     org.systemsbiology.pages.apis.containers.LoadConfiguration(json, "c_parentContainer");
                 }
             }
+
+            function LoadData() {
+                var url = get_parameter("URI");
+                if (url) {
+                    Ext.Ajax.request({ url: url, method: "GET", success: ShowLoadedJson });
+                } else {
+                    Ext.Ajax.request({ url: "/configs/all.json", method: "GET", success: ShowLoadedJson });
+                }
+            }
+
+            Ext.onReady(LoadData);
         </script>
     </head>
     <body>
@@ -69,9 +72,6 @@
                 <li>Share</li>
             </ul>
         </div>
-
-        <h3>JSON Output</h3>
-        <div id="c_json"></div>
 
         <div id="c_label"></div>
         <div id="c_parentContainer"></div>
