@@ -1,5 +1,22 @@
 Ext.ns('org.systemsbiology.pages.apis.containers');
 
+org.systemsbiology.pages.apis.containers.WindowMgr = new Ext.WindowGroup();
+
+org.systemsbiology.pages.apis.containers.WindowMgr.Cascade = function() {
+    console.log("cascade");
+    var x = 100;
+    var y = 100;
+    var windows = org.systemsbiology.pages.apis.containers.WindowMgr;
+    windows.each(function(win) {
+        console.log("cascade(): " + win.title + "," + win.minimized + "," + win.maximized + "," + win.isVisible());
+        if (win.isVisible() && !win.maximized) {
+            win.setPosition(x, y);
+            x += 30;
+            y += 30;
+        }
+    }, windows);
+};
+
 org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, parentDiv) {
     console.log("org.systemsbiology.pages.apis.containers.LoadConfiguration()");
 
@@ -14,6 +31,7 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
                         var _newInstance = new _Constructor(childDiv);
                         _newInstance.draw(container.data, container.options);
                     }
+                    org.systemsbiology.pages.apis.containers.WindowMgr.Cascade();
                 });
 
                 if (container.scripts && container.scripts.length) {
@@ -42,6 +60,7 @@ org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv,
     var win = new Ext.Window({
         contentEl: div,
         layout:'fit',
+        manager: org.systemsbiology.pages.apis.containers.WindowMgr,
         width:800,
         height:600,
         closeAction:'hide', 
@@ -64,3 +83,4 @@ org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv,
     shortcut.window = win;
     win.show(this);
 }
+
