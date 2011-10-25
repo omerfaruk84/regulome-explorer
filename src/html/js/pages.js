@@ -9,17 +9,17 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
                 var childDiv = Ext.DomHelper.append(parentDiv, { tag: 'div' }, true);
                 var buttonDiv = Ext.DomHelper.append(parentDiv, { tag: 'div' }, true);
                 org.systemsbiology.pages.apis.events.MessageBus.Subscribe(container.id, function(_Constructor) {
-                    org.systemsbiology.pages.apis.containers.CreateWindow(childDiv, buttonDiv, json.label);
+                    org.systemsbiology.pages.apis.containers.CreateWindow(childDiv, buttonDiv, container.label);
                     if (_Constructor) {
                         var _newInstance = new _Constructor(childDiv);
                         _newInstance.draw(container.data, container.options);
                     }
                 });
-            });
-        }
 
-        if (json.scripts && json.scripts.length) {
-            org.systemsbiology.pages.util.ScriptLoad(json.scripts);
+                if (container.scripts && container.scripts.length) {
+                    org.systemsbiology.pages.util.ScriptLoad(container.scripts);
+                }
+            });
         }
     }
 };
@@ -49,7 +49,7 @@ org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv,
         minimizable: true, maximizable: true, animCollapse: true, 
         autoScroll:true, 
         bodyBorder:true, 
-        modal: true, floating: true, 
+        modal: false, floating: true, 
         shadow: true, 
         title: label, titleCollapse: true,
         shortcut: shortcut 
