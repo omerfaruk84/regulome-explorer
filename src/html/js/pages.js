@@ -7,8 +7,9 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
         if (json.containers && parentDiv) {
             Ext.each(json.containers, function(container) {
                 var childDiv = Ext.DomHelper.append(parentDiv, { tag: 'div' }, true);
+                var buttonDiv = Ext.DomHelper.append(parentDiv, { tag: 'div' }, true);
                 org.systemsbiology.pages.apis.events.MessageBus.Subscribe(container.id, function(_Constructor) {
-                    org.systemsbiology.pages.apis.containers.CreateWindow(childDiv);
+                    org.systemsbiology.pages.apis.containers.CreateWindow(childDiv, buttonDiv, json.label);
                     if (_Constructor) {
                         var _newInstance = new _Constructor(childDiv);
                         _newInstance.draw(container.data, container.options);
@@ -23,14 +24,43 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
     }
 };
 
-org.systemsbiology.pages.apis.containers.CreateWindow = function(div) {
-    var win = new Ext.Window({
-        applyTo: div,
-        layout:'fit',
-        width:500,
-        height:300,
-        closeAction:'hide',
-        plain: true
+org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv, label) {
+    var shortcut = new Ext.Button({
+        applyTo: buttonDiv,
+        hidden: true,
+        scale: "medium",
+        iconCls: "shortcut",
+        listeners: {
+           "click": function(btn, ev) {
+              btn.hide();
+              if (btn.window) {
+                 btn.window.show();
+              }
+           }
+        }
     });
+    var win = new Ext.Window({
+        contentEl: div,
+        layout:'fit',
+        width:800,
+        height:600,
+        closeAction:'hide', 
+        border: true, frame:true, plain: false, 
+        minimizable: true, maximizable: true, animCollapse: true, 
+        autoScroll:true, 
+        bodyBorder:true, 
+        modal: true, floating: true, 
+        shadow: true, 
+        title: label, titleCollapse: true,
+        shortcut: shortcut 
+    });
+    win.on("minimize", function(w) {
+        w.minimized = true;
+        w.hide();
+        if (w.shortcut) {
+            shortcut.show();
+        }
+    });
+    shortcut.window = win;
     win.show(this);
 }
