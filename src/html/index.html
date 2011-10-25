@@ -39,7 +39,7 @@
                     Ext.getDom("c_label").innerHTML = "<b>List of Configurations</b>";
                     Ext.getDom("c_parentContainer").innerHTML = "<ul>" + html + "</ul>";
                 } else {
-                    Ext.getDom("c_label").innerHTML = "<b>" + json.label + "</b>";
+                    Ext.getDom("c_label").innerHTML = "";
                     org.systemsbiology.pages.apis.containers.LoadConfiguration(json, "c_parentContainer");
                 }
             }
