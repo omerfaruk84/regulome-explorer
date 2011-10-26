@@ -47,9 +47,7 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
                     }
                 });
 
-                if (container.scripts && container.scripts.length) {
-                    Ext.each(container.scripts, org.systemsbiology.pages.util.ScriptLoad);
-                }
+                org.systemsbiology.pages.util.ScriptLoad(container.scripts);
             });
         }
     }
