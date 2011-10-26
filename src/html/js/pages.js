@@ -39,7 +39,7 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
                 var buttonDiv = Ext.DomHelper.append(parentDiv, { tag: 'div' }, true);
                 org.systemsbiology.pages.apis.events.MessageBus.Subscribe(container.id, function(_Constructor) {
                     if (_Constructor) {
-                        var _newInstance = new _Constructor(childDiv);
+                        var _newInstance = new _Constructor(childDiv.id);
                         _newInstance.draw(container.data, container.options);
 
                         var logo = _newInstance.logo ? _newInstance.logo : {};
@@ -48,7 +48,7 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
                 });
 
                 if (container.scripts && container.scripts.length) {
-                    org.systemsbiology.pages.util.ScriptLoad(container.scripts);
+                    Ext.each(container.scripts, org.systemsbiology.pages.util.ScriptLoad);
                 }
             });
         }
