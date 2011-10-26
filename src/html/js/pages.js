@@ -32,6 +32,8 @@ org.systemsbiology.pages.apis.containers.WindowMgr.Position = function() {
 org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, parentDiv) {
     console.log("org.systemsbiology.pages.apis.containers.LoadConfiguration()");
 
+    var targetScripts = new Array();
+
     if (json) {
         if (json.containers && parentDiv) {
             Ext.each(json.containers, function(container) {
@@ -46,11 +48,18 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
                         org.systemsbiology.pages.apis.containers.CreateWindow(childDiv, buttonDiv, container.label, logo, container.position);
                     }
                 });
-
-                org.systemsbiology.pages.util.ScriptLoad(container.scripts);
+                if (container.scripts && container.scripts.length) {
+                    Ext.each(container.scripts, function(s) {
+                       if (targetScripts.indexOf(s) == -1) {
+                           targetScripts.push(s);
+                       }
+                    });
+                }
             });
         }
     }
+
+    org.systemsbiology.pages.util.ScriptLoad(targetScripts);
 };
 
 org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv, label, logo, position) {
