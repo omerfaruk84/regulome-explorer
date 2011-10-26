@@ -2,19 +2,31 @@ Ext.ns('org.systemsbiology.pages.apis.containers');
 
 org.systemsbiology.pages.apis.containers.WindowMgr = new Ext.WindowGroup();
 
-org.systemsbiology.pages.apis.containers.WindowMgr.Cascade = function() {
-    console.log("cascade");
+org.systemsbiology.pages.apis.containers.WindowMgr.Position = function() {
     var x = 100;
     var y = 100;
-    var windows = org.systemsbiology.pages.apis.containers.WindowMgr;
-    windows.each(function(win) {
-        console.log("cascade(): " + win.title + "," + win.minimized + "," + win.maximized + "," + win.isVisible());
+
+    var order = [];
+    this.each(function(win) {
         if (win.isVisible() && !win.maximized) {
-            win.setPosition(x, y);
-            x += 30;
-            y += 30;
+            if (!win.isPositioned) {
+                win.setPosition(x, y);
+                x += 30;
+                y += 30;
+            }
         }
-    }, windows);
+
+        if (win.order != null) {
+            order[win.order] = win;
+        }
+    });
+
+    for (var i = order.length; i >= 0; i--) {
+        var win = order[i];
+        if (win) {
+            this.bringToFront(win);
+        }
+    }
 };
 
 org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, parentDiv) {
@@ -100,7 +112,8 @@ org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv,
 
     if (position) {
         win.setPosition(position.x, position.y);
-    } else {
-        org.systemsbiology.pages.apis.containers.WindowMgr.Cascade();
+        win.order = position.order;
+        win.isPositioned = true;
     }
-}
+    org.systemsbiology.pages.apis.containers.WindowMgr.Position();
+};
