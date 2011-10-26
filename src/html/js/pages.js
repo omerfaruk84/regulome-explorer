@@ -26,12 +26,13 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
                 var childDiv = Ext.DomHelper.append(parentDiv, { tag: 'div' }, true);
                 var buttonDiv = Ext.DomHelper.append(parentDiv, { tag: 'div' }, true);
                 org.systemsbiology.pages.apis.events.MessageBus.Subscribe(container.id, function(_Constructor) {
-                    org.systemsbiology.pages.apis.containers.CreateWindow(childDiv, buttonDiv, container.label);
                     if (_Constructor) {
                         var _newInstance = new _Constructor(childDiv);
                         _newInstance.draw(container.data, container.options);
+
+                        var logo = _newInstance.logo ? _newInstance.logo : {};
+                        org.systemsbiology.pages.apis.containers.CreateWindow(childDiv, buttonDiv, container.label, logo);
                     }
-                    org.systemsbiology.pages.apis.containers.WindowMgr.Cascade();
                 });
 
                 if (container.scripts && container.scripts.length) {
@@ -42,12 +43,12 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
     }
 };
 
-org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv, label) {
-    var shortcut = new Ext.Button({
+org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv, label, logo) {
+    var shortCutConfig = {
         applyTo: buttonDiv,
         hidden: true,
-        scale: "medium",
-        iconCls: "shortcut",
+        iconAlign: 'top',
+        text: (logo.label ? logo.label : ""),
         listeners: {
            "click": function(btn, ev) {
               btn.hide();
@@ -56,7 +57,21 @@ org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv,
               }
            }
         }
-    });
+    };
+
+    if (logo.url) {
+        shortCutConfig["icon"] = logo.url;
+        if (logo.label) {
+            shortCutConfig["cls"] = "x-btn-text-icon";
+        } else {
+            shortCutConfig["cls"] = "x-btn-icon";
+        }
+    } else {
+        shortCutConfig["cls"] = "shortcut";
+    }
+
+    var shortcut = new Ext.Button(shortCutConfig);
+
     var win = new Ext.Window({
         contentEl: div,
         layout:'fit',
@@ -82,5 +97,8 @@ org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv,
     });
     shortcut.window = win;
     win.show(this);
+
+    org.systemsbiology.pages.apis.containers.WindowMgr.Cascade();
 }
+
 
