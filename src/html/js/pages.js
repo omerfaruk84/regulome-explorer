@@ -31,7 +31,7 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
                         _newInstance.draw(container.data, container.options);
 
                         var logo = _newInstance.logo ? _newInstance.logo : {};
-                        org.systemsbiology.pages.apis.containers.CreateWindow(childDiv, buttonDiv, container.label, logo);
+                        org.systemsbiology.pages.apis.containers.CreateWindow(childDiv, buttonDiv, container.label, logo, container.position);
                     }
                 });
 
@@ -43,7 +43,7 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
     }
 };
 
-org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv, label, logo) {
+org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv, label, logo, position) {
     var shortCutConfig = {
         applyTo: buttonDiv,
         hidden: true,
@@ -98,7 +98,9 @@ org.systemsbiology.pages.apis.containers.CreateWindow = function(div, buttonDiv,
     shortcut.window = win;
     win.show(this);
 
-    org.systemsbiology.pages.apis.containers.WindowMgr.Cascade();
+    if (position) {
+        win.setPosition(position.x, position.y);
+    } else {
+        org.systemsbiology.pages.apis.containers.WindowMgr.Cascade();
+    }
 }
-
-
