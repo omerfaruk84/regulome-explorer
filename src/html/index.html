@@ -16,6 +16,7 @@
 
         <script type="text/javascript" src="js/scriptLoad.js"></script>
         <script type="text/javascript" src="js/messageBus.js"></script>
+        <script type="text/javascript" src="js/notes.js"></script>
         <script type="text/javascript" src="js/pages.js"></script>
         <link rel="stylesheet" type="text/css" href="css/stylesheet.css"/>
         
@@ -26,6 +27,16 @@
 
             function AlertSignIn() {
                 alert("Sign in");
+            }
+
+            function ShowNotes() {
+                var url = get_parameter("URI");
+                if (url) {
+                    new org.systemsbiology.pages.apis.notes.Editor({
+                        notesUrl: url.replace(".json", ".txt"),
+                        contentEl: "c_noteseditor"
+                    });
+                }
             }
 
             function ShowLoadedJson(o) {
@@ -40,6 +51,7 @@
                     Ext.getDom("c_parentContainer").innerHTML = "<ul>" + html + "</ul>";
                 } else {
                     Ext.getDom("c_label").innerHTML = "";
+                    Ext.get("c_notes").show();
                     org.systemsbiology.pages.apis.containers.LoadConfiguration(json, "c_parentContainer");
                 }
             }
@@ -75,5 +87,9 @@
 
         <div id="c_label"></div>
         <div id="c_parentContainer"></div>
+        <div id="c_notes" style="display:none">
+          <a href="#" onclick="ShowNotes(); return false;">Notes</a>
+          <div id="c_noteseditor"></div>
+        </div>
     </body>
 </html>
