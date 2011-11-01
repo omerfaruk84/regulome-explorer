@@ -69,7 +69,7 @@
                     Ext.getDom("c_label").innerHTML = "<b>List of Configurations</b>";
                     Ext.getDom("c_parentContainer").innerHTML = "<ul>" + html + "</ul>";
                 } else {
-                    Ext.getDom("c_label").innerHTML = "";
+                    Ext.getDom("c_label").innerHTML = "<b>" + (json.title ? json.title : "Untitled") + "</b>";
                     Ext.get("c_notes").show();
                     org.systemsbiology.pages.apis.containers.LoadConfiguration(json, "c_parentContainer");
                 }
