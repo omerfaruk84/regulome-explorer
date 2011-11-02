@@ -8,12 +8,11 @@ import proxy_config
 def make_proxy_handler(host):
     class Handler(webapp.RequestHandler):
         def get(self):
-            path = self.request.path
-            target_url = host
-            if path[0] == "/":
-                target_url = target_url + path
-            else:
-                target_url = target_url + "/" + path
+            query_string = self.request.query_string
+            
+            target_url = host + self.request.path
+            if (len(query_string) > 0):
+                target_url = target_url + "?" + query_string
             
             result = urlfetch.fetch(target_url)            
             if result.status_code == 200:
@@ -26,12 +25,7 @@ def make_proxy_handler(host):
                 self.response.out.write(result.content)
         
         def post(self):
-            path = self.request.path
-            target_url = host
-            if path[0] == "/":
-                target_url = target_url + path
-            else:
-                target_url = target_url + "/" + path
+            target_url = host + self.request.path
             
             body = self.request.body
             result = urlfetch.fetch(url,
