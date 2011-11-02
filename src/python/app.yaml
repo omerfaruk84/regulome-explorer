@@ -13,6 +13,12 @@ handlers:
 - url: /files/.*
   script: redirections.py
 
+- url: /visquick/.*
+  script: redirections.py
+
+- url: /js/.*
+  script: redirections.py
+
 - url: /html/.*
   script: redirections.py
 
