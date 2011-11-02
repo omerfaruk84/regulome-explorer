@@ -16,9 +16,6 @@ handlers:
 - url: /visquick/.*
   script: redirections.py
 
-- url: /js/.*
-  script: redirections.py
-
 - url: /html/.*
   script: redirections.py
 
