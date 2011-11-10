@@ -473,7 +473,7 @@ Ext.onReady(function() {
                     monitorResize : true,
                     autoScroll : false,
                     forceLayout : true,
-                    layout : 'absolute',
+  //                  layout : 'absolute',
                     height: 800,
                     width:1050,
                     collapsible : false,
@@ -482,11 +482,11 @@ Ext.onReady(function() {
                             border : false,
                             frame : false,
                             items: [ {
-                                xtype:'panel' ,
+                                xtype:'container' ,
                                 id : 'graph-panel',
                                 name : 'graph-panel',
                                 autoScroll:false,
-                                height: 800,
+//                                height: 800,
                                 width:800
                             }]
                         }]
