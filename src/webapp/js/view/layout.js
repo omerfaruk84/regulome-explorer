@@ -707,7 +707,7 @@ Ext.onReady(function() {
                                             triggerAction : 'all',
                                             forceSelection : true,
                                             emptyText : 'Select a Type...',
-                                            value : '*',
+                                            value : 'GNAB',
                                             listeners : {
                                                 select : function(field,record, index) {
                                                     switch(record.id)  {
@@ -837,7 +837,7 @@ Ext.onReady(function() {
                                             triggerAction : 'all',
                                             forceSelection : true,
                                             emptyText : 'Select a Type...',
-                                            value : '*',
+                                            value : 'GEXP',
                                             listeners : {
                                                 select : function(field,record, index) {
                                                     switch(record.id)  {
