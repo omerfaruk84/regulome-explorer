@@ -1,6 +1,7 @@
 Ext.ns('org.systemsbiology.pages.apis.containers');
 
 org.systemsbiology.pages.apis.containers.WindowMgr = new Ext.WindowGroup();
+org.systemsbiology.pages.apis.containers.Instances = new Array();
 
 org.systemsbiology.pages.apis.containers.WindowMgr.Position = function() {
     var x = 100;
@@ -45,6 +46,8 @@ org.systemsbiology.pages.apis.containers.LoadConfiguration = function(json, pare
                         _newInstance.draw(container.data, container.options);
 
                         var logo = _newInstance.logo ? _newInstance.logo : {};
+
+                        org.systemsbiology.pages.apis.containers.Instances.push(_newInstance)
                         org.systemsbiology.pages.apis.containers.CreateWindow(childDiv, buttonDiv, container.label, logo, container.position);
                     }
                 });
