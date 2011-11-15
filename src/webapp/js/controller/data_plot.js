@@ -122,7 +122,7 @@ function colorscale_draw(div) {
             .text(x_axis.tickFormat);
 
     vis.anchor('bottom').add(pv.Label)
-            .text('Aggresiveness Score');
+            .text('Aggressiveness Score');
 
     vis.render();
 
