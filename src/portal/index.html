@@ -7,19 +7,62 @@
     <link type="text/css" href="/css/portal.css" rel="stylesheet" />    
     <script type="text/javascript" src="/jquery/1.7.0/jquery-1.7.min.js"></script>
     <script type="text/javascript" src="/jquery/1.7.0/jq-ui.min.js"></script>
-    <script type="text/javascript" src="/js/menus/menu.js"></script>
-    <script type="text/javascript"> 
-        activateTab("");
+    <script type="text/javascript">
+    window.addEventListener('load',function() {
+        if ( window.location.hostname == "vis.systemsbiology.org" ) {
+            window.location = "entry.html";
+        }
+    }, false);
     </script>
 </head>
-</head>
- <body scroll="no" class="">
-    <div id="everything" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-width: 600px;">
-    
-    
-        <div id="content">
-        </div>
+<body class="">
+   <div id="everything" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-width: 600px;">
+   <div id="background"></div>
+       <div id="content">
+                <h1>Regulome Explorer Tools</h1>
+        <ul>
+			<li>
+                 <a target="_blank" href="http://pubcrawl.systemsbiology.net">
+                <img  src="/images/pubcrawl.png" >Pubcrawl</a>
+                <div class="desc"> Literature-derived cross-validation of feature association</div>
+            </li>
+			<li>
+                <a target="_blank" href="/re/">
+                <img src="/images/rf_circ.png" >Random Forest Analysis</a>
+                <div class="desc">Multi-variate, non-linear associations on heterogeneous features</div>
+            </li>
+            <li>
+                <a target="_blank" href="/pairwise/">
+                <img src="/images/crc_icon.png" >Colorectal Cancer Aggressiveness</a>
+                <div class="desc">
+                Combined p-value approach to identifying significant features in terms of tumor aggressiveness</div>
+            </li>
+            <li>
+                <a target="_blank" href="/all_pairs/">
+                <img src="/images/crc_icon.png" >All-Pairs Correlation</a>
+                <div class="desc">
+                Identification of significant heterogeneous feature associations via standard correlation techniques</div>
+            </li>
+        </ul>
+           <div class="funding">Funding gratefully acknowledged from:<br/>
+                       <a href="http://cancergenome.nih.gov/"><img src="/images/tcga_logo.png" style="width:350px;"></a>
+                       <a href="http://www.cancer.gov/"><img src="/images/nci_logo.png" style="width:150px;"></a>
+                       <a href="http://www.genome.gov/"><img src="/images/nhgri_logo.png" style="width:220px;"></a>
+               </div>
 
-    </div>
-</body>
-</html>
+        </div>
+                  <div id="masthead">
+            <div class="title" style="position: absolute; top: 0; left: 0;">
+                <a href="/">
+                <img border="0" src="/images/icons/circle_logo.png" style="height: 26px; vertical-align: top;">Regulome Explorer</a>
+            </div>
+            <div class="green-dots-container">
+                <div class="green-dots">
+                    <img border="0" src="/images/icons/green.png" style="height: 26px;">
+                </div>
+            </div>
+
+
+            </div>
+        </body>
+        </html>

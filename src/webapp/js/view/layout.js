@@ -1195,6 +1195,7 @@ export_window = new Ext.Window( {
                                         proxy: new Ext.data.HttpProxy({
                                     url: '/google-dsapi-svc/addama/datasources/tcga/regulome_explorer_dataset/query?' +
                                         'tq=select `label`, `method`, `source`, `contact`, `comments`' +
+                                        ' where method=\'RF-ACE\'' +
                                         ' order by default_display DESC&tqx=out:json_array'
                                 }),
                                 fields : ['label','method','source','contact','comments'],

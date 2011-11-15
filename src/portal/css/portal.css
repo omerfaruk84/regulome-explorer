@@ -2,7 +2,7 @@ body{font:75% "Lucida Grande",verdana,arial,helvetica,sans-serif;background:#eee
 .unselectable{user-select:none;-moz-user-select:none;-webkit-user-select:none;}
 #background{position:absolute;background:#eeeeee;z-index:-1;top:0;left:0;margin:0;padding:0;width:100%;height:100%;}
 
-#content, #left,#left-border,#center,#right-border,#right{position:absolute;top:33px;bottom:0px;overflow:hidden;background:#fff;}
+#content, #left,#left-border,#center,#right-border,#right{position:absolute;top:33px;bottom:0px;overflow:auto;background:#fff;}
 #content,#left,#center,#right{border-top:solid #999 1px;}
 #content{padding: 5px; padding-left:10px; padding-right:5px;}
 #left-border,#right-border{background:#eeeeee;border-left:solid #999 1px;border-right:solid #999 1px;padding-right:1px;padding-left:1px;width:5px;z-index:10000;}
@@ -13,7 +13,7 @@ body{font:75% "Lucida Grande",verdana,arial,helvetica,sans-serif;background:#eee
 #left{left:0px;width:250px;z-index:200;}
 #left-border{left:250px;}
 #center{left:259px;right:259px;overflow:hidden;z-index:1;}
-#content{left:0px;right:0px;overflow:hidden;z-index:1;}
+#content{left:0px;right:0px;overflow:auto;z-index:1;}
 #right-border{right:250px;}
 #right{width:250px;right:0px;z-index:200;}
 .unified-panel-header{height:2em;z-index:1000;background:#cccccc;background-image:url(panel_header_bg.png);background-position:top center;background-repeat:repeat-x;border-bottom:solid #999 1px;margin:0;padding:0;padding-right:10px;padding-left:10px;color:#333;font-weight:bold;}
@@ -50,3 +50,17 @@ div.unified-panel-body{position:absolute;top:2em;bottom:0;width:100%;margin-top:
 #masthead .title a:hover{text-decoration:none;}
 .green-dots-container { position: absolute; top: 0px; right: 0px; height: 32px;}
 .green-dots{position:absolute;top:3px;right:3px;}
+#content h1{display:block;font-size:22px;}
+#content ul{margin:0;padding:0;list-style-type:none;}
+#content ul li{position:relative;display:block;padding:0;white-space:nowrap;margin-top:5px;}
+#content ul li img{border:2px solid;border-color:#f48234;height: 100px; width:100px;vertical-align: top;margin-right:5px;}
+#content ul li > a{color:#f48234;font-weight:bold;font-size:18px;}
+#content ul {color:#004e72;font-size:12px;}
+#content ul li .desc{position:absolute;top:20px;left: 110px;color:#004e72;width:200px;font-weight:bold;font-size:12px;}
+
+.funding {display:block;margin-left:10px;margin-top:50px;}
+.funding img{margin-right:10px; border:0;}
+
+
+
+
