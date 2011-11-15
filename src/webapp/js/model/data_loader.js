@@ -39,18 +39,18 @@ function parseFeatures(obj) {
        var f2 = row.alias2.split(':');
         var label_mod1 = f1.length >= 8 ? f1[7] : '';
         var label_mod2 = f2.length >= 8 ? f2[7] : '';
-        var obj = {score: row.score, logged_pvalue : row.logged_pvalue,
-            correlation: row.correlation, sign: row.sign, num_nonna: row.num_nonna};
+        var obj = {logged_pvalue : row.logged_pvalue,
+            correlation: row.correlation, num_nonna: row.num_nonna};
         var feature;
         switch('CLIN') {
             case(f2[1]) :
                 feature = { source : f1[1], label : f1[2], chr : f1[3].slice(3),
-               start: parseInt(f1[4]), end:f1[5] != '' ? parseInt(f1[5]) : parseInt(f1[4]), clin : f2[2],
+               start: parseInt(f1[4]), end:f1[5] != '' ? parseInt(f1[5]) : parseInt(f1[4]),
                 label_mod: label_mod1};
             break;
             case(f1[1]) :
                 feature = { source : f2[1], label : f2[2], chr : f2[3].slice(3),
-               start: parseInt(f2[4]), end:f2[5] != '' ? parseInt(f2[5]) : parseInt(f2[4]), clin: f1[2],
+               start: parseInt(f2[4]), end:f2[5] != '' ? parseInt(f2[5]) : parseInt(f2[4]),
                 label_mod: label_mod2};
                 break;
         }
@@ -116,8 +116,9 @@ function parseNetwork(responses) {
             node2: {id: row.alias2, source : node2[1], label : node2[2], chr : node2[3].slice(3),
                 start: parseInt(node2[4]), end:node2[5] != '' ? parseInt(node2[5]) : parseInt(node2[4]),
              label_mod: label_mod2},
-            logged_pvalue : row.logged_pvalue,score : row.score, correlation:row.correlation, clin: row.clin};
-            });
+            logged_pvalue : row.logged_pvalue,correlation:row.correlation
+            };
+   });
 
         var located_responses = whole_net.filter(function(feature) {
         return feature.node1.chr != '' && feature.node2.chr != '';});
@@ -127,22 +128,21 @@ function parseNetwork(responses) {
 
     var feature_ids = {};
     var features = [];
-    var unlocated_features = [];
     whole_net.forEach(function(link) {
         if (feature_ids[link.node1.id] == null) {
             feature_ids[link.node1.id]=1;
             features.push(vq.utils.VisUtils.extend({value:link.node1.label},link.node1));
-            unlocated_features.push(vq.utils.VisUtils.extend({
-                    value:0, score:link.score,clin:link.clin
-                    },link.node1));
         }
         if (feature_ids[link.node2.id] == null) {feature_ids[link.node2.id]=1;features.push(vq.utils.VisUtils.extend({value:link.node2.label},link.node2));    }
     });
 
+    parsed_data['unlocated_features'] = vq.utils.VisUtils.clone(features).filter(function(feature) {
+            return feature.chr =='';
+        });
+
     parsed_data['features'] = features;
     parsed_data['network'] = located_responses;
     parsed_data['unlocated'] = unlocated_responses;
-    parsed_data['unlocated_features'] = unlocated_features;
     parsed_data['located_features'] = vq.utils.VisUtils.clone(features).filter(function(feature) {
             return feature.chr !='';
         });

@@ -43,7 +43,7 @@ function registerPlotListeners() {
 
 
 var locatable_source_list = ['GEXP','METH','CNVR','MIRN','GNAB'],
-    unlocatable_source_list = ['CLIN','SAMP'],
+    unlocatable_source_list = ['CLIN','SAMP','PRDM'],
     all_source_list = pv.blend([locatable_source_list,unlocatable_source_list]);
 all_source_map = pv.numerate(all_source_list),
     locatable_source_map = pv.numerate(locatable_source_list),
@@ -203,6 +203,20 @@ function wedge_plot(parsed_data,div) {
         Location :  function(feature) { return 'Chr' + feature.chr + ' ' + feature.start + '-' + feature.end;}
     };
 
+ var unlocated_map = vq.utils.VisUtils.clone(parsed_data['unlocated']).filter(function(link) { return  link.node1.chr != '';})
+            .map(function(link) {
+      var node =  vq.utils.VisUtils.extend(link.node2,{ chr:link.node1.chr, start:link.node1.start,end:link.node1.end, value: 0});
+        node.sourceNode = vq.utils.VisUtils.extend({},link.node1); node.targetNode = vq.utils.VisUtils.extend({},link.node2);
+         node.logged_pvalue=link.logged_pvalue; node.correlation = link.correlation;
+        return node;
+    }).concat(vq.utils.VisUtils.clone(parsed_data['unlocated']).filter(function(link) { return  link.node2.chr != '';})
+            .map(function(link) {
+      var node =  vq.utils.VisUtils.extend(link.node1,{ chr:link.node2.chr, start:link.node2.start,end:link.node2.end, value: 0});
+        node.sourceNode = vq.utils.VisUtils.extend({},link.node1); node.targetNode = vq.utils.VisUtils.extend({},link.node2);
+         node.logged_pvalue=link.logged_pvalue; node.correlation = link.correlation;
+        return node;
+    }));
+
     var chrom_leng = vq.utils.VisUtils.clone(chrome_length);
 
     var ticks = vq.utils.VisUtils.clone(parsed_data['features']);
@@ -273,11 +287,11 @@ function wedge_plot(parsed_data,div) {
                     type :   'scatterplot'
                 },
                 DATA:{
-                    data_array : parsed_data['unlocated_features']
+                    data_array : unlocated_map
                 },
                 OPTIONS: {
-                    legend_label : 'Clinical Correlates' ,
-                    legend_description : 'Clinical Correlates',
+                    legend_label : 'Unmapped Correlates' ,
+                    legend_description : 'Unmapped Correlates',
                     outer_padding : 10,
                     base_value : 0,
                     min_value : -1,
@@ -288,13 +302,13 @@ function wedge_plot(parsed_data,div) {
                     stroke_style :  stroke_style_fn,
                     fill_style :  stroke_style_fn,
                     tooltip_items : {
-                        Node : function(node) {
-                            return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
-                                '-' + node.end;},
-                        'Logged Pvalue' : 'logged_pvalue',
-                        Score : 'score',
-                        'Clinical Feature':'clin',
-                        'Sign':'sign'
+                         'Node 1' : function(link) { return link.sourceNode.label+ ' ' + link.sourceNode.source + ' Chr' + link.sourceNode.chr + ' ' + link.sourceNode.start +
+                        '-' + link.sourceNode.end + ' ' + link.sourceNode.label_mod;},
+
+                    'Node 2' : function(link) { return link.targetNode.label+ ' ' + link.targetNode.source + ' Chr' + link.targetNode.chr + ' ' + link.targetNode.start +
+                        '-' + link.targetNode.end + ' ' + link.targetNode.label_mod;},
+                    'log(pvalue)' : 'logged_pvalue',
+                    Correlation : 'correlation'
                     },
                     listener : wedge_listener
                 }
@@ -324,16 +338,14 @@ function wedge_plot(parsed_data,div) {
                         return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + ':' +  feature.start +'-'+ feature.end;  }
                 },
                 link_tooltip_items :  {
-                    'Target' : function(link) { return link.sourceNode.label+ ' ' + link.sourceNode.source + ' Chr' + link.sourceNode.chr + ' ' + link.sourceNode.start +
+                    'Node 1' : function(link) { return link.sourceNode.label+ ' ' + link.sourceNode.source + ' Chr' + link.sourceNode.chr + ' ' + link.sourceNode.start +
                         '-' + link.sourceNode.end + ' ' + link.sourceNode.label_mod;},
 
-                    'Predictor' : function(link) { return link.targetNode.label+ ' ' + link.targetNode.source + ' Chr' + link.targetNode.chr + ' ' + link.targetNode.start +
+                    'Node 2' : function(link) { return link.targetNode.label+ ' ' + link.targetNode.source + ' Chr' + link.targetNode.chr + ' ' + link.targetNode.start +
                         '-' + link.targetNode.end + ' ' + link.targetNode.label_mod;},
-                    'Logged Pvalue' : 'logged_pvalue',
-                    Score : 'score',
-                    Correlation : 'correlation',
-                    'Clinical Associate': 'clin',
-                    Sign : 'sign'
+                    'log(pvalue)' : 'logged_pvalue',
+                    Correlation : 'correlation'
+
                 }
             }
         }};
@@ -381,22 +393,19 @@ function linear_plot(obj) {
     var stroke_style_fn = getStrokeStyleAttribute();
 
     var unlocated_tooltip_items = {
-        Target : function(tie) {
+        'Node 1' : function(tie) {
             return tie.sourceNode.label + ' ' + tie.sourceNode.source},
-        Predictor : function(tie) {
+         'Node 2' : function(tie) {
             return tie.targetNode.label + ' ' + tie.targetNode.source },
-        'Importance' : 'importance',
         Correlation : 'correlation',
-        'Logged Pvalue' : 'logged_pvalue'
-
+        'log(pvalue)' : 'logged_pvalue'
     },
         located_tooltip_items = {
             Feature : function(node) {
                 return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                     '-' + node.end + ' ' + node.label_mod;},
-            Score :function(node) { return feature_map[node.id] ? feature_map[node.id].score : 'NA';},
-            'Clinical Feature':function(node) { return feature_map[node.id] ? feature_map[node.id].clin : 'NA';},
-            'Sign':function(node) { return feature_map[node.id] ? feature_map[node.id].sign : 'NA';}
+            logged_pvalue :function(node) { return feature_map[node.id] ? feature_map[node.id].logged_pvalue : 'NA';}
+            
         },
         inter_tooltip_items = {
             'Node 1' : function(tie) {
@@ -405,22 +414,20 @@ function linear_plot(obj) {
             'Node 2' : function(tie) {
                 return tie.targetNode.label + ' ' + tie.targetNode.source +
                     ' Chr' + tie.targetNode.chr+ ' ' +tie.targetNode.start +'-'+tie.targetNode.end + ' ' + tie.targetNode.label_mod;},
-            'Importance' : 'importance',
-            Correlation : 'correlation',
-            Score : 'score'
-
+            'log(pvalue)' : 'logged_pvalue',
+            Correlation : 'correlation'
         };
 
     var hit_map = parsed_data['unlocated'].filter(function(link) { return  link.node1.chr == chrom;})
         .map(function(link) {
-            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,score:link.score,importance:link.importance, correlation:link.correlation},link.node1);
+            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,importance:link.importance, correlation:link.correlation},link.node1);
             node1_clone.start = bpToMb(node1_clone.start); node1_clone.end = bpToMb(node1_clone.end);
             node1_clone.sourceNode = vq.utils.VisUtils.extend({},link.node1);
             node1_clone.targetNode = vq.utils.VisUtils.extend({},link.node2);
             return node1_clone;
         }).concat(parsed_data['unlocated'].filter(function(link) { return  link.node2.chr == chrom;})
         .map(function(link) {
-            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,score:link.score,importance:link.importance, correlation:link.correlation},link.node2);
+            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,importance:link.importance, correlation:link.correlation},link.node2);
             node1_clone.start = bpToMb(node1_clone.start); node1_clone.end = bpToMb(node1_clone.end);
             node1_clone.sourceNode = vq.utils.VisUtils.extend({},link.node1);
             node1_clone.targetNode = vq.utils.VisUtils.extend({},link.node2);
@@ -432,7 +439,7 @@ function linear_plot(obj) {
         return link.node1.chr == chrom && link.node2.chr == chrom &&
             Math.abs(link.node1.start - link.node2.start) > proximal_distance;})
         .map(function(link) {
-            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,score:link.score,importance:link.importance, correlation:link.correlation},link.node1);
+            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,importance:link.importance, correlation:link.correlation},link.node1);
             node1_clone.start = link.node1.start <= link.node2.start ?
                 link.node1.start : link.node2.start;
             node1_clone.end = link.node1.start <= link.node2.start ? link.node2.start : link.node1.start;
@@ -441,7 +448,6 @@ function linear_plot(obj) {
             node1_clone.targetNode = vq.utils.VisUtils.extend({},link.node2);
             node1_clone.importance = link.importance,node1_clone.correlation = link.correlation;
             node1_clone.logged_pvalue = link.logged_pvalue;
-            node1_clone.score = link.score;
             return node1_clone;
         });
 
@@ -449,7 +455,7 @@ function linear_plot(obj) {
         return link.node1.chr == chrom && link.node2.chr == chrom &&
             Math.abs(link.node1.start - link.node2.start) < proximal_distance;})
         .map(function(link) {
-            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,score:link.score,importance:link.importance, correlation:link.correlation},link.node1),
+            var node1_clone = vq.utils.VisUtils.extend({logged_pvalue:link.logged_pvalue,importance:link.importance, correlation:link.correlation},link.node1),
                 node2_clone = vq.utils.VisUtils.extend({},link.node2);
             node1_clone.start = bpToMb(node1_clone.start);node1_clone.end = bpToMb(node1_clone.end);
             node1_clone.sourceNode = vq.utils.VisUtils.extend({},link.node1);
@@ -503,13 +509,13 @@ function linear_plot(obj) {
                 CONFIGURATION: {
                     fill_style : function (feature) {
                         if (feature_map[feature.id]) {
-                            return score_color_scale(feature_map[feature.id].score * feature_map[feature.id].agg);
+                            return score_color_scale(feature_map[feature.id].logged_pvalue);
                         }
                         return stroke_style_fn(feature);
                     },          //required
                     stroke_style : function (feature) {
                         if (feature_map[feature.id]) {
-                            return score_color_scale(feature_map[feature.id].score * feature_map[feature.id].agg);
+                            return score_color_scale(feature_map[feature.id].logged_pvalue);
                         }
                         return stroke_style_fn(feature);
                     },          //required
@@ -518,6 +524,9 @@ function linear_plot(obj) {
                     track_padding: 20,             //required
                     tile_padding:6,              //required
                     tile_overlap_distance:1,    //required
+                     track_fill_style : pv.color('#EEDEDD'),
+                    track_line_width : 1,
+                    track_stroke_style: pv.color('#000000'),
                     notifier:tile_listener         //optional
                 },
                 OPTIONS: {
@@ -537,6 +546,9 @@ function linear_plot(obj) {
                     tile_overlap_distance:.1,    //required
                     shape :  'dot',
                     tile_show_all_tiles : true,
+                    track_fill_style : pv.color('#EEEEEE'),
+                    track_line_width : 1,
+                    track_stroke_style: pv.color('#000000'),
                     radius : 3
                 },
                 OPTIONS: {
@@ -546,7 +558,7 @@ function linear_plot(obj) {
                 data_array : hit_map
             },
             { type: 'glyph',
-                label : 'Proximal Feature Predictors',
+                label : 'Proximal Feature Associates',
                 description : '',
                 CONFIGURATION: {
                     fill_style : function(link) {
@@ -558,6 +570,9 @@ function linear_plot(obj) {
                     tile_overlap_distance:1,    //required
                     shape :  'dot',
                     tile_show_all_tiles : true,
+                     track_fill_style : pv.color('#DDEEEE'),
+                    track_line_width : 1,
+                    track_stroke_style: pv.color('#000000'),
                     radius : 3
                 },
                 OPTIONS: {
@@ -578,6 +593,9 @@ function linear_plot(obj) {
                     tile_height : 2,
                     tile_padding:7,              //required
                     tile_overlap_distance:.1,    //required
+                     track_fill_style : pv.color('#EEDDEE'),
+                    track_line_width : 1,
+                    track_stroke_style: pv.color('#000000'),
                     tile_show_all_tiles : true
                 },
                 OPTIONS: {
@@ -623,8 +641,7 @@ function plotFeatureDataLinear(obj) {
         Feature : function(node) {
             return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                 '-' + node.end + ' ' + node.label_mod;},
-                            'Clinical Feature':'clin',
-                                'Sgn(log(p))' :'slp',
+                                'log(p)' :'slp',
                                 'Sp Corr' : 'correlation',
                                 'Count':'num_nonna'
     };
@@ -698,7 +715,7 @@ function plotFeatureDataLinear(obj) {
                 label : 'Feature Scores',
                 description : 'Clinical Scores of Features',
                 CONFIGURATION: {
-                    fill_style : function (feature) {  return score_color_scale(feature.score);  },          //required
+                    fill_style : function (feature) {  return score_color_scale(feature.logged_pvalue);  },          //required
                     stroke_style : function (feature) { return 'grey';},//return score_color_scale(feature.value);  },          //required
                     track_fill_style : pv.color('#EEEEEE'),
                     track_height : 200,           //required
@@ -720,7 +737,7 @@ function plotFeatureDataLinear(obj) {
                     node.start = bpToMb(node.start);node.end = bpToMb(node.end);
                     return node;
                 }),
-                value_key: 'score'
+                value_key: 'log(pvalue)'
             }]
     }
     };
@@ -764,11 +781,11 @@ function processCircvisObject(data,filter,div) {
     var ticks = vq.utils.VisUtils.clone(data);
     ticks.forEach(function(f) { f.value = f.label;});
     var features = vq.utils.VisUtils.clone(data);
-    var pos_data = features.filter(function(r) { return r.score >= 0;}).map(function(row) { return row.score;});
-    var neg_data = features.filter(function(r) { return r.score <= 0;}).map(function(row) { return row.score;});
+    var pos_data = features.filter(function(r) { return r.logged_pvalue >= 0;}).map(function(row) { return row.logged_pvalue;});
+    var neg_data = features.filter(function(r) { return r.logged_pvalue <= 0;}).map(function(row) { return row.logged_pvalue;});
     max_score = Math.ceil(2* pv.deviation(pos_data) + pv.mean(pos_data));
     neg_score =  Math.floor(pv.mean(neg_data) - 2* pv.deviation(neg_data));
-    features.forEach(function(f) {f.slp = f.score; f.score=Math.max(neg_score,Math.min(max_score,f.score));});
+    features.forEach(function(f) {f.slp = f.logged_pvalue; f.logged_pvalue=Math.max(neg_score,Math.min(max_score,f.logged_pvalue));});
 
     
         var karyotype_tooltip_items = {
@@ -883,8 +900,7 @@ function processCircvisObject(data,filter,div) {
                           Feature : function(node) {
                               return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                                   '-' + node.end;},
-                                       'Clinical Feature':'clin',
-                                'Sgn(log(p))' :'slp',
+                                'log(p)' :'logged_pvalue',
                                 'Sp Corr' : 'correlation',
                                 'Count':'num_nonna'
                       }
@@ -901,7 +917,7 @@ function processCircvisObject(data,filter,div) {
                   },
                   DATA:{
                       data_array : features,
-                      value_key : 'score'
+                      value_key : 'logged_pvalue'
                   },
                   OPTIONS: {
                       legend_label : 'Clinical Correlates' ,
@@ -914,17 +930,17 @@ function processCircvisObject(data,filter,div) {
                             draw_axes : true,
                             shape:'dot',
                             stroke_style : function (feature) {
-                                return score_color_scale(feature.score);
+                                return score_color_scale(feature.logged_pvalue);
                             },
                             fill_style :  function (feature) {
-                                return score_color_scale(feature.score);
+                                return score_color_scale(feature.logged_pvalue);
                             },
                             tooltip_items : {
                                 Feature : function(node) {
                                     return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
                                         '-' + node.end;},
-                                       'Clinical Feature':'clin',
-                                'Sgn(log(p))' :'slp',
+
+                                'log(p)' :'logged_pvalue',
                                 'Sp Corr' : 'correlation',
                                 'Count':'num_nonna'
                             },
