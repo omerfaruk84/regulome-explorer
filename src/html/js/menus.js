@@ -1,55 +1,22 @@
 Ext.ns('org.systemsbiology.pages.apis.menus');
 
-org.systemsbiology.pages.apis.menus.homemenu = {
-    cls: "home",
-    caption: "Home",
-    items: [
-        {
-            caption: "New workspace",
-            uri: "#"
-        }
-    ]
-};
+org.systemsbiology.pages.apis.menus.AddMenu = function(menuSpec) {
+    // TODO : Fire events on selection?
+    
+    var tpl = '<li>';
+    if (menuSpec.cls) {
+        tpl += '<a href="{uri}" class="{cls}">{label}</a>';
+    } else {
+        tpl += '<a href="{uri}">{label}</a>';
+    }
+    if (menuSpec.items && menuSpec.items.length) {
+        tpl += '<ul>';
+        tpl += '<tpl for="items">';
+        tpl += '<li><a href="index.html?URI={uri}">{label}</a></li>';
+        tpl += '</tpl>';
+        tpl += '</ul>';
+    }
 
-org.systemsbiology.pages.apis.menus.viewmenu = {
-    cls: "",
-    caption: "View",
-    items: [
-        {
-            caption: "Add tool",
-            uri: "#"
-        }
-    ]
-};
-
-org.systemsbiology.pages.apis.menus.filtermenu = {
-    cls: "",
-    caption: "Filter",
-    items: [
-        {
-            caption: "Filter by ...",
-            uri: "#"
-        }
-    ]
-};
-
-org.systemsbiology.pages.apis.menus.GetMenuHtml = function(data, menu_style, menu_id) {
-    data.menu_style = menu_style;
-    data.menu_id = menu_id;
-
-    var tpl = new Ext.XTemplate(
-        '<li id="{menu_id}">' +
-        '<tpl if="cls==\'\'"><a href="#">{caption}</a></tpl>' +
-        '<tpl if="cls"><a href="#" class="{cls}">{caption}</a></tpl>' +
-            '<tpl if="items">' +
-            '<ul class="{menu_style}">' +
-            '<tpl for="items">' +
-                '<li><a href="index.html?URI={uri}">{caption}</a></li>' +
-            '</tpl>' +
-            '</ul>' +
-        '</tpl>' +
-        '</li>'
-    );
-
-    return tpl.apply(data);
+    Ext.DomHelper.append("ul-containermenu", new Ext.XTemplate(tpl).apply(menuSpec));
+    $('#ul-containermenu').xBreadcrumbs();
 };
