@@ -44,47 +44,44 @@
                 }
             }
 
-            function ShowLoadedJson(o) {
-                var json = Ext.util.JSON.decode(o.responseText);
-                if (json.items) {
-                    var html = "";
-                    Ext.each(json.items, function(item) {
-                        html += '<li><a href="' + document.location + '?URI=' + item.uri + '">' + item.label + '</a></li>';
-                    });
-
-                    var menus = [
-                        {el: "li-homemenu",spec: org.systemsbiology.pages.apis.menus.homemenu},
-                        {el: "li-viewmenu", spec: org.systemsbiology.pages.apis.menus.viewmenu},
-                        {el: "li-filtermenu", spec: org.systemsbiology.pages.apis.menus.filtermenu}
-                    ];
-
-                    Ext.each(menus, function(item) {
-                        if (Ext.getDom(item.el) === null) {
-                            var menu_html = org.systemsbiology.pages.apis.menus.GetMenuHtml(item.spec, item.el);
-                            Ext.DomHelper.append("ul-containermenu", menu_html);
-                        }
-                    });
-
-                    $('#ul-containermenu').xBreadcrumbs();
-                    Ext.getDom("c_label").innerHTML = "<b>List of Configurations</b>";
-                    Ext.getDom("c_parentContainer").innerHTML = "<ul>" + html + "</ul>";
-                } else {
-                    Ext.getDom("c_label").innerHTML = "<b>" + (json.title ? json.title : "Untitled") + "</b>";
-                    Ext.get("c_notes").show();
-                    org.systemsbiology.pages.apis.containers.LoadConfiguration(json, "c_parentContainer");
-                }
+            function LoadMenus() {
+                org.systemsbiology.pages.apis.menus.AddMenu({ label: "Home", uri: "/index.html" });
+                org.systemsbiology.pages.apis.menus.AddMenu({ label: "View", items: [ { label: "Add tool", uri: "#" } ] });
+                org.systemsbiology.pages.apis.menus.AddMenu({ label: "Filter", items: [ { label: "Filter by...", uri: "#" } ] });
             }
 
-            function LoadData() {
+            function LoadPagesMenu() {
+                Ext.Ajax.request({
+                    url: "/configs/all.json",
+                    method: "GET",
+                    success: function(o) {
+                        var json = Ext.util.JSON.decode(o.responseText);
+                        if (json && json.items) {
+                            org.systemsbiology.pages.apis.menus.AddMenu({ label: "Pages", items: json.items });
+                        }
+                    }
+                });
+            }
+
+            function LoadSelectedPage() {
                 var url = get_parameter("URI");
                 if (url) {
-                    Ext.Ajax.request({ url: url, method: "GET", success: ShowLoadedJson });
-                } else {
-                    Ext.Ajax.request({ url: "/configs/all.json", method: "GET", success: ShowLoadedJson });
+                    Ext.Ajax.request({
+                        url: url,
+                        method: "GET",
+                        success: function(o) {
+                            var json = Ext.util.JSON.decode(o.responseText);
+                            Ext.getDom("c_label").innerHTML = "<b>" + (json.title ? json.title : "Untitled") + "</b>";
+                            Ext.get("c_notes").show();
+                            org.systemsbiology.pages.apis.containers.LoadConfiguration(json, "c_parentContainer");
+                        }
+                    });
                 }
             }
-            
-            Ext.onReady(LoadData);
+
+            Ext.onReady(LoadMenus);
+            Ext.onReady(LoadPagesMenu);
+            Ext.onReady(LoadSelectedPage);
         </script>
     </head>
     <body>
