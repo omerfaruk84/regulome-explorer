@@ -55,6 +55,7 @@ label_map['CLIN'] = 'Clinical';
 label_map['MIRN'] = 'microRNA';
 label_map['GNAB'] = 'Gene Aberration';
 label_map['SAMP'] = 'Tumor Sample';
+label_map['PRDM'] = 'Paradigm Feature';
 
 /*
         Window handles
