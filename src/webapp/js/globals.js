@@ -6,6 +6,8 @@ globals.js
 Import this before MVC scripts.
  */
 
+var re = {};
+
 /*
 * Chromosome label list.
 *       Object consists of fields:

@@ -150,7 +150,7 @@ function getFilterSelections() {
             Ext.getCmp('f2_chr_stop').getValue(),
 
             Ext.getCmp('min_importance').getValue(),
-            Ext.getCmp('min_correlation').getValue(),
+            Ext.getCmp('correlation').getValue(),
 
             Ext.getCmp('order_combo').getValue(),
             Ext.getCmp('limit_combo').getValue(),
@@ -186,7 +186,7 @@ function resetFormPanel() {
             Ext.getCmp('f2_chr_stop').reset(),
             Ext.getCmp('min_importance').reset(),
             Ext.getCmp('max_pvalue').reset(),
-            Ext.getCmp('min_correlation').reset(),
+            Ext.getCmp('correlation').reset(),
             Ext.getCmp('order_combo').reset(),
             Ext.getCmp('limit_combo').reset()
 }
@@ -909,71 +909,13 @@ Ext.onReady(function() {
                                             fieldLabel : 'pvalue <=',
                                             value : 0.5
                                         },
-                                        {
-                        xtype : 'compositefield',
-                        anchor: '-20',
-                        msgTarget: 'side',
-                        fieldLabel: 'Correlation',
-                        items : [
-                            {
-                                //the width of this field in the HBox layout is set directly
-                                //the other 2 items are given flex: 1, so will share the rest of the space
-                                width:          50,
-                                id:'correlation_fn',
-                                name :'correlation_fn',
-                                xtype:          'combo',
-                                mode:           'local',
-                                value:          'Abs',
-                                triggerAction:  'all',
-                                forceSelection: true,
-                                editable:       false,
-                                fieldLabel:     'Fn',
-                                displayField:   'name',
-                                valueField:     'value',
-                                store:          new Ext.data.JsonStore({
-                                    fields : ['name', 'value'],
-                                    data   : [
-                                        {name : '>=',   value: '>='},
-                                        {name : '<=',  value: '<='},
-                                        {name : 'Abs', value: 'Abs'},
-                    {name : 'Btw', value: 'Btw'}
-                                    ]
-                                }),
-                                 listeners: {
-                                            render: function(c) {
-                                                Ext.QuickTips.register({
-                                                target: c,
-                                                title: '',
-                                                text: 'Implies if corr value (x)=.5, Abs is a filtering of (x >= .5 OR x <= -.5) <br>Btw is a filtering of (x >= -.5 AND x <= .5)'
-                                            });
-                                                }
-                                          }
-                            },
-                            {xtype : 'numberfield',
-                                            id:'min_correlation',
-                                            name :'min_correlation',
-                                            allowNegative: true,
-                                            decimalPrecision : 2,
-                                            emptyText : 'Input value...',
-                                            invalidText:'This value is not valid.',
-                                            minValue:-1.0,
-                                            maxValue:1.0,
-                                            width: 40,
-                                            tabIndex : 1,
-                                            validateOnBlur : true,
-                                            fieldLabel : 'Range(Corr)',
-                                            value : 0.1,
-                                            listeners: {
-                                            render: function(c) {
-                                                Ext.QuickTips.register({
-                                                target: c,
-                                                title: '',
-                                                text: 'Numeric field with 2 decimal precision'
-                                            });
-                                                }
-                                          }
-                          }
-            ]},
+                                       new re.multirangeField(
+                                            {id:'correlation',
+                                             label: 'Correlation',
+                                             default_value: 0,
+                                                min_value: -1,
+                                                max_value: 1}
+                                        ),
                                         { xtype:'combo', name:'order_combo',id:'order_combo',
                                             mode:'local',
                                             allowBlank : true,
