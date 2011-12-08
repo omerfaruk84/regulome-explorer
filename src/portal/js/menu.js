@@ -34,14 +34,16 @@ $(function() {
         </tr>\
     </table>\
     </div>    \
-    <div class="title" style="position: absolute; top: 0; left: 0;">\
-        <a href="/">\
-        <img border="0" src="/images/icons/circle_logo.png" style="height: 26px; vertical-align: top;">Regulome Explorer</a>\
-    </div>\
     <div class="green-dots-container">   \
         <div class="green-dots">   \
             <img border="0" src="/images/icons/green.png" style="height: 26px;">            \
         </div>\
+    </div>\
+    </div>\
+    <div id = "top">\
+    <div class="title">\
+        <a href="/">\
+        <img border="0" src="/images/icons/circle_logo.png" style="height: 46px; vertical-align:middle; margin-right:10px">Regulome Explorer</a>\
     </div>\
     </div>';
 	$("#everything").prepend(masthead);
