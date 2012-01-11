@@ -22,10 +22,7 @@ function registerLayoutListeners() {
         details_window_mask.hide();
     });
     d.addListener('data_ready','annotations',function(obj){
-        checkDatasetURL();
-        if(Ext.getCmp('dataset_grid').getSelectionModel().getSelected() === undefined)
-                Ext.getCmp('dataset_grid').getSelectionModel().selectFirstRow();
-                loadSelectedDataset();
+        loadDataset();
      });
     d.addListener('render_complete','circvis',function(circvis_plot){
        exposeCirclePlot();
@@ -45,6 +42,10 @@ function registerLayoutListeners() {
 /*
 URL-based Form manipulation
  */
+
+window.onpopstate = function(event) {
+       loadDataset();
+};
 
 function extractURL() {
     var json = null;
@@ -291,6 +292,13 @@ function loadDataTableStore(data) {
 loadSelectedDataset
     should dispatch an event after validating dataset selection
  */
+
+function loadDataset() {
+        checkDatasetURL();
+        if(Ext.getCmp('dataset_grid').getSelectionModel().getSelected() === undefined)
+                Ext.getCmp('dataset_grid').getSelectionModel().selectFirstRow();
+                loadSelectedDataset();
+}
 
 function selectDatasetByLabel(label)  {
 var record_index = Ext.StoreMgr.get('dataset_grid_store').find('label',label);
