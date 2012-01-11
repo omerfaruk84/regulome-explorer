@@ -28,8 +28,7 @@ function registerLayoutListeners() {
        exposeCirclePlot();
     });
     d.addListener('data_ready','associations',function(data) {
-        loadDataTableStore(data);
-        displayFormURL();
+        loadDataTableStore(data);       
     });
      d.addListener('render_complete','linear',function(linear){
        exposeLinearPlot();
@@ -92,12 +91,8 @@ function extractURL() {
         var completePath = getURI() + '?' + Ext.urlEncode(generateStateJSON());
         return completePath;
     }
-    function clearBrowserURL() {
-    //window.location.href = getURI()+'#';
-    }
 
-    function displayFormURL() {
-        //window.location.href = generateURL() + '#';
+    function preserveState() {
         window.history.pushState(generateStateJSON(), '','?' + Ext.urlEncode(generateStateJSON()));
     }
 
@@ -169,6 +164,12 @@ function openBrowserTab(url) {
 /*
         Filters
  */
+
+function manualFilterRequest() {
+    preserveState();
+    requestFilteredData();
+}
+
 function requestFilteredData() {
          vq.events.Dispatcher.dispatch(new vq.events.Event('data_request','associations',getFilterSelections()));
          prepareVisPanels();
@@ -683,7 +684,7 @@ Ext.onReady(function() {
                                     formBind : true,
                                     listeners : {
                                         click : function(button,e) {
-                                            requestFilteredData();
+                                            manualFilterRequest();
                                         }
                                     }
                                 },
