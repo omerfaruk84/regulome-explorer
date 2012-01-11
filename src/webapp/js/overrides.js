@@ -75,3 +75,29 @@ re.multirangeField = Ext.extend(Ext.form.CompositeField, {
         re.multirangeField.superclass.constructor.call(this, config);
     }
 });
+
+  Ext.override(Ext.form.ComboBox, {
+        setValue: function(v, fireSelect) {
+            var text = v;
+            if (this.valueField) {
+                var r = this.findRecord(this.valueField, v);
+                if (r) {
+                    text = r.data[this.displayField];
+                    if (fireSelect) {
+                        var index = this.store.indexOf(r);
+                        this.selectedIndex = index;
+                        this.fireEvent('select', this, r, index);
+                    }
+                } else if (Ext.isDefined(this.valueNotFoundText)) {
+                    text = this.valueNotFoundText;
+                }
+            }
+            this.lastSelectionText = text;
+            if (this.hiddenField) {
+                this.hiddenField.value = v;
+            }
+            Ext.form.ComboBox.superclass.setValue.call(this, text);
+            this.value = v;
+            return this;
+        }
+    });
