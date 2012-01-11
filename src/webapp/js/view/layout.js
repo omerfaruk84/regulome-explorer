@@ -1,5 +1,5 @@
 
-
+var once_loaded = false;
 function registerLayoutListeners() {
      var d = vq.events.Dispatcher;
     d.addListener('data_ready','dataset_labels',function(obj){
@@ -7,6 +7,7 @@ function registerLayoutListeners() {
          resetFormPanel();
         checkFormURL();
         requestFilteredData();
+        once_loaded=true;
     });
     d.addListener( 'load_fail','associations',function(obj){
         network_mask.hide();
@@ -43,7 +44,7 @@ URL-based Form manipulation
  */
 
 window.onpopstate = function(event) {
-       loadDataset();
+    if (once_loaded) loadDataset();
 };
 
 function extractURL() {
@@ -317,13 +318,17 @@ function getSelectedDatasetLabel() {
     return selected_dataset;
 }
 
+function manualLoadSelectedDataset() {
+         preserveState();
+        loadSelectedDataset();
+}
+
 function loadSelectedDataset() {
     var selected_dataset = getSelectedDatasetLabel();
     if (selected_dataset != '') {
         vq.events.Dispatcher.dispatch(new vq.events.Event('dataset_selected','dataset_grid',selected_dataset));
         hideDatasetWindow();
         Ext.getCmp('filters').setTitle( 'Filtering ' + selected_dataset);
-//        loadDataset(selected_json);
     } else {
         Ext.MessageBox.alert('Dataset not selected','Select a dataset to load.');
     }
@@ -1232,7 +1237,7 @@ export_window = new Ext.Window( {
                                 },
                             bbar:[{
                                text:'Load',
-                              handler: loadSelectedDataset
+                              handler: manualLoadSelectedDataset
                           },
                               {text:'Cancel',
                                   handler: hideDatasetWindow
