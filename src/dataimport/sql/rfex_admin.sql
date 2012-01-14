@@ -2,7 +2,7 @@ CREATE TABLE `tcga`.`regulome_explorer_dataset`
 (
    label varchar(40) PRIMARY KEY NOT NULL,
    method varchar(100),
-   source varchar(100) DEFAULT TCGA,
+   source varchar(100) DEFAULT 'TCGA',
    contact varchar(50),
    comments longtext,
    pvalue_cutoff double,
