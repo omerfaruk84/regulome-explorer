@@ -1,26 +1,4 @@
 
-var base_query_url = '',
-    csacr_base_query_uri = '/google-dsapi-svc/addama/datasources/csacr',
-    tcga_base_query_uri = '/google-dsapi-svc/addama/datasources/tcga',
-    dataset_table = '/regulome_explorer_dataset/query';
-
-var query_uri = '/query',
-    json_out_param='&tqx=out:json_array';
-query_param='?tq=';
-parsed_data = {network : null,unlocated : null,features : null,unlocated_features:null,located_features:null},
-    responses = {network : null},
-    features = {data : null},
-    cancer = {sv : null},
-    dataset_labels,
-    current_data = '';
-network_query ='',
-    network_uri = '',
-    feature_uri ='',
-    clin_uri ='',
-    patient_uri =  '',
-    pathway_uri = '',
-    feature_data_uri =  '/clinical_correlates_0817/query';
-
 function registerDataRetrievalListeners() {
     var d = vq.events.Dispatcher;
     d.addListener('dataset_selected',function(obj){
@@ -28,119 +6,204 @@ function registerDataRetrievalListeners() {
         loadDatasetLabels();
     });
     d.addListener('data_request','associations',function(obj){
-        loadNetworkData(obj.filter);
+        loadNetworkData(obj);
+    });
+    d.addListener('data_request','label_position', function(obj){
+        lookupLabelPosition(obj);
     });
     d.addListener('data_request','annotations', function(obj){
         loadAnnotations();
     });
-    d.addListener('data_request','filtered_features',function(obj) {
-        loadFeatureData(obj.filter);
+    d.addListener('click_association',function(link) {
+        loadFeatureData(link);
     });
 }
 
 function selectDataset(set_label) {
-    current_data = set_label;
-    network_uri = '/'+set_label+'/query';
-    //feature_uri = '/v_clinical_tumor_aggressiveness/query';
-    clin_uri = '/' +set_label + '_clinical_features/query';
-    tumor_uri =  '/brca_pairwise_clinical_associations_0924/query';
-    feature_data_uri =  '/' +set_label + '/query';
-    pathway_uri = '/' + set_label + '_feature_pathways/query';
+    re.tables.current_data = set_label;
+    re.tables.network_uri = '/mv_'+set_label+'_feature_networks';
+    re.tables.feature_uri = '/v_'+set_label+'_feature_sources';
+    re.tables.clin_uri = '/v_'+set_label+'_feature_clinlabel';
+    re.tables.patient_uri =  '/v_'+set_label+'_patients';
+    re.tables.feature_data_uri =  '/v_' + set_label + '_patient_values';
+    re.tables.pathway_uri = '/' + set_label + '_feature_pathways';
 }
-
-
 
 function loadDatasetLabels() {
 
-    function loadFailed() {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','dataset_labels',{msg:'Retrieval Timeout'}));
-    }
-
-    var dataset_labels = {feature_sources : null, clin_labels : null};
-    var clin_label_query_str = query_param + 'select `label`' + json_out_param;
-    var clin_label_query = base_query_url + tcga_base_query_uri + clin_uri+clin_label_query_str;
+    var dataset_labels = {feature_sources : null, clin_labels : null, patients: null};
+    var clin_label_query_str = '?' + re.params.query + 'select `label`' + re.params.json_out;
+    var clin_label_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.clin_uri + re.rest.query +clin_label_query_str;
+    var timer = new vq.utils.SyncDatasources(200,40,loadComplete,dataset_labels,loadFailed);
 
     function clinicalLabelQueryHandler(response) {
-        dataset_labels['clin_labels'] = Ext.decode(response.responseText);
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','dataset_labels',dataset_labels));
+        try {  
+            dataset_labels['clin_labels'] = Ext.decode(response.responseText);        
+        } catch (err) {
+            throwQueryError('clin_labels',response);
+        }          
     }
 
-    function queryFailed(response) {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','dataset_labels',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
+    function loadComplete() {
+          vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','dataset_labels',dataset_labels));
+      }
+
+      function loadFailed() {
+          vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','dataset_labels',{msg:'Failed to load dataset labels.'}));
+      }
+
+    Ext.Ajax.request({url:clin_label_query,success:clinicalLabelQueryHandler, failure: function(response) { queryFailed('dataset_labels',response);}});
+
+    var sources_query_str = '?' + re.params.query + 'select source' + re.params.json_out;
+    var sources_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.feature_uri + re.rest.query + sources_query_str;
+
+    function featureSourceQueryHandler(response) {
+        try {          
+            dataset_labels['feature_sources'] = Ext.decode(response.responseText);        
+        } catch (err) {
+            throwQueryError('feature_sources',response);
+        }          
     }
 
-    Ext.Ajax.request({url:clin_label_query,success:clinicalLabelQueryHandler,failure: queryFailed});
+    Ext.Ajax.request({url:sources_query,success:featureSourceQueryHandler, failure: function(response) { queryFailed('feature_source',response); }});
 
-//    var sources_query_str = query_param + 'select source' + json_out_param;
-//    var sources_query = base_query_url + tcga_base_query_uri + feature_uri + sources_query_str;
-//
-//    function featureSourceQueryHandler(response) {
-//        dataset_labels['feature_sources'] = Ext.decode(response.responseText);
-//    }
-//
-//    Ext.Ajax.request({url:sources_query,success:featureSourceQueryHandler,failure: queryFailed});
+    var patient_query_str = '?' + re.params.query + 'limit 1'+re.params.json_out;
+    var patient_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.patient_uri + re.rest.query +patient_query_str;
 
+    function patientQueryHandle(response) {
+          try {          
+            dataset_labels['patients'] = Ext.decode(response.responseText)[0]['barcode'].split(':');    
+        } catch (err) {
+            throwQueryError('patients_barcode',response);
+        }                 
+    }
+
+    timer.start_poll();
+    Ext.Ajax.request({url:patient_query,success:patientQueryHandle, failure: function(response) { queryFailed('patient_labels',response); }});
 
 }
 
-function loadFeatureData(query_params) {
+function lookupLabelPosition(label_obj) {
+    var label = label_obj.label || '';
+    var query_str = 'select chr, start, end, alias where alias = \'' + label + '\' limit 1';
+    var position_query_str = '?' + re.params.query + query_str + re.params.json_out;
+    var position_url = re.databases.base_uri  + re.databases.metadata.uri + re.tables.label_lookup + re.rest.query + position_query_str;
+    var  position_array = [];
+
+    function positionQueryHandle(response) {
+        try {
+            position_array = Ext.decode(response.responseText);
+            if (position_array.length ==1) {
+                loadComplete();
+            }
+            else{
+                noResults('label_position');
+            }
+        } 
+        catch (err) {
+            throwQueryError('label_position',response);
+        }
+    }
 
     function loadComplete() {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','filtered_features',features));
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','label_position',vq.utils.VisUtils.extend({feature:position_array[0]},label_obj)));
+    }
+
+    function loadFailed() {
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','label_position',{msg:'Retrieval Timeout'}));
+    }
+
+    Ext.Ajax.request({url:position_url,success:positionQueryHandle,failure: function(response) { queryFailed('label_position',response); }});
+
+}
+
+function loadFeatureData(link) {
+
+    var patients = {data : null};
+    var query_str = 'select f1alias, f1values, f2alias, f2values ' +
+        'where f1alias  = \'' + link.sourceNode.id + '\' and f2alias = \'' + link.targetNode.id + '\' limit 1';
+        var query_json = { tq : query_str, tqx : 'out:json_array'};
+    var patient_query_str = '?' + Ext.urlEncode(query_json);
+    var patient_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.feature_data_uri + re.rest.query + patient_query_str;
+
+    function patientQueryHandle(response) {
+        try {
+        patients['data'] = Ext.decode(response.responseText);
+        if (patients['data'].length ==1) {
+            loadComplete();
+        }
+        else {
+            noResults('features');
+        }
+    } 
+    catch (err) {
+        throwQueryError('features',response);
+    }
+    }
+
+    function loadComplete() {
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','features',patients));
     }
 
     function loadFailed() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','features',{msg:'Retrieval Timeout'}));
     }
-
-    var features = {data : null,filter : query_params};
-    var query_str = buildGQLFeatureQuery(query_params)
-
-    var feature_query_str = query_param + query_str + json_out_param;
-    var feature_query = base_query_url + tcga_base_query_uri + feature_data_uri + feature_query_str;
-
-    function featureQueryHandle(response) {
-        features['data'] = Ext.decode(response.responseText);
-        loadComplete();
-    }
-
-    function queryFailed(response) {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','features',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
-    }
-    Ext.Ajax.request({url:feature_query,success:featureQueryHandle,failure: queryFailed});
+    Ext.Ajax.request({url:patient_query,success:patientQueryHandle,failure: function(response) { queryFailed('features',response); }});
 
 }
 
 function loadAnnotations() {
 
+    var annotations = {'chrom_leng': null};
+    var chrom_query_str = '?' + re.params.query + ('select chr_name, chr_length') + re.params.json_out;
+    var chrom_query = re.databases.base_uri + re.databases.metadata.uri + re.tables.chrom_info +  re.rest.query+ chrom_query_str;
+
+    function handleChromInfoQuery(response) {
+        try {
+            annotations['chrom_leng'] = Ext.decode(response.responseText);
+              if (annotations['chrom_leng'].length >=1) {
+                  loadComplete();
+               }
+              else{
+                noResults('annotations');
+             }
+            
+            } 
+        catch (err) {
+                throwQueryError('annotations',response);
+            }
+        }
+      
     function loadComplete() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','annotations',annotations));
     }
-
     function loadFailed() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','annotations',{msg:'Retrieval Timeout'}));
     }
-    var annotations = {'chrom_leng': null};
 
-    var chrom_query_str = query_param + ('select chr_name, chr_length') + json_out_param;
-    var chrom_query = base_query_url + csacr_base_query_uri + '/chrom_info' + query_uri+ chrom_query_str;
-
-    function handleChromInfoQuery(response) {
-        annotations['chrom_leng'] = Ext.decode(response.responseText);
-        loadComplete();
-    }
-    function queryFailed(response) {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','annotations',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
-    }
-
-    Ext.Ajax.request({url:chrom_query,success:handleChromInfoQuery,failure: queryFailed});
+    Ext.Ajax.request({url:chrom_query,success:handleChromInfoQuery,failure: function(response) { queryFailed('annotations',response); }});
 }
 
 /*
  not very good yet.  move json_array responsibility to server.. stop running cascading timers!
  */
 
-function loadNetworkData(query_params) {
+function loadNetworkData(response) {
+    switch(response['filter_type']){
+        case(re.ui.feature1.id):
+        case(re.ui.feature2.id):
+            loadNetworkDataByFeature(response)
+            break;
+        case('association'):
+        default:
+            loadNetworkDataByAssociation(response);
+    }
+}
+
+function loadNetworkDataByFeature(params) {
+    var feature = params['filter_type'] == re.ui.feature1.id ? 't' : 'p';
+    var labels = parseLabelList(params[feature + '_label']);
+
     function loadComplete() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','associations', responses));
     }
@@ -149,170 +212,264 @@ function loadNetworkData(query_params) {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','associations',{msg:'Retrieval Timeout'}));
     }
 
-    var responses = {network : null, params:query_params};
-
-    var network_query=buildGQLNetworkQuery(query_params);
+    var responses = [];
 
     function handleNetworkQuery(response) {
-        responses['network'] = Ext.decode(response.responseText);
-        loadComplete();
-    }
-    function queryFailed(response) {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','assocations',{msg:'Query Error: ' + response.status + ': ' + response.responseText}));
+        try { 
+         responses.push(Ext.decode(response.responseText));
+             if (responses.length >= labels.length) {
+                responses = pv.blend(responses);
+                if (responses.length >= 1) {
+                   loadComplete();
+                   return;
+                }
+                else {  //no matching results
+                    noResults('associations')
+                }
+            }
+            else { // haven't gathered all of the responses yet
+                return;
+            }
+        }
+        catch (err) {   //an error detected in one of the responses
+            throwQueryError('associations',response);
+        }     
     }
 
-    var association_query_str = query_param + network_query + json_out_param;
-    var association_query = base_query_url + tcga_base_query_uri + network_uri + association_query_str;
+    labels.forEach(function(label){
+        params[feature + '_label'] = label;
+        var network_query=buildGQLQuery(params);
+        var association_query_str = '?' + re.params.query + network_query + re.params.json_out;
+        var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
+        Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: function(response) { queryFailed('associations',response); }});
+    });
+    
+}
 
-    Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: queryFailed});
+function loadNetworkDataByAssociation(params) {
+
+    if (re.analysis.directed_association != undefined &&  re.analysis.directed_association == false) {
+        loadUndirectedNetworkDataByAssociation(params);
+        return;
+    }
+    else {
+        loadDirectedNetworkDataByAssociation(params);
+        return;
+    }
+}
+
+    function  loadDirectedNetworkDataByAssociation(params) {
+
+    var responses = [];
+
+    re.state.network_query=buildGQLQuery(params);
+    var association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
+    var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
+
+    function handleNetworkQuery(response) {      
+    try {  
+        responses = Ext.decode(response.responseText);       
+          if (responses.length >=1) {
+            loadComplete();
+        }
+        else{
+            noResults('associations');
+        }
+        } catch (err) {
+            throwQueryError('associations',response);
+        }        
+    }
+
+    function loadComplete() {
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','associations', responses));
+    }
+       function loadFailed() {
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','associations',{msg:'Retrieval Timeout'}));
+    }
+
+
+    Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: function(response) { queryFailed('associations',response); }});
 
 }
+
+  function  loadUndirectedNetworkDataByAssociation(params) {
+
+    var responses = [];
+    
+    function handleNetworkQuery(response) {      
+    try {  
+        responses.push(Ext.decode(response.responseText));       
+          if (responses.length == 2) {
+            responses = pv.blend(responses);
+            if (responses.length < 1)  {
+                noResults('associations');
+            }
+            else {
+            loadComplete();
+            }       
+        }
+        } catch (err) {
+            throwQueryError('associations',response);
+        }        
+    }
+
+    function loadComplete() {
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','associations', responses));
+    }
+       function loadFailed() {
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','associations',{msg:'Retrieval Timeout'}));
+    }
+
+
+    re.state.network_query=buildGQLQuery(params);
+    var association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
+    var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
+
+    Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: function(response) { queryFailed('associations',response); }});
+
+    var flip_params = flipParams(params);
+    re.state.network_query=buildGQLQuery(flip_params);
+    association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
+    association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
+
+    Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: function(response) { queryFailed('associations',response); }});
+
+}
+
+/* Handler functions */
+    function noResults(query_type) {
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail',query_type,{msg:'No matching results found.'}));
+    }
+
+    function throwQueryError(query_type,response) {
+            var text = response.responseText;
+            var json_index = text.indexOf('(') + 1;
+            // -2 because we want to cut the ); out of the end of the message 
+            var json = Ext.decode(text.slice(json_index,-2));
+            var error = json.errors[0];
+          vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail',query_type,{msg: error.message + error.detailed_message }));
+    }
 
 /*
  Utility functions
  */
-function buildGQLNetworkQuery(args) {
-    var query = 'select alias1, alias2, num_nonna, correlation, logged_pvalue';
+
+ function flipParams(params) {
+    var temp = vq.utils.VisUtils.clone(params);
+   return vq.utils.VisUtils.extend(temp,{
+       t_type:params['p_type'],
+       p_type:params['t_type'],
+       
+       t_label:params['p_label'],
+       p_label:params['t_label'],
+
+       t_chr:params['p_chr'],
+       p_chr:params['t_chr'],
+
+       t_start:params['p_start'],
+       p_start:params['t_start'],
+
+       t_stop:params['p_stop'],
+       p_stop:params['t_stop']
+
+   });
+ };
+
+function buildGQLQuery(args) {
+    var query = 'select alias1, alias2';
+     re.model.association.types.forEach( function(obj) { 
+         query += ', ' + obj.query.id;
+     });
+
     var whst = ' where',
         where = whst;
 
-    if (args['f1_type'] != '' && args['f1_type'] != '*') {
+    if (args['t_type'] != '' && args['t_type'] != '*') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'source1 = \'' +args['f1_type']+ '\'';
+        where += 'f1source = \'' +args['t_type']+ '\'';
     }
-    if (args['f2_type'] != '' && args['f2_type'] != '*') {
+    if (args['p_type'] != '' && args['p_type'] != '*') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'source2 = \'' +args['f2_type']+ '\'';
+        where += 'f2source = \'' +args['p_type']+ '\'';
     }
-    if (args['f1_label'] != '' && args['f1_label'] != '*') {
+    if (args['t_label'] != '' && args['t_label'] != '*') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += '`label1` ' + parseLabel(args['f1_label']);
+        where += '`f1label` ' + parseLabel(args['t_label']);
     }
-    if (args['f2_label'] != '' && args['f2_label'] != '*') {
+    if (args['p_label'] != '' && args['p_label'] != '*') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += '`label2` ' + parseLabel(args['f2_label']);
+        where += '`f2label` ' + parseLabel(args['p_label']);
     }
-    if (args['f1_chr'] != '' && args['f1_chr'] != '*') {
+    if (args['t_chr'] != '' && args['t_chr'] != '*') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'chr1 = \'' +args['f1_chr']+'\'';
+        where += 'f1chr = \'' +args['t_chr']+'\'';
     }
-    if (args['f2_chr'] != '' && args['f2_chr'] != '*') {
+    if (args['p_chr'] != '' && args['p_chr'] != '*') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'chr2 = \'' +args['f2_chr']+'\'';
+        where += 'f2chr = \'' +args['p_chr']+'\'';
     }
-    if (args['f1_start'] != '') {
+    if (args['t_start'] != '') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'start2 >= ' +args['f1_start'];
+        where += 'f1start >= ' +args['t_start'];
     }
-    if (args['f2_start'] != '') {
+    if (args['p_start'] != '') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'start2 >= ' +args['f2_start'];
+        where += 'f2start >= ' +args['p_start'];
     }
-    if (args['f1_stop'] != '') {
+    if (args['t_stop'] != '') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'end1 <= ' +args['f1_stop'];
+        where += 'f1end <= ' +args['t_stop'];
     }
-    if (args['f2_stop'] != '') {
+    if (args['p_stop'] != '') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'end2 <= ' +args['f2_stop'];
+        where += 'f2end <= ' +args['p_stop'];
     }
-    if ((args['f2_start'] != '') && (args['f2_stop'] != '')) {
-        where += ' and end2 >= ' +args['f2_start'];
+    if ((args['p_start'] != '') && (args['p_stop'] != '')) {
+        where += ' and f2end >= ' +args['p_start'];
     }
-    if ((args['f1_start'] != '') && (args['f1_stop'] != '')) {
-        where += ' and end1 >= ' +args['f1_start'];
+    if ((args['t_start'] != '') && (args['t_stop'] != '')) {
+        where += ' and f1end >= ' +args['t_start'];
     }
 
-    where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('correlation',args['correlation'],args['correlation_fn']);
-    where += (where.length > whst.length ? ' and ' : ' ') + flex_field_query('logged_pvalue',args['score'], args['score_fn']);
+    re.model.association.types.forEach(function(obj) {
+        if (typeof obj.query.clause == 'function') {
+             var clause =  flex_field_query(obj.query.id,args[obj.query.id],args[obj.query.id+'_fn']);
+             where += ((clause.length < 1) ?  '' : ((where.length > whst.length ? ' and ' : ' ') + clause));
+             return;
+        }
+        if (args[obj.query.id] != '') {
+            where += (where.length > whst.length ? ' and ' : ' ');
+            where += obj.query.clause + args[obj.query.id];
+        }
+    });
+
+    // if (args['importance'] != '') {
+    //     where += (where.length > whst.length ? ' and ' : ' ');
+    //     where += 'importance >= ' +args['importance'];
+    // }
+    // if (args['pvalue'] != '') {
+    //     where += (where.length > whst.length ? ' and ' : ' ');
+    //     where += 'pvalue <= ' +args['pvalue'];
+    // }
+    // query += flex_field_query('correlation',args['correlation'],'correlation_fn');
 
     query += (where.length > whst.length ? where : '');
-    query += ' order by '+args['order'] + (args['order'] == 'logged_pvalue' ? ' ASC' : ' DESC');
+    query += ' order by '+args['order'] + ' ' + (re.model.association.types[re.model.association_map[args['order']]].query.order_direction || 'DESC');
     query += ' limit '+args['limit'];
 
     return query;
 }
 
-function buildGQLFeatureQuery(args) {
-
-    var query = 'select alias1, alias2, num_nonna, correlation, logged_pvalue ';
-
-    var whst = ' where ';
-    var where1 = ' (';
-
-    if (args['type'] != '' && args['type'] != '*') {
-        where1 += (where1.length > 2 ? ' and ' : ' ');
-        where1 += 'source1 = \'' +args['type']+ '\'';
-    }
-    if (args['label'] != '' && args['label'] != '*') {
-        where1 += (where1.length > 2 ? ' and ' : ' ');
-        where1 += '`label1` ' + parseLabel(args['label']);
-        where1 += ' and `label2` ' + parseLabel(args['clin']);
-    } else {
-        where1 += (where1.length > 2 ? ' and ' : ' ');
-        where1 += '`label2` ' + parseLabel(args['clin']);
-    }
-
-    if (args['chr'] != '' && args['chr'] != '*') {
-        where1 += (where1.length > 2 ? ' and ' : ' ');
-        where1 += 'chr1 = \'' +args['chr']+'\'';
-    }
-    if (args['start'] != '') {
-        where1 += (where1.length > 2 ? ' and ' : ' ');
-        where1 += 'start1 >= ' +args['start'];
-    }
-    if (args['stop'] != '') {
-        where1 += (where1.length > 2 ? ' and ' : ' ');
-        where1 += 'end1 <= ' +args['stop'];
-    }
-
-    if ((args['start'] != '') && (args['stop'] != '')) {
-        where1 += ' and end1 >= ' +args['start'];
-    }
-
-    var stat_where = (where1.length > 2 ? ' and ' : ' ') + flex_field_query('correlation',args['correlation'],args['correlation_fn']);
-    stat_where += (stat_where.length > 2 ? ' and ' : ' ') + flex_field_query('logged_pvalue',args['score'], args['score_fn']);
-
-    query += whst + (where1.length > 2 ?  where1 +')': '');
-    query += stat_where;
-    query += ' order by logged_pvalue DESC' + ' limit '+args['limit'];
-
-    return query;
-
-}
-
-function flex_field_query(label, value, fn) {
-    var where = '';
-    if (value != '') {
-        if (fn == 'Btw'){
-            where += '(' + label + ' >= -' +value + ' and '+ label + ' <= ' + value +')';
-        }else if (fn == '<='){
-            where += '('+ label + ' <= ' + value +')';
-        }else if (fn == '>='){
-            where += '('+ label + ' >= ' +value +')';
-        }else{
-            where += '('+ label + ' >= ' +value + ' or '+ label + ' <= -' + value +')';
-        }
-    }
-    return where;
-
-}
-
-function parseLabel(label) {
-    if (label.length > 1 && label.indexOf('*') >= 0) {
-        return 'like \'' + label.replace(new RegExp('[*]', 'g'),'%') + '\'';
-    } else {
-        return '=\'' + label + '\'';
-    }
-}
-
 /*
  Misc data/file retrieval
  */
+
 function downloadNetworkData(target_frame,output) {
     var output_label = output;
     var output_extension=output;
     if (output_label =='tsv') {output_extension=output_label;output_label='tsv-excel';}
-    target_frame.src = 'http://' + window.location.host + encodeURI(base_query_url +
-        tcga_base_query_uri + network_uri+ '?tq=' + network_query + '&tqx=out:' +output_label+';outFileName:'+current_data+'_query.'+output_extension);
+    target_frame.src = 'http://' + window.location.host + encodeURI(re.databases.base_uri +
+        re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query+ '?tq=' + re.state.network_query + '&tqx=out:' +output_label+';outFileName:'+re.tables.current_data+'_query.'+output_extension);
 }
+
+

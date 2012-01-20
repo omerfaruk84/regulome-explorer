@@ -2,21 +2,48 @@
 <head>
      <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge">
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>All Pairs Signficance Explorer</title>
+    <title>All Pairs Significance Explorer</title>
     <link rel="stylesheet" type="text/css" href="/extjs/3.4.0/resources/css/ext-all.css" />
     <link rel="stylesheet" type="text/css" href="/extjs/3.4.0/resources/css/xtheme-slate.css" />
     <link rel="stylesheet" type="text/css" href="css/icons.css" />
 
-    <script type="text/javascript" src="/extjs/3.4.0/adapter/ext/ext-base-debug.js"></script>
-    <script type="text/javascript" src="/extjs/3.4.0/ext-all-debug.js"></script>
+    <script type="text/javascript" src="/extjs/3.4.0/adapter/ext/ext-base.js"></script>
+    <script type="text/javascript" src="/extjs/3.4.0/ext-all.js"></script>
+
+     <!-- JSON support for IE (needed to use JS API) -->
+    <script type="text/javascript" src="/cytoscape_web/js/min/json2.min.js"></script>
+
+        <!-- Flash embedding utility (needed to embed Cytoscape Web) -->
+    <script type="text/javascript" src="/cytoscape_web/js/min/AC_OETags.min.js"></script>
+
+    <!-- Cytoscape Web JS API (needed to reference org.cytoscapeweb.Visualization) -->
+    <script type="text/javascript" src="/cytoscape_web/js/min/cytoscapeweb.min.js"></script>
+    
+    <!-- intial setup -->
+    <script type="text/javascript" src="js/namespace.js"></script>
+    <script type="text/javascript" src="js/overrides.js"></script>
+    <script type="text/javascript" src="js/utils.js"></script>
 
 
-  <script type="text/javascript" src="/js/visquick/data/cytoband.hg18.json"></script>
+    <!-- Karyotype data -->
+    <script type="text/javascript" src="/js/visquick/data/cytoband.hg18.json"></script>
+
+    <!-- Protovis library -->
     <script type="text/javascript" src="/js/protovis/protovis-r3.3.1.js"></script>
+    <!-- Visquick core library -->
     <script type="text/javascript" src="/js/visquick/vq.min.js"></script>
+    <!-- Visquick linear browser  -->
     <script type="text/javascript" src="/js/visquick/vq.linear_browser.min.js"></script>
+    <!-- Visquick scatterplot  -->
+    <script type="text/javascript" src="/js/visquick/vq.scatterplot.min.js"></script>
+    <!-- Visquick violinplot  -->
+    <script type="text/javascript" src="/js/visquick/vq.violinplot.min.js"></script>
+    <!-- Visquick circvis -->
     <script type="text/javascript" src="/js/visquick/vq.circvis.min.js"></script>
-
+    <!-- Visquick cubbyhole   -->
+    <script type="text/javascript" src="/js/visquick/vq.cubbyhole.min.js"></script>
+    
+    <script type="text/javascript" src="js/model/association.js"></script>
     <script type="text/javascript" src="js/globals.js"></script>
     <script type="text/javascript" src="js/controller/data_retrieval.js"></script>
     <script type="text/javascript" src="js/controller/data_plot.js"></script>
