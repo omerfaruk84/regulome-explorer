@@ -6,6 +6,7 @@
  if (re === undefined) { re = {};}
 
 vq.utils.VisUtils.extend(re, {
+
         title : 'All Pairs Significance Explorer',
         
     analysis : {
@@ -71,6 +72,7 @@ vq.utils.VisUtils.extend(re, {
                     hidden : false
                 },
                 pairwise_scores : {
+                    value_field : re.model.association.types[0].query.id,
                     hidden : false
                 }
             },
@@ -107,6 +109,7 @@ vq.utils.VisUtils.extend(re, {
         flashInstallerPath : "/cytoscape_web/swf/playerProductInstall"
     },
 
+
     plot: {
         locatable_source_list : ['GEXP','METH','CNVR','MIRN','GNAB','RPPA'],
         unlocatable_source_list : ['CLIN','SAMP','PRDM'],
@@ -126,7 +129,10 @@ vq.utils.VisUtils.extend(re, {
 
         scatterplot_data : null
     },
-    ui: {
+    ui: {        
+        filters: {
+            single_feature : true  
+        },
         chromosomes:  [],
         dataset_labels: [],
         getDatasetLabels : function () { return re.ui.dataset_labels;},
@@ -191,9 +197,9 @@ vq.utils.VisUtils.extend(re, {
         'GNAB' : 'Gene Aberration',
         'SAMP' : 'Tumor Sample',
         'PRDM' : 'Paradigm Feature',
-        'RPPA'  : 'Reverse Phase Protein Array'
+        'RPPA'  : 'RPPA'
     };
-     re.plot.all_source_list = re.plot.locatable_source_list.concat(re.plot.unlocatable_source_list);
+     re.plot.all_source_list = pv.blend([re.plot.locatable_source_list,re.plot.unlocatable_source_list]);
      re.plot.all_source_map = pv.numerate(re.plot.all_source_list);
      re.plot.locatable_source_map = pv.numerate(re.plot.locatable_source_list);
 
@@ -203,7 +209,7 @@ vq.utils.VisUtils.extend(re, {
      re.model.association.types.forEach(function(obj) { 
         re.ui.order_list.push({value:obj.id,label:obj.label});
      });
-     
+
      if (re.analysis.directed_association) {
          re.ui.feature1 = {label : 'Target', id :'target'};
          re.ui.feature2 = {label : 'Predictor', id : 'predictor'};

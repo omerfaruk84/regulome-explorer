@@ -3,27 +3,28 @@ if (re.model === undefined) re.model = {};
 re.model.association =  {
 	types : [
 		{ 	id : 'logged_pvalue',
-			label : 'log(p)',
+			label : 'log10(p)',
 			ui : {
 			filter : { 
 				 					component: {
 					 							xtype : 'numberfield',
                                                 id:'logged_pvalue',
                                                 name :'logged_pvalue',
-                                                allowNegative: false,
-                                                decimalPrecision : 8,
+                                                allowNegative: true,
+                                                decimalPrecision : 0,
                                                 emptyText : 'Input value...',
                                                 invalidText:'This value is not valid.',
-                                                maxValue:0.9,
-                                                minValue:0,
+                                                maxValue:0,
+                                                minValue:-300.0,
                                                 tabIndex : 1,
                                                 validateOnBlur : true,
-                                                fieldLabel : 'log(p) <=',
-                                                value : 0.5
+                                                fieldLabel : 'log10(p) <=',
+                                                defaultValue: -2,
+                                                value : -2
                                             }
 			},
 			grid : {
-				column : { header : "log(p)", width : 50 , id: 'logged_pvalue' , dataIndex : 'logged_pvalue', hidden: true},
+				column : { header : "log10(p)", width : 50 , id: 'logged_pvalue' , dataIndex : 'logged_pvalue', hidden: true},
 				store_index : 'logged_pvalue'
 			}
 			},
@@ -38,7 +39,14 @@ re.model.association =  {
 				},
 				tooltip : {
 					entry : { 'log(p)' : 'logged_pvalue' }
-				}
+				},
+                scatterplot: {
+                    values: {
+                        min:-300,
+                        floor : -50,
+                        ceil: 0
+                    }
+                }
 			}	
 		},
 		{ 	id : 'num_nonna',
@@ -57,6 +65,7 @@ re.model.association =  {
                                                 tabIndex : 1,
                                                 validateOnBlur : true,
                                                 fieldLabel : '# of non-NA >=',
+                                                defaultValue: 0,
                                                 value : 0
                                            }
 			},
@@ -76,7 +85,8 @@ re.model.association =  {
 				},
 				tooltip : {
 					entry : { ' # of non-NA' : 'num_nonna'}
-				}
+				},
+                scatterplot: {}
 			}	
 		},
 		{ 	id : 'correlation',
@@ -107,7 +117,8 @@ re.model.association =  {
 				},
 				tooltip : {
 					entry : {  Correlation : 'correlation',}
-				}
+				},
+                scatterplot: {}
 			}	
 		}
 	]

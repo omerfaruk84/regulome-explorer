@@ -7,6 +7,11 @@ function registerPlotListeners() {
         renderCircleData(data);
         renderCircleLegend();
     });
+         d.addListener('data_ready','sf_associations',function(data) {
+        if (re.state.query_cancel) { return;}
+        renderSFCircleData(data);
+        renderCircleLegend('top-right');
+    });
     d.addListener( 'data_ready','graph',function(data) {
         var obj = {
         network : data,
@@ -114,14 +119,18 @@ function generateColorMaps(dataset_labels) {
     re.plot.colors.link_sources_colors = function(link) { return re.plot.link_sources_array[current_map[link[0]] * current_data.length + current_map[link[1]]];}
 }
 
-function renderCircleLegend() {
-    legend_draw(document.getElementById('circle-legend-panel'));
+function renderCircleLegend(anchor) {
+    legend_draw(document.getElementById('circle-legend-panel'),anchor);
 }
-function renderLinearLegend() {
+function renderLinearLegend(anchor) {
     legend_draw(document.getElementById('linear-legend-panel'));
 }
 function renderCircleData(data) {
     wedge_plot(data, document.getElementById('circle-panel'));
+}
+
+function renderSFCircleData(data) {
+    singlefeature_circvis(data, document.getElementById('circle-panel'));
 }
 
 function renderLinearData(obj) {
@@ -143,20 +152,38 @@ function initiateDetailsPopup(link) {
 }
 
 function legend_draw(div) {
+
     var dataset_labels = re.ui.getDatasetLabels();
-    var source_map = pv.numerate(dataset_labels['feature_sources'], function(row) {return row.source;});
-    var current_locatable_data = re.plot.locatable_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
-    var current_data = re.plot.all_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
-    var current_map = pv.numerate(current_data);
+        var source_map = pv.numerate(dataset_labels['feature_sources'], function(row) {return row.source;});
+        var current_locatable_data = re.plot.locatable_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
+        var current_data = re.plot.all_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
+        var current_map = pv.numerate(current_data);
+
+       var anchor = 'top-right';
+    var width=800, height=800;
+    var top = 20, left = 0;
+    var legend_height = (30 + current_data.length * 13), legend_width = 150;;
+
+    if (arguments[1] != undefined) {anchor = arguments[1];}
+    switch(anchor) {
+        case('center'):
+            top = (height / 2) - (legend_height / 2);
+            left = (width / 2) - (legend_width / 2);
+        break;
+        case('top-right'):
+        default:
+        break;
+    }
+
 
     re.plot.colors.node_colors = function(source) { return re.plot.colors.source_color_scale(current_map[source]);};
     re.plot.colors.link_sources_colors = function(link) { return re.plot.link_sources_array[current_map[link[0]] * current_data.length + current_map[link[1]]];}
 
     var vis= new pv.Panel()
-        .width(150)
-        .height(90 + current_data.length * 13)
-        .left(0)
-        .top(20)
+        .width(legend_width)
+        .height(legend_height)
+        .left(left)
+        .top(top)
         .lineWidth(1)
         .strokeStyle('black')
         .canvas(div);
@@ -228,6 +255,175 @@ function legend_draw(div) {
 }
 
 
+function singlefeature_circvis(parsed_data,div) {
+    var width=800, height=800;
+    var ring_radius = width / 10;
+    var chrom_keys = ["1","2","3","4","5","6","7","8","9","10",
+        "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"];
+    var stroke_style = re.plot.colors.getStrokeStyleAttribute();
+
+    function genome_listener(chr) {
+        var e = new vq.events.Event('render_linearbrowser','circvis',{data:vq.utils.VisUtils.clone(parsed_data),chr:chr});
+        e.dispatch();
+    }
+
+    function wedge_listener(feature) {
+        var chr = feature.chr;
+        var start = bpToMb(feature.start) - 2.5;
+        var range_length = bpToMb(feature.end) - start + 2.5;
+        var e = new vq.events.Event('render_linearbrowser','circvis',{data:vq.utils.VisUtils.clone(parsed_data),chr:chr,start:start,range:range_length});
+        e.dispatch();
+    }
+
+    var ucsc_genome_url = 'http://genome.ucsc.edu/cgi-bin/hgTracks';
+ 
+    var karyotype_tooltip_items = {
+        'Karyotype Label' : function(feature) { return  vq.utils.VisUtils.options_map(feature)['label'];},
+        Location :  function(feature) { return 'Chr' + feature.chr + ' ' + feature.start + '-' + feature.end;}
+    },       
+    scatterplot_tooltips =  {Feature : function(node) { return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
+                    '-' + node.end + ' ' + node.label_mod;}
+                    };
+      
+    re.model.association.types.forEach( function(assoc) { 
+            vq.utils.VisUtils.extend(scatterplot_tooltips, assoc.vis.tooltip.entry);
+        });
+
+    var scatterplot_data = parsed_data['features'];
+
+   var field = re.display_options.circvis.rings.pairwise_scores.value_field;
+    var association  = re.model.association.types[re.model.association_map[field]];
+    var settings = association.vis.scatterplot;
+    if (settings.values === undefined) { settings.values = {};}
+   var min = settings.values.min === undefined ? pv.min(scatterplot_data, function(o) { return o[field];}) : settings.values.min;
+   var max = settings.values.max === undefined ? pv.max(scatterplot_data, function(o) { return o[field];}) : settings.values.max;
+   var scale_type = settings.scale_type;
+
+    var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrome_length);
+    var ticks = vq.utils.VisUtils.clone(parsed_data['features']);
+
+    var floor = settings.values.floor === undefined ? min : settings.values.floor;
+    var ceil = settings.values.ceil === undefined ? max : settings.values.ceil;
+    if ( floor != min || ceil != max)  {
+        scatterplot_data = parsed_data['features'].map(function(obj){
+        var return_obj = vq.utils.VisUtils.clone(obj);
+        return_obj[field+'_plot'] = Math.max(floor,Math.min(return_obj[field],ceil));
+             return return_obj;
+    });
+        field = field+'_plot';
+    }
+    min = floor;
+    max = ceil;
+    var score_color_scale = pv.Scale.linear(min,max).range('blue','red');
+
+
+    var data = {
+        GENOME: {
+            DATA:{
+                key_order : chrom_keys,
+                key_length : chrom_leng
+            },
+            OPTIONS: {
+                radial_grid_line_width: 1,
+                label_layout_style : 'clock',
+                listener : genome_listener,
+                label_font_style : '18pt helvetica'
+            }
+        },
+        TICKS : {
+            DATA : {
+                data_array : ticks
+            },
+            OPTIONS :{
+                display_legend : false,
+                listener : wedge_listener,
+                stroke_style :stroke_style,
+                fill_style : function(tick) {return re.plot.colors.node_colors(tick.source); },
+                tooltip_items : {Tick : function(node) { return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
+                    '-' + node.end + ' ' + node.label_mod;}},
+                tooltip_links : {
+                    'UCSC Genome Browser' :  function(feature){
+                        return  ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
+                    'Ensemble' : function(feature) {
+                        return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + ':' +  feature.start +'-'+ feature.end;  }
+                }
+            }
+        },
+        PLOT: {
+            width : width,
+            height :  height,
+            horizontal_padding : 30,
+            vertical_padding : 30,
+            container : div,
+            enable_pan : false,
+            enable_zoom : false,
+            show_legend: true,
+            legend_include_genome : false,
+            legend_corner : 'ne',
+            legend_radius  : width / 15
+        },
+        WEDGE:[
+            {
+                PLOT : {
+                    height : ring_radius/2,
+                    type :   'karyotype'
+                },
+                DATA:{
+                    data_array : cytoband
+                },
+                OPTIONS: {
+                    legend_label : 'Karyotype Bands' ,
+                    legend_description : 'Chromosomal Karyotype',
+                    outer_padding : 10,
+//                    fill_style : function(feature) { return feature.value;},
+//                    stroke_style : function(feature) { return feature.value;},
+                    tooltip_items : karyotype_tooltip_items
+//                    listener : wedge_listener
+                }
+            },{
+                PLOT : {
+                    height : ring_radius,
+                    type :   'scatterplot'
+                },
+                DATA:{
+                    data_array : scatterplot_data,
+                    value_key : field
+                },
+                OPTIONS: {
+                    legend_label : association.label ,
+                    legend_description : association.label + ' Values',
+                    outer_padding : 10,
+                    base_value : (max - min) / 2,
+                    min_value : min,
+                    max_value : max,
+                    radius : 2,
+                    draw_axes : true,
+                    shape:'dot',
+                    fill_style  : function(feature) {return score_color_scale(feature[field]); },
+                    stroke_style  : function(feature) {return score_color_scale(feature[field]); },
+                    tooltip_items : scatterplot_tooltips,
+                    tooltip_links : {
+                    'UCSC Genome Browser' :  function(feature){
+                        return  ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
+                    'Ensemble' : function(feature) {
+                        return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + ':' +  feature.start +'-'+ feature.end;  }
+                    }
+                   // listener : initiateDetailsPopup
+                }
+            }
+        ]           
+    };
+    var circle_vis = new vq.CircVis();
+    var dataObject ={DATATYPE : "vq.models.CircVisData", CONTENTS : data };
+    circle_vis.draw(dataObject);
+
+    var e = new vq.events.Event('render_complete','circvis',circle_vis);
+    e.dispatch();
+
+    return circle_vis;
+}
+
+
 function wedge_plot(parsed_data,div) {
     var width=800, height=800;
     var ring_radius = width / 20;
@@ -236,7 +432,7 @@ function wedge_plot(parsed_data,div) {
     var stroke_style = re.plot.colors.getStrokeStyleAttribute();
 
     function genome_listener(chr) {
-        var e = new vq.events.Event('render_linearbrowser','circvis',{data:parsed_data,chr:chr});
+        var e = new vq.events.Event('render_linearbrowser','circvis',{data:vq.utils.VisUtils.clone(parsed_data),chr:chr});
         e.dispatch();
     }
 
@@ -244,7 +440,7 @@ function wedge_plot(parsed_data,div) {
         var chr = feature.chr;
         var start = bpToMb(feature.start) - 2.5;
         var range_length = bpToMb(feature.end) - start + 2.5;
-        var e = new vq.events.Event('render_linearbrowser','circvis',{data:parsed_data,chr:chr,start:start,range:range_length});
+        var e = new vq.events.Event('render_linearbrowser','circvis',{data:vq.utils.VisUtils.clone(parsed_data),chr:chr,start:start,range:range_length});
         e.dispatch();
     }
 
@@ -264,13 +460,13 @@ function wedge_plot(parsed_data,div) {
         unlocated_tooltip_items = {};
             unlocated_tooltip_items[re.ui.feature1.label] =  function(feature) { return feature.sourceNode.source + ' ' + feature.sourceNode.label +
                 (feature.sourceNode.chr ? ' Chr'+ feature.sourceNode.chr : '') +
-                (feature.sourceNode.start ? ' '+ feature.sourceNode.start : '') +
-                (feature.sourceNode.end ? '-'+ feature.sourceNode.end : '')  + ' '+
+                (feature.sourceNode.start > -1 ? ' '+ feature.sourceNode.start : '') +
+                (!isNaN(feature.sourceNode.end) ? '-'+ feature.sourceNode.end : '')  + ' '+
                 feature.sourceNode.label_mod;};
             unlocated_tooltip_items[re.ui.feature2.label] = function(feature) { return feature.targetNode.source + ' ' + feature.targetNode.label +
                 (feature.targetNode.chr ? ' Chr'+ feature.targetNode.chr : '') +
-                (feature.targetNode.start ? ' '+ feature.targetNode.start : '') +
-                (feature.targetNode.end ? '-'+ feature.targetNode.end : '')  + ' ' +
+                (feature.targetNode.start > -1 ? ' '+ feature.targetNode.start : '') +
+                (!isNaN(feature.targetNode.end) ? '-'+ feature.targetNode.end : '')  + ' ' +
                 feature.targetNode.label_mod;};
 
         re.model.association.types.forEach( function(assoc) { 
@@ -286,7 +482,7 @@ function wedge_plot(parsed_data,div) {
 
     var unlocated_map = vq.utils.VisUtils.clone(parsed_data['unlocated']).filter(function(link) { return  link.node1.chr != '';})
         .map(function(link) {
-            var node =  vq.utils.VisUtils.extend(link.node2,{ chr:link.node1.chr, start:link.node1.start,end:link.node1.end, value: 0});
+            var node =  { chr:link.node1.chr, start:link.node1.start,end:link.node1.end, value: 0};
             node.sourceNode = vq.utils.VisUtils.extend({},link.node1); node.targetNode = vq.utils.VisUtils.extend({},link.node2);
             types.forEach(function(assoc) { 
             node[assoc] = link[assoc];
@@ -294,7 +490,7 @@ function wedge_plot(parsed_data,div) {
             return node;
         }).concat(vq.utils.VisUtils.clone(parsed_data['unlocated']).filter(function(link) { return  link.node2.chr != '';})
         .map(function(link) {
-            var node =  vq.utils.VisUtils.extend(link.node1,{ chr:link.node2.chr, start:link.node2.start,end:link.node2.end, value: 0});
+            var node =  { chr:link.node2.chr, start:link.node2.start,end:link.node2.end, value: 0};
             node.sourceNode = vq.utils.VisUtils.extend({},link.node1); node.targetNode = vq.utils.VisUtils.extend({},link.node2);
             types.forEach(function(assoc) { 
             node[assoc] = link[assoc];
@@ -774,7 +970,7 @@ function scatterplot_draw(params) {
             valuecolumnid: 'patient_id',
             xcolumnlabel : f1label,
             ycolumnlabel : f2label,
-            valuecolumnlabel : 'Sample Id',
+            valuecolumnlabel : '',
             tooltip_items : tooltip,
             show_points : true,
             regression :regression_type
@@ -797,7 +993,7 @@ function scatterplot_draw(params) {
             valuecolumnid: 'patient_id',
             xcolumnlabel : f1label,
             ycolumnlabel : f2label,
-            valuecolumnlabel : 'Sample Id',
+            valuecolumnlabel : '',
             tooltip_items : tooltip,
             show_points : true,
             radial_interval : 7
@@ -821,7 +1017,7 @@ function scatterplot_draw(params) {
             valuecolumnid: 'patient_id',
             xcolumnlabel : f1label,
             ycolumnlabel : f2label,
-            valuecolumnlabel : 'Sample Id',
+            valuecolumnlabel : '',
             tooltip_items : tooltip,
             radial_interval : 7,
             regression :regression_type
