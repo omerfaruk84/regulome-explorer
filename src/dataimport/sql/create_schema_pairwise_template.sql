@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS regulome_explorer_dataset
    default_display varchar(10),
    description varchar(100),
    dataset_date varchar(30),
-   max_logged_pvalue float DEFAULT -1.0
+   max_logged_pvalue float DEFAULT -1.0,
+   input_files varchar(255)
 );
 
 CREATE TABLE IF NOT EXISTS sample_meta (
