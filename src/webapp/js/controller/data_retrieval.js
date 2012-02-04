@@ -203,8 +203,10 @@ function loadNetworkData(response) {
     }
 }
 
+
 function loadNetworkDataSingleFeature(params) {
     var responses = [];
+    var feature_types = ['t'];
 
     function loadComplete() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','sf_associations', responses));
@@ -222,7 +224,7 @@ function loadNetworkDataSingleFeature(params) {
             throwQueryError('associations',response);
             return;
         }
-        if (responses.length >= 2) {
+        if (responses.length >= feature_types.length) {
             responses = pv.blend(responses);
             if (responses.length >= 1) {
                 loadComplete();
@@ -240,7 +242,7 @@ function loadNetworkDataSingleFeature(params) {
 
     var query_obj = {
         order: params['order'],
-        limit: (parseInt(params['limit']) / 2) + ''
+        limit: (parseInt(params['limit']) / feature_types.length) + ''
     };
     re.model.association.types.forEach( function(obj) {
         query_obj[obj.query.id] = params[obj.query.id];
@@ -249,16 +251,17 @@ function loadNetworkDataSingleFeature(params) {
         }
     });
 
-    ['t','p'].forEach(function(f){
+    feature_types.forEach(function(f){
         var obj = vq.utils.VisUtils.clone(query_obj);
         obj[f +'_label'] = params['t_label'];
         obj[f +'_type'] = params['t_type'];
-        var network_query=buildSingleFeatureGQLQuery(obj, f == 't' ? re.ui.feature1.id : re.ui.feature2.id);
-        var association_query_str = '?' + re.params.query + network_query + re.params.json_out;
+        re.state.network_query=buildSingleFeatureGQLQuery(obj, f == 't' ? re.ui.feature1.id : re.ui.feature2.id);
+        var association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
         var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
         Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: function(response) { queryFailed('associations',response); }});
     });
 }
+
 
 
 function loadNetworkDataByFeature(params) {
@@ -514,7 +517,8 @@ function buildGQLQuery(args) {
 
 
 function buildSingleFeatureGQLQuery(args,feature) {
-    var query = 'select ' + (feature == re.ui.feature2.id ? 'alias1' : 'alias2');
+    //var query = 'select ' + (feature == re.ui.feature2.id ? 'alias1' : 'alias2');
+    var query = 'select ' + (feature == re.ui.feature1.id ? 'alias1' : 'alias2');
     re.model.association.types.forEach( function(obj) {
         query += ', ' + obj.query.id;
     });
@@ -581,10 +585,15 @@ function buildSingleFeatureGQLQuery(args,feature) {
         }
     });
 
+    var order_id = (re.model.association.types[re.model.association_map[args['order']]].query.order_id === undefined) ?
+        args['order']
+        : re.model.association.types[re.model.association_map[args['order']]].query.order_id;
+
     query += (where.length > whst.length ? where : '');
-    query += ' order by '+args['order'] + ' ' + (re.model.association.types[re.model.association_map[args['order']]].query.order_direction || 'DESC');
+    query += ' order by '+ order_id + ' ' + (re.model.association.types[re.model.association_map[args['order']]].query.order_direction || 'DESC');
     query += ' limit '+args['limit'];
-    query += ' label ' + (feature == re.ui.feature2.id ? 'alias1 \'alias\'' : 'alias2 \'alias\'');
+   // query += ' label ' + (feature == re.ui.feature2.id ? 'alias1 \'alias\'' : 'alias2 \'alias\'');
+    query += ' label ' + (feature == re.ui.feature1.id ? 'alias1 \'alias\'' : 'alias2 \'alias\'');
 
     return query;
 }

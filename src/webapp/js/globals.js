@@ -7,11 +7,11 @@
 
 vq.utils.VisUtils.extend(re, {
 
-        title : 'Random Forest Associations Explorer',
+        title : 'CRC Aggressiveness Explorer',
         
     analysis : {
-        dataset_method_clause : ' where method=\'RF-ACE\'',
-        directed_association : true
+        dataset_method_clause : ' where method=\'crc_agg\'',
+        directed_association : false
     },
     state : {
       once_loaded : false,
@@ -50,16 +50,6 @@ vq.utils.VisUtils.extend(re, {
         patient_uri : '',
         feature_data_uri : '',
         pathway_uri : ''
-    },
-/*
- *        URL's
- *            addresses to pathways used by MEDLINE tab
- */
-    pathways: {
-        wikipw_url : 'http://www.wikipathways.org/index.php?title=Special%3ASearchPathways&doSearch=1&sa=Search&species=Homo+sapiens&query=',
-        biocarta_url : 'http://www.biocarta.com/pathfiles/h_',
-        kegg_url : 'http://www.genome.jp/kegg-bin/search_pathway_text?map=map&mode=1&viewImage=true&keyword=',
-        pw_commons_url : 'http://www.pathwaycommons.org/pc/webservice.do?version=3.0&snapshot_id=GLOBAL_FILTER_SETTINGS&record_type=PATHWAY&format=html&cmd=get_by_keyword&q='
     },
 
     display_options : {
@@ -204,8 +194,25 @@ vq.utils.VisUtils.extend(re, {
      re.plot.locatable_source_map = pv.numerate(re.plot.locatable_source_list);
 
         re.plot.proximal_distance = 2.5 * re.plot.linear_unit;
+    re.plot.colors.features = {
+            'GEXP' : '#1f77b4',
+            'METH': '#2ca02c',
+            'CNVR' : '#ff7f0e',
+            'MIRN': '#d62728',
+            'GNAB' : '#9467bd',
+            'PRDM' : '#8c564b',
+            'RPPA' : '#e377c2',
+            'CLIN' : '#7f7f7f',
+            'SAMP' : '#bcbd22'
+            //#17becf
+        };
 
-     re.plot.colors.node_colors = function(source) { return re.plot.colors.source_color_scale(re.plot.all_source_map[source]);};
+     re.plot.colors.node_colors = function(source) {
+         if (source in re.plot.colors.features){
+            return pv.color(re.plot.colors.features[source]);
+         }
+         return "blue";
+     };
      re.model.association.types.forEach(function(obj) { 
         re.ui.order_list.push({value:obj.id,label:obj.label});
      });

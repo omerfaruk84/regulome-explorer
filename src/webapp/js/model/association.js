@@ -2,131 +2,101 @@ if (re.model === undefined) re.model = {};
 
 re.model.association =  {
 	types : [
-		{ 	id : 'importance',
-			label : 'Importance',
+        { 	id : 'score',
+      			label : 'Agg. Score',
+      			ui : {
+      			filter : {
+      				 					component:   new re.multirangeField(
+                                                      {   id:'score',
+                                                          label: 'Agg. Score',
+                                                          default_value: 2.00,
+                                                          min_value: -10,
+                                                          max_value: 10}
+                                                  )
+      			},
+      			grid : {
+      				column : { header: 'Agg. Score', width:50, id:'score',dataIndex:'score'},
+      				store_index : 'score'
+      			}
+      			},
+      			query : {
+      				id : 'score',
+      				clause : flex_field_query,
+                      order_id : ' floorlogged_pvalue',
+      				order_direction : 'DESC'
+      			},
+      			vis : {
+      				network : {
+      					edgeSchema : { name: "score", type: "number" }
+      				},
+      				tooltip : {
+      					entry : {  'Agg. Score' : 'score'}
+      				},
+                      scatterplot : {
+                          scale_type :'linear',
+                          values : {
+                                 min : -10,
+                                  max : 10
+                              },
+                          color_scale : pv.Scale.linear(-10,-0.1,0.1,10).range('blue','white','white','red')
+      			}
+      		}
+        },
+		{ 	id : 'association',
+			label : 'Assoc.',
 			ui : {
-			filter : { 
-				 					component: {
-					 							xtype : 'numberfield',
-                                                id:'importance',
-                                                name :'importance',
-                                                allowNegative: false,
-                                                decimalPrecision : 2,
-                                                emptyText : 'Input value...',
-                                                invalidText:'This value is not valid.',
-                                                minValue:0,
-                                                tabIndex : 1,
-                                                validateOnBlur : true,
-                                                fieldLabel : 'Importance >=',
-                                                defaultValue : 0,
-                                                value : 0
-                                            }
-			},
+                filter : {
+                    component: {
+                        width:          50,
+                        id: 'association',
+                        name :'Assoc.',
+                        xtype:          'combo',
+                        mode:           'local',
+                        defaultValue:   '',
+                        value:          '',
+                        triggerAction:  'all',
+                        forceSelection: true,
+                        editable:       false,
+                        fieldLabel:     'Assoc.',
+                        displayField:   'name',
+                        valueField:     'value',
+                        store:          new Ext.data.JsonStore({
+                            fields : ['name', 'value'],
+                            data   : [
+                                {name : 'Either',   value: ''},
+                                {name : '+',  value: '1'},
+                                {name : '-', value: '-1'}
+                            ]
+                        })
+                    }
+                },
 			grid : {
-				column : { header: "Importance", width:50, id:'importance',dataIndex:'importance' },
-				store_index : 'importance'
+				column : { header: 'Assoc.', width:50, id:'association',dataIndex:'association' },
+				store_index : 'association'
 				}
 			},
 			query : {
-				id : 'importance',
-				clause : 'importance >= ',
+				id : 'association',
+				clause : 'association = ',
+
 				order_direction : 'DESC'
 			},
 			vis : {
 				network : {
-					edgeSchema : { name: "importance", type: "number" }
+					edgeSchema : { name: "association", type: "number" }
 				},
 				tooltip : {
-					entry : { ' Importance' : 'importance'}
+					entry : { ' Importance' : 'association'}
 				},
                 scatterplot : {
                     scale_type :'linear',
                     values : {
-
-                    }
+                        min:-1,
+                        max : 1
+                        },
+                    color_scale : pv.Scale.linear(-1,1).range('blue','red')
                 }
 			}	
-		},
-		{ 	id : 'pvalue',
-			label : 'Pvalue',
-			ui : {
-			filter : { 
-				 					component: {
-					 							xtype : 'numberfield',
-                                                id:'pvalue',
-                                                name :'pvalue',
-                                                allowNegative: false,
-                                                decimalPrecision : 8,
-                                                emptyText : 'Input value...',
-                                                invalidText:'This value is not valid.',
-                                                maxValue:0.9,
-                                                minValue:0,
-                                                tabIndex : 1,
-                                                validateOnBlur : true,
-                                                fieldLabel : 'pvalue <=',
-                                                defaultValue : 0.5,
-                                                value : 0.5
-                                            }
-			},
-			grid : {
-				column : { header : "pvalue", width : 50 , id: 'pvalue' , dataIndex : 'pvalue', hidden: true},
-				store_index : 'pvalue'
-			}
-			},
-			query : {
-				id : 'pvalue',
-				clause : 'pvalue <= ',
-				order_direction : 'ASC'
-			},
-			vis : {
-				network : {
-					edgeSchema : {name: "pvalue", type: "number" }
-				},
-				tooltip : {
-					entry : { pvalue : 'pvalue' }
-				},
-                scatterplot : {
-                }
-			}
-
-		},
-		{ 	id : 'correlation',
-			label : 'Correlation',
-			ui : {
-			filter : { 
-				 					component:   new re.multirangeField(
-                                                {   id:'correlation',
-                                                    label: 'Correlation',
-                                                    default_value: 0,
-                                                    min_value: -1,
-                                                    max_value: 1}
-                                            )
-			},
-			grid : {
-				column : { header: "Correlation", width:50, id:'correlation',dataIndex:'correlation'},
-				store_index : 'correlation'
-			}
-			},
-			query : {
-				id : 'correlation',
-				clause : flex_field_query,
-				order_direction : 'DESC'
-			},
-			vis : {
-				network : {
-					edgeSchema : { name: "correlation", type: "number" }
-				},
-				tooltip : {
-					entry : {  Correlation : 'correlation'}
-				},
-                scatterplot : {
-                    scale_type :'linear',
-                    values : {
-                           min : -1,
-                            max : 1
-                        }
-                }
-			}
 		}
 	]
 };
