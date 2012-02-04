@@ -76,7 +76,8 @@ vq.utils.VisUtils.extend(re.ui, {
                                         	id:'isolate',
                                         	fieldLabel:'Isolate',
                                             defaultValue:false,
-                                        	checked:false,
+                                        	checked:true,
+                                            hidden : true,
                                         	listeners: { check: function(cb, checked) {
                                         		Ext.getCmp(re.ui.feature2.id).setDisabled(checked);
                                         		if (checked) { Ext.getCmp(re.ui.feature2.id).collapse(); }
@@ -241,6 +242,9 @@ vq.utils.VisUtils.extend(re.ui, {
                                         title:re.ui.feature2.label, 
                                        	checkboxToggle:false,
                                        	maskDisabled:true,
+                                        disabled:true,
+                                        hidden: true,
+                                        collapsed: true,
                                         collapsible: true,
                                         defaults:{anchor:'100%'},
                                         labelWidth: 70,
@@ -453,8 +457,8 @@ vq.utils.VisUtils.extend(re.ui, {
                                                 typeAhead : true,
                                                 selectOnFocus:true,
                                                 triggerAction : 'all',
-                                                defaultValue : 200,
-                                                value : 200
+                                                defaultValue : 2000,
+                                                value : 2000
                                             }
                                         ])
                                     },
@@ -464,6 +468,7 @@ vq.utils.VisUtils.extend(re.ui, {
                                         valueField:'id',
                                         id:'filter_type',
                                         mode: 'local',
+                                        hidden : true,
                                         defaultValue:'association',
                                         value:'association',
                                         typeAhead : true,
