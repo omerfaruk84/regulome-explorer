@@ -646,6 +646,7 @@ Ext.onReady(function() {
                             {
                                 xtype: 'panel', id:'circle-legend-panel',
                                 width:150,
+                                height:150,
                                 border:false,
                                 frame : false,
                                 x:375,
@@ -654,6 +655,7 @@ Ext.onReady(function() {
                             {
                                 xtype: 'panel', id:'circle-colorscale-panel',
                                 width:150,
+                                height:150,
                                 border:false,
                                 frame : false,
                                 x:345,

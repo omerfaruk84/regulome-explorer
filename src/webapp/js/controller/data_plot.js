@@ -200,42 +200,46 @@ function colorscale_draw(association_obj, div) {
 
 }
 
-function legend_draw(div) {
+function legend_draw(div,anchor) {
 
     var dataset_labels = re.ui.getDatasetLabels();
-    var source_map = pv.numerate(dataset_labels['feature_sources'], function(row) {return row.source;});
-    var current_locatable_data = re.plot.locatable_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
-    var current_data = re.plot.all_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
-    var current_map = pv.numerate(current_data);
+        var source_map = pv.numerate(dataset_labels['feature_sources'], function(row) {return row.source;});
+        var current_locatable_data = re.plot.locatable_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
+        var current_data = re.plot.all_source_list.filter(function(input_row){return source_map[input_row] != undefined;});
+        var current_map = pv.numerate(current_data);
 
-    var anchor = 'top-right';
+       var anchor = anchor || 'top-right';
     var width=800, height=800;
+    var legend_height = (30 + current_locatable_data.length * 13), legend_width = 150;
     var top = 20, left = 0;
-    var legend_height = (30 + current_data.length * 13), legend_width = 150;;
-
     if (arguments[1] != undefined) {anchor = arguments[1];}
     switch(anchor) {
         case('center'):
-            top = (height / 2) - (legend_height / 2);
-            left = (width / 2) - (legend_width / 2);
-            break;
+                    Ext.getCmp('circle-legend-panel').setPosition(375,330);
+                    Ext.getCmp('circle-legend-panel').doLayout();
+        break;
         case('top-right'):
+                Ext.getCmp('circle-legend-panel').setPosition(880,20);
+                Ext.getCmp('circle-legend-panel').doLayout();
         default:
-            break;
+        break;
     }
+
 
 
     //re.plot.colors.node_colors = function(source) { return re.plot.colors.source_color_scale(current_map[source]);};
     re.plot.colors.link_sources_colors = function(link) { return re.plot.link_sources_array[current_map[link[0]] * current_data.length + current_map[link[1]]];}
 
     var vis= new pv.Panel()
-        .width(legend_width)
-        .height(legend_height)
         .left(left)
         .top(top)
+
+        .width(legend_width)
+        .height(legend_height)
         .lineWidth(1)
         .strokeStyle('black')
         .canvas(div);
+
 
     var drawPanel = vis.add(pv.Panel)
         .top(20)
@@ -268,8 +272,10 @@ function legend_draw(div) {
         .textAlign('left')
         .textBaseline('bottom')
         .font("11px helvetica");
+
     vis.render();
 }
+
 
 
 function singlefeature_circvis(parsed_data,div) {
