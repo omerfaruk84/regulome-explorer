@@ -5,12 +5,12 @@ function registerPlotListeners() {
     d.addListener('data_ready','associations',function(data) {
         if (re.state.query_cancel) { return;}
         renderCircleData(data);
-        renderCircleLegend();
+        renderCircleLegend('top-right');
     });
     d.addListener('data_ready','sf_associations',function(data) {
         if (re.state.query_cancel) { return;}
         renderSFCircleData(data);
-        renderCircleLegend('top-right');
+        renderCircleLegend('center');
     });
     d.addListener( 'data_ready','graph',function(data) {
         var obj = {
