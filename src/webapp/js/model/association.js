@@ -86,7 +86,7 @@ re.model.association =  {
 					edgeSchema : { name: "association", type: "number" }
 				},
 				tooltip : {
-					entry : { ' Importance' : 'association'}
+					entry : { 'Association' : 'association'}
 				},
                 scatterplot : {
                     scale_type :'linear',

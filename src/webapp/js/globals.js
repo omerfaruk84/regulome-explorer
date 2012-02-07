@@ -3,19 +3,19 @@
 
  Import this before MVC scripts.
  */
- if (re === undefined) { re = {};}
+if (re === undefined) { re = {};}
 
 vq.utils.VisUtils.extend(re, {
 
-        title : 'CRC Aggressiveness Explorer',
-        
+    title : 'CRC Aggressiveness Explorer',
+
     analysis : {
         dataset_method_clause : ' where method=\'crc_agg\'',
         directed_association : false
     },
     state : {
-      once_loaded : false,
-      query_cancel : false,
+        once_loaded : false,
+        query_cancel : false,
         network_query : ''
     },
     rest : {
@@ -28,10 +28,10 @@ vq.utils.VisUtils.extend(re, {
     databases: {
         base_uri : '',
         metadata: {
-        uri: '/google-dsapi-svc/addama/datasources/csacr'
+            uri: '/google-dsapi-svc/addama/datasources/csacr'
         },
         rf_ace: {
-            uri: '/google-dsapi-svc/addama/datasources/tcga'
+            uri: '/google-dsapi-svc/addama/datasources/dev'
         },
         solr : {
             uri : '/solr',
@@ -65,6 +65,17 @@ vq.utils.VisUtils.extend(re, {
                     value_field : re.model.association.types[0].query.id,
                     hidden : false
                 }
+            },
+            tooltips:{
+                feature :  {
+                    Feature : function(node) { var pos = node.label.indexOf('_');
+                    return pos > 0 ? node.label.slice(0,pos) : node.label;},
+                    Source : function(node) { return re.label_map[node.source]},
+                    'Location' : function(node) { return node.chr + ' ' + node.start + '-' + node.end + ' ';} ,
+                    Other : function(node) { return node.label_mod.replace(/_/g,', ');}
+                },
+                edge : function(edge) {}
+
             },
             ticks : {
                 tick_overlap_distance : null,
@@ -119,9 +130,9 @@ vq.utils.VisUtils.extend(re, {
 
         scatterplot_data : null
     },
-    ui: {        
+    ui: {
         filters: {
-            single_feature : true  
+            single_feature : true
         },
         chromosomes:  [],
         dataset_labels: [],
@@ -144,24 +155,24 @@ vq.utils.VisUtils.extend(re, {
         order_list : []
     },
 
-/*
- Window handles
- global handles to the masks and windows used by events
- */
+    /*
+     Window handles
+     global handles to the masks and windows used by events
+     */
 
- windows : {
-     details_window : null,
-    helpWindowReference : null,
-     masks: {
-     details_window_mask: null,
-         network_mask : null
-     }
+    windows : {
+        details_window : null,
+        helpWindowReference : null,
+        masks: {
+            details_window_mask: null,
+            network_mask : null
+        }
     },
     data: {
         parsed_data : {network : null,unlocated : null,features : null,unlocated_features:null,located_features:null},
-            responses : {network : null},
-            patients : {data : null}
-   }
+        responses : {network : null},
+        patients : {data : null}
+    }
 });
 
 
@@ -173,10 +184,10 @@ vq.utils.VisUtils.extend(re, {
     re.ui.chromosomes.push({value:'X',label:'X'});
     re.ui.chromosomes.push({value:'Y',label:'Y'});
 
-/*
- Label map
- Hash maps feature type id to feature type label
- */
+    /*
+     Label map
+     Hash maps feature type id to feature type label
+     */
     re.label_map = {
         '*':'All',
         'GEXP' :'Gene Expression',
@@ -189,41 +200,46 @@ vq.utils.VisUtils.extend(re, {
         'PRDM' : 'Paradigm Feature',
         'RPPA'  : 'RPPA'
     };
-     re.plot.all_source_list = pv.blend([re.plot.locatable_source_list,re.plot.unlocatable_source_list]);
-     re.plot.all_source_map = pv.numerate(re.plot.all_source_list);
-     re.plot.locatable_source_map = pv.numerate(re.plot.locatable_source_list);
+    re.plot.all_source_list = pv.blend([re.plot.locatable_source_list,re.plot.unlocatable_source_list]);
+    re.plot.all_source_map = pv.numerate(re.plot.all_source_list);
+    re.plot.locatable_source_map = pv.numerate(re.plot.locatable_source_list);
 
-        re.plot.proximal_distance = 2.5 * re.plot.linear_unit;
+    re.plot.proximal_distance = 2.5 * re.plot.linear_unit;
     re.plot.colors.features = {
-            'GEXP' : '#1f77b4',
-            'METH': '#2ca02c',
-            'CNVR' : '#ff7f0e',
-            'MIRN': '#d62728',
-            'GNAB' : '#9467bd',
-            'PRDM' : '#8c564b',
-            'RPPA' : '#e377c2',
-            'CLIN' : '#7f7f7f',
-            'SAMP' : '#bcbd22'
-            //#17becf
-        };
+        'GEXP' : '#1f77b4',
+        'METH': '#2ca02c',
+        'CNVR' : '#ff7f0e',
+        'MIRN': '#9467bd',
+        'GNAB' : '#d62728',
+        'PRDM' : '#8c564b',
+        'RPPA' : '#e377c2',
+        'CLIN' : '#7f7f7f',
+        'SAMP' : '#bcbd22'
+        //#17becf
+    };
 
-     re.plot.colors.node_colors = function(source) {
-         if (source in re.plot.colors.features){
+    re.plot.colors.node_colors = function(source) {
+        if (source in re.plot.colors.features){
             return pv.color(re.plot.colors.features[source]);
-         }
-         return "blue";
-     };
-     re.model.association.types.forEach(function(obj) { 
+        }
+        return "blue";
+    };
+    re.model.association.types.forEach(function(obj) {
         re.ui.order_list.push({value:obj.id,label:obj.label});
-     });
+    });
 
-     if (re.analysis.directed_association) {
-         re.ui.feature1 = {label : 'Target', id :'target'};
-         re.ui.feature2 = {label : 'Predictor', id : 'predictor'};
-     } else {
-         re.ui.feature1 = {label : 'Feature 1', id : 'feature1'};
-         re.ui.feature2 = {label : 'Feature 2', id : 'feature2'};
-     }
+    if (re.analysis.directed_association) {
+        re.ui.feature1 = {label : 'Target', id :'target'};
+        re.ui.feature2 = {label : 'Predictor', id : 'predictor'};
+    } else {
+        re.ui.feature1 = {label : 'Feature 1', id : 'feature1'};
+        re.ui.feature2 = {label : 'Feature 2', id : 'feature2'};
+    }
+
+
+    re.model.association.types.forEach( function(assoc) {
+                            vq.utils.VisUtils.extend(re.display_options.circvis.tooltips.feature, assoc.vis.tooltip.entry);
+                        });
 
 })();
 
