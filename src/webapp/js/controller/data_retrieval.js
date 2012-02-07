@@ -602,4 +602,8 @@ function downloadNetworkData(target_frame,output) {
         re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query+ '?tq=' + re.state.network_query + '&tqx=out:' +output_label+';outFileName:'+re.tables.current_data+'_query.'+output_extension);
 }
 
+function queryFailed(title, response) {
+    org.systemsbiology.addama.js.Message.show(title, response.statusText);
+}
+
 
