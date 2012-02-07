@@ -28,10 +28,10 @@ if (re === undefined) { re = {};}
    databases: {
        base_uri : '',
        metadata: {
-       uri: '/addama/datasources/csacr'
+       uri: '/addama/datasources/internal_csacr'
        },
        rf_ace: {
-           uri: '/addama/datasources/tcga'
+           uri: '/addama/datasources/internal_tcga'
        },
        solr : {
            uri : '/solr',
