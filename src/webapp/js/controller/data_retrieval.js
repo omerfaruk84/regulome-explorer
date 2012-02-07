@@ -603,7 +603,7 @@ function downloadNetworkData(target_frame,output) {
 }
 
 function queryFailed(title, response) {
-    org.systemsbiology.addama.js.Message.show(title, response.statusText);
+    org.systemsbiology.addama.js.Message.error(title, response.statusText);
 }
 
 
