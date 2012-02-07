@@ -884,6 +884,7 @@ Ext.onReady(function() {
                 ]
             }
         ],
+        tbar: [ { contentEl: "container_topbar", height: 30 } ],
         renderTo:Ext.getBody()
     });
 

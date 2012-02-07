@@ -51,6 +51,17 @@
     <script type="text/javascript" src="js/view/panels.js"></script>
     <script type="text/javascript" src="js/view/layout.js"></script>
 
+    <link rel="stylesheet" type="text/css" href="/css/stylesheet.css"/>
+    <script type="text/javascript" src="/js/utils.js"></script>
+    <script type="text/javascript" src="/js/widgets.js"></script>
+    <script type="text/javascript" src="/js/topbar.js"></script>
+    <script type="text/javascript">
+        Ext.onReady(function() {
+            new org.systemsbiology.addama.js.TopBar({ contentEl: "container_topbar" });
+            org.systemsbiology.addama.js.Message.show("All Pairs Significance", "Ready to Explore");
+        });
+    </script>
+
     <style type="text/css">
         #scatterplot_panel { background-color : #fff	!important}
     </style>
@@ -88,6 +99,7 @@
     </script>
   <![endif]-->
 <iframe id="frame" height=0 width=0></iframe>
+<div id="container_topbar"></div>
 <div id="home"></div>
 
 </body>
