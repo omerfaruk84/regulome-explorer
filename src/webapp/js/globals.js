@@ -34,7 +34,7 @@ if (re === undefined) { re = {};}
            uri: '/addama/datasources/internal_tcga'
        },
        solr : {
-           uri : '/solr',
+           uri : '/addama/indexes/solr',
            select : '/select/'
 
        }
