@@ -57,7 +57,11 @@
     <link rel="stylesheet" type="text/css" href="css/topbar.css" />
     <script type="text/javascript">
         Ext.onReady(function() {
-            new org.systemsbiology.addama.js.FloatingTopBar({ hidden: true });
+            var tb = new org.systemsbiology.addama.js.FloatingTopBar({ hidden: true });
+            Ext.each(getMenus(), function(menu) {
+                tb.toolbar.add(menu);
+            });
+
             org.systemsbiology.addama.js.Message.show("All Pairs Significance", "Ready to Explore");
         });
     </script>

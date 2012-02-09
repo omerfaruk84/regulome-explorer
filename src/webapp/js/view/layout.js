@@ -570,6 +570,104 @@ function registerAllListeners() {
     registerPlotListeners();
 }
 
+function getMenus() {
+    var dataMenu = {
+        text:'Data',
+        labelStyle: 'font-weight:bold;',
+        menu:[
+            { text:'Select', handler:loadDataDialog },
+            { text:'Export', menu:[
+                { text:'CSV', value:'csv', handler:exportDataDialog },
+                { text:'TSV',value:'tsv', handler:exportDataDialog },
+                { text:'SVG',value:'svg', handler:showSVGDialog }
+            ]
+            }
+        ]
+    };
+
+    var displayMenu = {
+        text:'Display',
+        labelStyle: 'font-weight:bold;',
+        menu:[
+            {
+                text:'Network',
+                labelStyle: 'font-weight:bold;',
+                menu:[
+                    {
+                        checked:true, text:'Force Directed', xtype:'menucheckitem', group:'networklayout_group',
+                        handler:function() {
+                            re.display_options.cytoscape.layout = 'force_directed';
+                            vq.events.Dispatcher.dispatch(new vq.events.Event('layout_network','main_menu',{}));
+                        }
+                    },
+                    {
+                        text:'Radial', xtype:'menucheckitem', group:'networklayout_group',
+                        handler: function() {
+                            re.display_options.cytoscape.layout = 'radial';
+                            vq.events.Dispatcher.dispatch(new vq.events.Event('layout_network','main_menu',{}));
+                        }
+                    },
+                    {
+                        text:'Tree', xtype:'menucheckitem', group:'networklayout_group',
+                        handler: function() {
+                            re.display_options.cytoscape.layout = 'tree';
+                            vq.events.Dispatcher.dispatch(new vq.events.Event('layout_network','main_menu',{}));
+                        }
+                    }
+                ]
+            },
+            {
+                text:'Circular Scatterplot',
+                labelStyle: 'font-weight:bold;',
+                menu: re.model.association.types.map(function (obj,index){
+                    return {
+                        text:obj.label,
+                        value:obj.id,
+                        xtype:'menucheckitem',
+                        handler:function (item) {
+                            re.display_options.circvis.rings.pairwise_scores.value_field = re.model.association.types[re.model.association_map[item.value]].id;
+                        },
+                        checked: (index ==0),
+                        group:'scatterplot_group'
+                    };
+                })
+            }
+        ]
+    };
+
+    var modeMenu = {
+        text:'Mode',
+        labelStyle: 'font-weight:bold;',
+        menu:[
+            {
+                text:'Circular Plot',
+                menu:[
+                    {
+                        xtype:'menucheckitem', checked:true, group:'mode_group', text:'Explore', value: 'explore',
+                        handler: function() {
+                            vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:false,zoom_enable:false}));
+                        }
+                    },
+                    {
+                        xtype:'menucheckitem', group:'mode_group', text:'Navigate', value: 'navigate',
+                        handler: function() {
+                            vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:true,zoom_enable:true}));
+                        }
+                    },
+                    {
+                        xtype:'menucheckitem', group:'mode_group', disabled:true, text:'Select', value: 'Select',
+                        handler: function() {
+                            vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:false,zoom_enable:false}));
+                        }
+                    }
+                ]
+            }
+        ]
+    };
+    
+    return [ dataMenu, displayMenu, modeMenu ];
+}
+
 Ext.onReady(function() {
     Ext.QuickTips.init();
 
@@ -772,104 +870,7 @@ Ext.onReady(function() {
                 split: false,
                 height: 27,
                 layout : 'fit',
-                tbar: [
-                    {
-                        id:'dataMenu',
-                        text:'Data',
-                        labelStyle: 'font-weight:bold;',
-                        menu:[{
-                            text:'Select',
-                            handler:loadDataDialog
-                        },{
-                            text:'Export',
-                            menu:[{
-                                text:'CSV',
-                                value:'csv',
-                                handler:exportDataDialog
-                            },{
-                                text:'TSV',value:'tsv',
-                                handler:exportDataDialog
-                            },
-                                {text:'SVG',value:'svg',
-                                    handler:showSVGDialog
-                                }]
-                        }]
-                    },{
-                        id:'displayMenu',
-                        text:'Display',
-                        labelStyle: 'font-weight:bold;',
-                        menu:[{
-                            id:'networkMenu',
-                            text:'Network',
-                            labelStyle: 'font-weight:bold;',
-                            menu:[{
-                                checked:true,
-                                text:'Force Directed',
-                                xtype:'menucheckitem',
-                                handler:networkLayoutHandler,
-                                group:'networklayout_group'
-                            },
-                                { text:'Radial',
-                                    xtype:'menucheckitem',
-                                    handler:networkLayoutHandler,
-                                    checked: false,
-                                    group:'networklayout_group'},
-                                { text:'Tree',
-                                    xtype:'menucheckitem',
-                                    handler:networkLayoutHandler,
-                                    checked: false,
-                                    group:'networklayout_group'}
-                            ]
-                        }, {
-                            id:'circularScatterplotMenu',
-                            text:'Circular Scatterplot',
-                            labelStyle: 'font-weight:bold;',
-                            menu:        re.model.association.types.map(function (obj,index){
-                                var return_obj = {
-                                    text:obj.label,
-                                    value:obj.id,
-                                    xtype:'menucheckitem',
-                                    handler:scatterplotFieldHandler,
-                                    checked: false,
-                                    group:'scatterplot_group'};
-                                if (index ==0) { return_obj.checked = true; }
-                                return     return_obj;
-                                })
-                        }
-                        ]
-                    },{
-                        id:'modalMenu',
-                        text:'Mode',
-                        labelStyle: 'font-weight:bold;',
-                        menu:[{
-                            text:'Circular Plot',
-                            menu:[{
-                                xtype:'menucheckitem',
-                                handler: modeHandler,
-                                checked:true,
-                                id:'explore_check',
-                                group:'mode_group',
-                                text:'Explore',
-                                value: 'explore'
-                            },
-                                {
-                                    xtype:'menucheckitem',
-                                    handler: modeHandler,
-                                    group:'mode_group',
-                                    id:'nav_check',
-                                    text:'Navigate',
-                                    value: 'navigate'
-                                }, {
-                                    xtype:'menucheckitem',
-                                    handler: modeHandler,
-                                    group:'mode_group',
-                                    disabled:true,
-                                    id:'select_check',
-                                    text:'Select',
-                                    value: 'Select'
-                                }]
-                        }]
-                    }]
+                tbar: getMenus()
             },
             { region:'center',
                 id:'center-panel', name:'center-panel',
@@ -886,36 +887,6 @@ Ext.onReady(function() {
         ],
         renderTo:Ext.getBody()
     });
-
-    function modeHandler(item){
-        switch(item.getId()) {
-            case('nav_check'):
-                vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:true,zoom_enable:true}));
-                break;
-            case('explore_check'):
-            default:
-                vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis','main_menu',{pan_enable:false,zoom_enable:false}));
-        }
-    }
-    function scatterplotFieldHandler(item) {
-                re.display_options.circvis.rings.pairwise_scores.value_field = re.model.association.types[re.model.association_map[item.value]].id;
-    }
-
-    function networkLayoutHandler(item) {
-        switch(item.text) {
-            case('Radial'):
-                re.display_options.cytoscape.layout = 'radial';
-                break;
-            case('Tree'):
-                re.display_options.cytoscape.layout = 'tree';
-                break;
-            case('Force Directed') :
-            default:
-                re.display_options.cytoscape.layout = 'force_directed';
-                break;
-        }
-        vq.events.Dispatcher.dispatch(new vq.events.Event('layout_network','main_menu',{}));
-    }
 
     re.windows.export_window = new Ext.Window( {
         id          : 'export-window',
