@@ -3,14 +3,14 @@
 
 vq.utils.VisUtils.extend(re.ui, {
  panels : {
-	 east : {
-		 region: 'east',
+     east : {
+         region: 'east',
                 collapsible: true,
                 floatable: true,
                 autoHide:false,
                 split: true,
                 width: 280,
-				id: 'filter_parent',
+                id: 'filter_parent',
                 title: 'Filtering',
                 layout: {
                     type: 'accordion'
@@ -73,20 +73,20 @@ vq.utils.VisUtils.extend(re.ui, {
                                         autoHeight:true,
                                         items:[
                                         { xtype:'checkbox',
-                                        	id:'isolate',
-                                        	fieldLabel:'Isolate',
+                                            id:'isolate',
+                                            fieldLabel:'Isolate',
                                             defaultValue:false,
-                                        	checked:false,
-                                        	listeners: { check: function(cb, checked) {
-                                        		Ext.getCmp(re.ui.feature2.id).setDisabled(checked);
-                                        		if (checked) { Ext.getCmp(re.ui.feature2.id).collapse(); }
-                                        		else { Ext.getCmp(re.ui.feature2.id).expand(); }
+                                            checked:false,
+                                            listeners: { check: function(cb, checked) {
+                                                Ext.getCmp(re.ui.feature2.id).setDisabled(checked);
+                                                if (checked) { Ext.getCmp(re.ui.feature2.id).collapse(); }
+                                                else { Ext.getCmp(re.ui.feature2.id).expand(); }
                                                 Ext.getCmp('t_chr').setDisabled(checked);
                                                 Ext.getCmp('t_start').setDisabled(checked);
                                                 Ext.getCmp('t_stop').setDisabled(checked);
                                                 Ext.getCmp('t_lookup_button').setDisabled(checked);
                                                 Ext.getCmp('filter_type').setDisabled(checked);
-                                        	}
+                                            }
                                         }
                                         },
                                             {
@@ -237,10 +237,10 @@ vq.utils.VisUtils.extend(re.ui, {
                                             }
                                         ]},
                                     {  xtype:'fieldset',
-                                    	id:re.ui.feature2.id,
+                                        id:re.ui.feature2.id,
                                         title:re.ui.feature2.label, 
-                                       	checkboxToggle:false,
-                                       	maskDisabled:true,
+                                        checkboxToggle:false,
+                                        maskDisabled:true,
                                         collapsible: true,
                                         defaults:{anchor:'100%'},
                                         labelWidth: 70,
@@ -248,12 +248,12 @@ vq.utils.VisUtils.extend(re.ui, {
                                         defaultType:'textfield',
                                         autoHeight:true,
                                         listeners: {
-                                        	disabled : function(){
-                                        		var me = this;
-                                        		Ext.getCmp('filter_type').setDisabled(me.disabled);
-                                        	}
+                                            disabled : function(){
+                                                var me = this;
+                                                Ext.getCmp('filter_type').setDisabled(me.disabled);
+                                            }
                                         },
-                                        items: [                                        	
+                                        items: [                                            
                                             {
                                                 xtype:'combo',
                                                 name:'p_type',

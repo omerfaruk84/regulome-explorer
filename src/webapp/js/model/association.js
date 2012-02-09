@@ -104,7 +104,7 @@ re.model.association =  {
 			grid : {
 				column : { header: "Correlation", width:50, id:'correlation',dataIndex:'correlation'},
 				store_index : 'correlation'
-			}
+				}
 			},
 			query : {
 				id : 'correlation',
