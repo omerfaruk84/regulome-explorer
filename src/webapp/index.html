@@ -53,11 +53,11 @@
 
     <script type="text/javascript" src="/js/utils.js"></script>
     <script type="text/javascript" src="/js/widgets.js"></script>
-    <script type="text/javascript" src="/js/topbar.js"></script>
+    <script type="text/javascript" src="https://addama.googlecode.com/hg/gae-svcs/addama-registry/src/main/webapp/js/topbar.js"></script>
     <link rel="stylesheet" type="text/css" href="css/topbar.css" />
     <script type="text/javascript">
         Ext.onReady(function() {
-            new org.systemsbiology.addama.js.FloatingTopBar();
+            new org.systemsbiology.addama.js.FloatingTopBar({ hidden: true });
             org.systemsbiology.addama.js.Message.show("All Pairs Significance", "Ready to Explore");
         });
     </script>
