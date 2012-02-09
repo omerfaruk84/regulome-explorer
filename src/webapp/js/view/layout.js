@@ -665,7 +665,7 @@ function getMenus() {
         ]
     };
     
-    return [ dataMenu, displayMenu, modeMenu ];
+    return [ dataMenu, "-", displayMenu, "-", modeMenu, "-" ];
 }
 
 Ext.onReady(function() {
