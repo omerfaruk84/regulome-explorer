@@ -71,7 +71,7 @@ vq.utils.VisUtils.extend(re, {
                     Feature : function(node) { var pos = node.label.indexOf('_');
                     return pos > 0 ? node.label.slice(0,pos) : node.label;},
                     Source : function(node) { return re.label_map[node.source]},
-                    'Location' : function(node) { return node.chr + ' ' + node.start + '-' + node.end + ' ';} ,
+                    'Location' : function(node) { return 'Chr' + node.chr + ' ' + node.start + '-' + node.end + ' ';} ,
                     Other : function(node) { return node.label_mod.replace(/_/g,', ');}
                 },
                 edge : function(edge) {}
