@@ -3,7 +3,7 @@ if (re.model === undefined) re.model = {};
 re.model.association =  {
 	types : [
         { 	id : 'score',
-      			label : 'Agg. Score',
+      			label : 'Aggressiveness Score',
       			ui : {
       			filter : {
       				 					component:   new re.multirangeField(
@@ -30,7 +30,7 @@ re.model.association =  {
       					edgeSchema : { name: "score", type: "number" }
       				},
       				tooltip : {
-      					entry : {  'Agg. Score' : 'score'}
+      					entry : {  'Aggressiveness Score' : 'score'}
       				},
                       scatterplot : {
                           scale_type :'linear',
@@ -41,63 +41,63 @@ re.model.association =  {
                           color_scale : pv.Scale.linear(-10,-0.1,0.1,10).range('blue','white','white','red')
       			}
       		}
-        },
-		{ 	id : 'association',
-			label : 'Assoc.',
-			ui : {
-                filter : {
-                    component: {
-                        width:          50,
-                        id: 'association',
-                        name :'Assoc.',
-                        xtype:          'combo',
-                        mode:           'local',
-                        defaultValue:   '',
-                        value:          '',
-                        triggerAction:  'all',
-                        forceSelection: true,
-                        editable:       false,
-                        fieldLabel:     'Assoc.',
-                        displayField:   'name',
-                        valueField:     'value',
-                        store:          new Ext.data.JsonStore({
-                            fields : ['name', 'value'],
-                            data   : [
-                                {name : 'Either',   value: ''},
-                                {name : '+',  value: '1'},
-                                {name : '-', value: '-1'}
-                            ]
-                        })
-                    }
-                },
-			grid : {
-				column : { header: 'Assoc.', width:50, id:'association',dataIndex:'association' },
-				store_index : 'association'
-				}
-			},
-			query : {
-				id : 'association',
-				clause : 'association = ',
-
-				order_direction : 'DESC'
-			},
-			vis : {
-				network : {
-					edgeSchema : { name: "association", type: "number" }
-				},
-				tooltip : {
-					entry : { 'Association' : 'association'}
-				},
-                scatterplot : {
-                    scale_type :'linear',
-                    values : {
-                        min:-1,
-                        max : 1
-                        },
-                    color_scale : pv.Scale.linear(-1,1).range('blue','red')
-                }
-			}	
-		}
+        }
+//		{ 	id : 'association',
+//			label : 'Association',
+//			ui : {
+//                filter : {
+//                    component: {
+//                        width:          50,
+//                        id: 'association',
+//                        name :'Assoc.',
+//                        xtype:          'combo',
+//                        mode:           'local',
+//                        defaultValue:   '',
+//                        value:          '',
+//                        triggerAction:  'all',
+//                        forceSelection: true,
+//                        editable:       false,
+//                        fieldLabel:     'Assoc.',
+//                        displayField:   'name',
+//                        valueField:     'value',
+//                        store:          new Ext.data.JsonStore({
+//                            fields : ['name', 'value'],
+//                            data   : [
+//                                {name : 'Either',   value: ''},
+//                                {name : '+',  value: '1'},
+//                                {name : '-', value: '-1'}
+//                            ]
+//                        })
+//                    }
+//                },
+//			grid : {
+//				column : { header: 'Assoc.', width:50, id:'association',dataIndex:'association' },
+//				store_index : 'association'
+//				}
+//			},
+//			query : {
+//				id : 'association',
+//				clause : 'association = ',
+//
+//				order_direction : 'DESC'
+//			},
+//			vis : {
+//				network : {
+//					edgeSchema : { name: "association", type: "number" }
+//				},
+//				tooltip : {
+//					entry : { 'Association' : 'association'}
+//				},
+//                scatterplot : {
+//                    scale_type :'linear',
+//                    values : {
+//                        min:-1,
+//                        max : 1
+//                        },
+//                    color_scale : pv.Scale.linear(-1,1).range('blue','red')
+//                }
+//			}
+//		}
 	]
 };
 
