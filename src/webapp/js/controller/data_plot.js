@@ -7,9 +7,9 @@ function registerPlotListeners() {
         renderCircleData(data);
         renderCircleLegend('top-right');
     });
-    d.addListener('data_ready','sf_associations',function(data) {
+    d.addListener('data_ready','sf_associations',function(response) {
         if (re.state.query_cancel) { return;}
-        renderSFCircleData(data);
+        renderSFCircleData(response.features,response.filter);
         renderCircleLegend('center');
     });
     d.addListener( 'data_ready','graph',function(data) {
@@ -28,13 +28,17 @@ function registerPlotListeners() {
         generateColorMaps(obj);
     });
     d.addListener('data_ready','annotations',function(obj){
-        re.plot.chrome_length = obj['chrom_leng'];
+        re.plot.chrom_length = obj['chrom_leng'];
     });
     d.addListener('render_scatterplot','details', function(obj){
         scatterplot_draw(obj);
     });
-    d.addListener('render_linearbrowser', function(obj){
+    d.addListener('render_linearbrowser','circvis', function(obj){
         renderLinearData(obj);
+        renderLinearLegend();
+    });
+    d.addListener('render_linearbrowser','feature_circvis', function(obj){
+        renderLinearFeatureData(obj);
         renderLinearLegend();
     });
     d.addListener('render_complete','circvis', function(obj){
@@ -120,11 +124,10 @@ function generateColorMaps(dataset_labels) {
 }
 
 function renderCircleLegend(anchor) {
-
-    legend_draw(document.getElementById('circle-legend-panel'),anchor);
+    legend_draw('circle-legend-panel',anchor);
 }
 function renderLinearLegend(anchor) {
-    legend_draw(document.getElementById('linear-legend-panel'));
+    legend_draw('linear-legend-panel',anchor);
 }
 
 function renderCircleData(data) {
@@ -134,8 +137,8 @@ function renderCircleData(data) {
     wedge_plot(data, document.getElementById('circle-panel'));
 }
 
-function renderSFCircleData(data) {
-    singlefeature_circvis(data, document.getElementById('circle-panel'));
+function renderSFCircleData(data,filter) {
+    singlefeature_circvis(data,filter, document.getElementById('circle-panel'));
     var field = re.display_options.circvis.rings.pairwise_scores.value_field;
     var association  = re.model.association.types[re.model.association_map[field]];
     Ext.getCmp('circle-legend-panel').setPosition(375,330);
@@ -200,7 +203,7 @@ function colorscale_draw(association_obj, div) {
 
 }
 
-function legend_draw(div,anchor) {
+function legend_draw(div_id,anchor) {
 
     var dataset_labels = re.ui.getDatasetLabels();
         var source_map = pv.numerate(dataset_labels['feature_sources'], function(row) {return row.source;});
@@ -210,16 +213,16 @@ function legend_draw(div,anchor) {
 
        var anchor = anchor || 'top-right';
     var width=800, height=800;
-    var legend_height = (30 + current_locatable_data.length * 13), legend_width = 150;
+    var legend_height = (30 + current_locatable_data.length * 13), legend_width = 220;
     var top = 20, left = 0;
     if (arguments[1] != undefined) {anchor = arguments[1];}
     switch(anchor) {
         case('center'):
-                    Ext.getCmp('circle-legend-panel').setPosition(375,330);
-                    Ext.getCmp('circle-legend-panel').doLayout();
+                    Ext.getCmp(div_id).setPosition(345,330);
+                    Ext.getCmp(div_id).doLayout();
         break;
         case('top-right'):
-                Ext.getCmp('circle-legend-panel').setPosition(880,20);
+                Ext.getCmp(div_id).setPosition(880,20);
                 Ext.getCmp('circle-legend-panel').doLayout();
         default:
         break;
@@ -238,7 +241,7 @@ function legend_draw(div,anchor) {
         .height(legend_height)
         .lineWidth(1)
         .strokeStyle('black')
-        .canvas(div);
+        .canvas(div_id);
 
 
     var drawPanel = vis.add(pv.Panel)
@@ -278,7 +281,7 @@ function legend_draw(div,anchor) {
 
 
 
-function singlefeature_circvis(parsed_data,div) {
+function singlefeature_circvis(features,filter,div) {
     var width=800, height=800;
     var ring_radius = width / 10;
     var chrom_keys = ["1","2","3","4","5","6","7","8","9","10",
@@ -286,7 +289,7 @@ function singlefeature_circvis(parsed_data,div) {
     var stroke_style = re.plot.colors.getStrokeStyleAttribute();
 
     function genome_listener(chr) {
-        var e = new vq.events.Event('render_linearbrowser','circvis',{data:vq.utils.VisUtils.clone(parsed_data),chr:chr});
+        var e = new vq.events.Event('render_linearbrowser','feature_circvis',{data:scatterplot_data,filter:filter,chr:chr});
         e.dispatch();
     }
 
@@ -294,7 +297,7 @@ function singlefeature_circvis(parsed_data,div) {
         var chr = feature.chr;
         var start = bpToMb(feature.start) - 2.5;
         var range_length = bpToMb(feature.end) - start + 2.5;
-        var e = new vq.events.Event('render_linearbrowser','circvis',{data:vq.utils.VisUtils.clone(parsed_data),chr:chr,start:start,range:range_length});
+        var e = new vq.events.Event('render_linearbrowser','feature_circvis',{data:scatterplot_data,filter:filter,chr:chr,start:start,range:range_length});
         e.dispatch();
     }
 
@@ -306,7 +309,7 @@ function singlefeature_circvis(parsed_data,div) {
     },
         scatterplot_tooltips =  re.display_options.circvis.tooltips.feature;
 
-    var scatterplot_data = parsed_data['features'];
+    var scatterplot_data = vq.utils.VisUtils.clone(features);
 
     var field = re.display_options.circvis.rings.pairwise_scores.value_field;
     var association  = re.model.association.types[re.model.association_map[field]];
@@ -316,8 +319,8 @@ function singlefeature_circvis(parsed_data,div) {
     var max = settings.values.max === undefined ? pv.max(scatterplot_data, function(o) { return o[field];}) : settings.values.max;
     var scale_type = settings.scale_type;
 
-    var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrome_length);
-    var ticks = vq.utils.VisUtils.clone(parsed_data['features']);
+    var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
+    var ticks = vq.utils.VisUtils.clone(scatterplot_data);
 
     var floor = settings.values.floor === undefined ? min : settings.values.floor;
     var ceil = settings.values.ceil === undefined ? max : settings.values.ceil;
@@ -331,6 +334,7 @@ function singlefeature_circvis(parsed_data,div) {
     }
     min = floor;
     max = ceil;
+
 
     function re_interpolate(new_domain) {
         var old_domain  = settings.color_scale.domain(), old_range = settings.color_scale.range();
@@ -403,10 +407,7 @@ function singlefeature_circvis(parsed_data,div) {
                     legend_label : 'Karyotype Bands' ,
                     legend_description : 'Chromosomal Karyotype',
                     outer_padding : 10,
-//                    fill_style : function(feature) { return feature.value;},
-//                    stroke_style : function(feature) { return feature.value;},
                     tooltip_items : karyotype_tooltip_items
-//                    listener : wedge_listener
                 }
             },{
                 PLOT : {
@@ -430,12 +431,7 @@ function singlefeature_circvis(parsed_data,div) {
                     fill_style  : function(feature) {return settings.color_scale(feature[field]); },
                     stroke_style  : function(feature) {return settings.color_scale(feature[field]); },
                     tooltip_items : scatterplot_tooltips,
-                    tooltip_links : {
-                        'UCSC Genome Browser' :  function(feature){
-                            return  ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
-                        'Ensemble' : function(feature) {
-                            return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + ':' +  feature.start +'-'+ feature.end;  }
-                    }
+                    tooltip_links :  re.display_options.circvis.tooltips.links
                     // listener : initiateDetailsPopup
                 }
             }
@@ -443,6 +439,7 @@ function singlefeature_circvis(parsed_data,div) {
     };
     var circle_vis = new vq.CircVis();
     var dataObject ={DATATYPE : "vq.models.CircVisData", CONTENTS : data };
+    vq.utils.VisUtils.extend(dataObject,buildCircvisObject(filter));
     circle_vis.draw(dataObject);
 
     var e = new vq.events.Event('render_complete','circvis',circle_vis);
@@ -503,7 +500,7 @@ function wedge_plot(parsed_data,div) {
     });
 
 
-    var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrome_length);
+    var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
     var ticks = vq.utils.VisUtils.clone(parsed_data['features']);
 
     var types = re.model.association.types.map(function(assoc) { return assoc.query.id;});
@@ -697,7 +694,7 @@ function linear_plot(obj) {
             var obj = {};
             re.model.association.types.forEach(function(assoc) {
                 obj[assoc.ui.grid.store_index] = link[assoc.query.id];
-            })
+            });
             var node1_clone = vq.utils.VisUtils.extend(obj,link.node1);
             node1_clone.start = bpToMb(node1_clone.start); node1_clone.end = bpToMb(node1_clone.end);
             node1_clone.sourceNode = vq.utils.VisUtils.extend({},link.node1);
@@ -708,7 +705,7 @@ function linear_plot(obj) {
             var obj = {};
             re.model.association.types.forEach(function(assoc) {
                 obj[assoc.ui.grid.store_index] = link[assoc.query.id];
-            })
+            });
             var node1_clone = vq.utils.VisUtils.extend(obj,link.node2);
             node1_clone.start = bpToMb(node1_clone.start); node1_clone.end = bpToMb(node1_clone.end);
             node1_clone.sourceNode = vq.utils.VisUtils.extend({},link.node1);
@@ -724,7 +721,7 @@ function linear_plot(obj) {
             var obj = {};
             re.model.association.types.forEach(function(assoc) {
                 obj[assoc.ui.grid.store_index] = link[assoc.query.id];
-            })
+            });
             var node1_clone = vq.utils.VisUtils.extend(obj,link.node1);
             node1_clone.start = link.node1.start <= link.node2.start ?
                 link.node1.start : link.node2.start;
@@ -873,7 +870,7 @@ function linear_plot(obj) {
             }]
     }
     };
-    var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrome_length);
+    var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
     var chr_match = chrom_leng.filter(function(chr_obj) { return chr_obj.chr_name == chrom;});
     var maxPos = Math.ceil(bpToMb(chr_match[0]['chr_length']));
 
@@ -1055,6 +1052,140 @@ function scatterplot_draw(params) {
     var e = new vq.events.Event('render_complete','scatterplot',sp);
     e.dispatch();
     return sp;
+
+}
+
+function renderLinearFeatureData(obj) {
+    plotFeatureDataLinear(vq.utils.VisUtils.extend(obj,{div:document.getElementById('linear-panel')}));
+}
+
+
+function plotFeatureDataLinear(obj) {
+    var div = obj.div || null, features = obj.data || [], chrom = obj.chr || '1', start = obj.start || null, range_length = obj.range || null;
+
+    features=features.filter(function(f) { return f.chr == chrom;});
+
+
+    var tooltip_links = { };
+    for (var link in re.display_options.circvis.tooltips.links ) {
+            tooltip_links[link] = function(feature) { return re.display_options.circvis.tooltips.links[link](
+                {
+                    chr:feature.chr,
+                    start: mbpToBp(feature.start),
+                    end:mbpToBp(feature.end)
+                });
+    };
+    }
+
+
+    var tile_listener = function(feature){
+        window.open(re.display_options.circvis.tooltips.links['UCSC Genome Browser'](
+            {
+                chr:feature.chr,
+                start: mbpToBp(feature.start),
+                end:mbpToBp(feature.end)
+            }),'_blank');
+        return false;
+    };
+
+   var stroke_style_fn = re.plot.colors.getStrokeStyleAttribute();
+
+   var field = re.display_options.circvis.rings.pairwise_scores.value_field;
+   var association  = re.model.association.types[re.model.association_map[field]];
+   var settings = association.vis.scatterplot;
+   if (settings.values === undefined) { settings.values = {};}
+   var min = settings.values.min === undefined ? pv.min(features, function(o) { return o[field];}) : settings.values.min;
+   var max = settings.values.max === undefined ? pv.max(features, function(o) { return o[field];}) : settings.values.max;
+   var data = vq.utils.VisUtils.clone(features).map(function (location)  {
+                        var node =location;
+                        node.start = bpToMb(node.start);node.end = bpToMb(node.end);
+                        return node;
+                    });
+
+    var data_obj = function() { return {
+        PLOT :     {
+            width:800,
+            height:700,
+            min_position:1,
+            max_position:maxPos,
+            vertical_padding:20,
+            horizontal_padding:20,
+            container : div,
+            context_height: 100},
+        TRACKS : [
+            { type: 'glyph',
+                label : 'Feature Types',
+                description : 'Genome Location of Features',
+                CONFIGURATION: {
+                    fill_style : function(tick) {return re.plot.colors.node_colors(tick.source); },
+                    stroke_style : stroke_style_fn,
+                  shape :  'square',
+                    track_height : 290,           //required
+                    track_padding: 30,             //required
+                    tile_height:12,                //required
+                    tile_padding:3,              //required
+                    radius: 4,
+                    //required
+                    tile_overlap_distance:.5,    //required
+                    tile_show_all_tiles : true,
+                    track_fill_style : pv.color('#EEDDEE'),
+                    track_line_width : 1,
+                    track_stroke_style: pv.color('#000000'),
+                    notifier:tile_listener         //optional
+                },
+                OPTIONS: {
+                    tooltip_links :tooltip_links,
+                    tooltip_items :  re.display_options.circvis.tooltips.feature     //optional
+                },
+                data_array : vq.utils.VisUtils.clone(features).map(function (location)  {
+                    var node =location;
+                    node.start = bpToMb(node.start);node.end = bpToMb(node.end);
+                    return node;
+                })
+            },{ type: 'scatter',
+                label : 'Feature Scores',
+                description : 'Clinical Scores of Features',
+                CONFIGURATION: {
+                    fill_style : function (feature) {  return settings.color_scale(feature[field]);  },          //required
+                    stroke_style : function (feature) { return 'grey';},//return score_color_scale(feature.value);  },          //required
+                    track_fill_style : pv.color('#EEEEEE'),
+                    track_height : 200,           //required
+                    track_padding: 20,             //required
+                    min_value : min,
+                    max_value : max,
+                    base_value : 0,
+                    num_y_rule_lines: 5,
+                   shape : 'circle',
+                    radius:4,
+                    notifier:tile_listener
+                },//optional
+                OPTIONS: {
+                    tooltip_links : tooltip_links,
+                    tooltip_items :  re.display_options.circvis.tooltips.feature     //optional
+                },
+                data_array :data,
+                value_key:field
+            }]
+    }
+    };
+    var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
+    var chr_match = chrom_leng.filter(function(chr_obj) { return chr_obj.chr_name == chrom;});
+    var maxPos = Math.ceil(bpToMb(chr_match[0]['chr_length']));
+
+    var lin_browser = new vq.LinearBrowser();
+    var lin_data = {DATATYPE: 'vq.models.LinearBrowserData',CONTENTS: data_obj()};
+
+    lin_browser.draw(lin_data);
+
+    if (start != null && start > 0 && range_length != null && range_length > 0) {
+        lin_browser.setFocusRange(start,range_length);
+    }
+
+    obj.vis = lin_browser;
+    var e = new vq.events.Event('render_complete','linear',obj);
+    e.dispatch();
+
+    return lin_browser;
 }
 
 
@@ -1144,7 +1275,7 @@ function populateGraph(obj) {
 }
 
 function buildCircvisObject(filter) {
-    var data = {PLOT:{},GENOME:{},TICKS{OPTIONS:{}}};
+    var data = {PLOT:{},GENOME:{},TICKS:{OPTIONS:{}}};
     data.PLOT.width=re.display_options.circvis.width, data.PLOT.height=re.display_options.circvis.height;
     var ring_radius = re.display_options.circvis.ring_radius;
     var chrom_keys = re.display_options.circvis.chrom_keys;
@@ -1179,4 +1310,3 @@ function buildCircvisObject(filter) {
     return data;
 }
 
-}

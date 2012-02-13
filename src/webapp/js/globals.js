@@ -69,13 +69,31 @@ vq.utils.VisUtils.extend(re, {
             tooltips:{
                 feature :  {
                     Feature : function(node) { var pos = node.label.indexOf('_');
-                    return pos > 0 ? node.label.slice(0,pos) : node.label;},
+                        return pos > 0 ? node.label.slice(0,pos) : node.label;},
                     Source : function(node) { return re.label_map[node.source]},
-                    'Location' : function(node) { return 'Chr' + node.chr + ' ' + node.start + '-' + node.end + ' ';} ,
+                    'Location' : function(node) { return 'Chr' + node.chr + ' ' + node.start + (node.end == '' ? '' : '-'+ node.end) + ' ';} ,
                     Annotations : function(node) { return node.label_mod.replace(/_/g,', ');}
                 },
-                edge : function(edge) {}
-
+                edge : function(edge) {},
+                link_objects: [
+                    {
+                        label : 'UCSC Genome Browser',
+                        url : 'http://genome.ucsc.edu/cgi-bin/hgTracks',
+                        uri : '?db=hg18&position=chr',
+                        config_object :  function(feature){
+                            return  'http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg18&position=chr' +
+                                feature.chr + ':' +  feature.start + (feature.end == '' ? '' : '-'+ feature.end);  }
+                    },//ucsc_genome_browser
+                    {
+                        label :'Ensemble',
+                        url : 'http://uswest.ensembl.org/Homo_sapiens/Location/View',
+                        uri : '?r=',
+                        config_object :  function(feature) {
+                            return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr +
+                                ':' +  feature.start + (feature.end == '' ? '' : '-'+ feature.end);  }
+                    }//ensemble
+                ], //link_objects
+                links : {}
             },
             ticks : {
                 tick_overlap_distance : null,
@@ -126,7 +144,7 @@ vq.utils.VisUtils.extend(re, {
         },
         inter_scale : pv.Scale.linear(0.00005,0.0004).range('lightpink','red'),
         linear_unit : 100000,
-        chrome_length : [],
+        chrom_length : [],
 
         scatterplot_data : null
     },
@@ -199,11 +217,11 @@ re.isRingHidden = function(ring) {
     re.label_map = {
         '*':'All',
         'GEXP' :'Gene Expression',
-        'METH' : 'Methylation',
-        'CNVR' : 'Copy # Var Region',
+        'METH' : 'DNA Methylation',
+        'CNVR' : 'Somatic Copy Number Alteration',
         'CLIN' : 'Clinical',
-        'MIRN': 'microRNA',
-        'GNAB' : 'Gene Aberration',
+        'MIRN': 'MicroRNA Expression',
+        'GNAB' : 'Somatic Mutation',
         'SAMP' : 'Tumor Sample',
         'PRDM' : 'Paradigm Feature',
         'RPPA'  : 'RPPA'
@@ -244,10 +262,13 @@ re.isRingHidden = function(ring) {
         re.ui.feature2 = {label : 'Feature 2', id : 'feature2'};
     }
 
+        re.display_options.circvis.tooltips.link_objects.forEach(function(link){
+            re.display_options.circvis.tooltips.links[link.label] = link.config_object;
+        });
 
     re.model.association.types.forEach( function(assoc) {
-                            vq.utils.VisUtils.extend(re.display_options.circvis.tooltips.feature, assoc.vis.tooltip.entry);
-                        });
+        vq.utils.VisUtils.extend(re.display_options.circvis.tooltips.feature, assoc.vis.tooltip.entry);
+    });
 
 })();
 

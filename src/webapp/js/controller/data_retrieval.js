@@ -207,28 +207,31 @@ function loadNetworkData(response) {
 
 
 function loadNetworkDataSingleFeature(params) {
-    var responses = [];
+    var responses = {data:[],filter:params};
     var feature_types = ['t'];
+    var data = [];
 
     function loadComplete() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_complete','sf_associations', responses));
     }
 
     function loadFailed() {
-        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','associations',{msg:'Retrieval Timeout'}));
+        vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','sf_associations',{msg:'Retrieval Timeout'}));
     }
 
     function handleNetworkQuery(response) {
         try {
-            responses.push(Ext.decode(response.responseText));
+            data.push(Ext.decode(response.responseText));
         }
         catch (err) {   //an error detected in one of the responses
             throwQueryError('associations',response);
             return;
         }
-        if (responses.length >= feature_types.length) {
-            responses = pv.blend(responses);
-            if (responses.length >= 1) {
+        if (data.length >= feature_types.length) {
+            data = pv.blend(data);
+            if (data.length >= 1) {
+                responses.data = vq.utils.VisUtils.clone(data);
+                delete data;
                 loadComplete();
                 return;
             }

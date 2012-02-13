@@ -161,7 +161,7 @@ function parseNetwork(responses) {
 
 function parseSFValues(responses) {
 
-    var parsed_data = {features:[]};
+    var parsed_data = {features:[],filter:responses.filter};
     function loadComplete() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('data_ready','sf_associations', parsed_data));
     }
@@ -172,7 +172,7 @@ function parseSFValues(responses) {
 
     var data = [];
 
-    data = responses.map(parseFeatureAlias);
+    data = responses.data.map(parseFeatureAlias);
     if (data.length < 1)loadFailed();
 
     parsed_data.features = data.filter(function(feature) { return feature.chr != '' && feature.start != '';});
