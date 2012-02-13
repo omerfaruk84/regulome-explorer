@@ -809,29 +809,167 @@ Ext.onReady(function() {
                         id:'displayMenu',
                         text:'Display',
                         labelStyle: 'font-weight:bold;',
-                        menu:[{
-                            id:'networkMenu',
-                            text:'Network',
-                            labelStyle: 'font-weight:bold;',
+                        menu:[ {
+                            text:'Outer Ticks:',
                             menu:[{
-                                checked:true,
-                                text:'Force Directed',
+
+                                xtype :'compositefield',
+                                items:[
+                                    {
+                                        xtype:'checkbox',
+                                        id: 'tile_ticks_checkbox',
+                                        checked : false,
+                                        label:'Specifiy Tick Tiling',
+                                        handler :
+                                            function(checkbox, checked){
+                                                Ext.getCmp('tile_ticks_field').setDisabled(!checked);
+                                                re.display_options.circvis.ticks.tile_ticks_manually = checked;
+                                                re.display_options.circvis.ticks.tick_overlap_distance = Ext.getCmp('tile_ticks_field').getValue();
+                                            }
+                                    },
+                                    {
+                                        xtype:'label',
+                                        text:'Overlap Distance'
+                                    },
+                                    {
+                                        id:'tile_ticks_field',
+                                        xtype:'numberfield',
+                                        width:75,
+                                        value:'7200',
+                                        minValue:-2,
+                                        maxValue: 20000000.0,
+                                        disabled : true,
+                                        listeners : {
+                                            change:  function(field,value) {
+                                                    re.display_options.circvis.ticks.tick_overlap_distance =value;
+
+                                            }
+                                        }
+                                    },
+                                    {
+                                        xtype:'label',
+                                        text:'bp'
+                                    }
+                                ],
+                                text:'Tile Overlap',
+                                width: 220
+                            },{
+                                xtype:'compositefield',
+                                width: 240,
+                                items:[   {
+                                        xtype:'checkbox',
+                                        id: 'tick_wedge_height_manually',
+                                        checked : false,
+                                        label:'Wedge Height',
+                                        handler :
+                                            function(checkbox, checked){
+                                                Ext.getCmp('circvis_tick_wedge_height').setDisabled(!checked);
+                                                re.display_options.circvis.ticks.wedge_height_manually = checked;
+                                                re.display_options.circvis.ticks.wedge_height = Ext.getCmp('circvis_tick_wedge_height').getValue();
+                                            }
+                                    },
+                                    {
+                                        xtype:'label',
+                                        text:'Wedge Height'
+                                    },{
+                                    id:'circvis_tick_wedge_height',
+                                    xtype:'numberfield',
+                                    minValue:1,
+                                    maxValue:30,
+                                    value: 10,
+                                    width: 75,
+                                        disabled : true,
+                                    listeners: {
+                                        change: function(field,value) {
+                                                re.display_options.circvis.ticks.wedge_height = value;
+                                        }
+                                    }
+                                },{
+                                    xtype:'label',
+                                    text:'pixels'
+                                }]
+                            },{
+                                xtype:'compositefield',
+                                width: 240,
+                                items:[   {
+                                        xtype:'checkbox',
+                                        id: 'tick_wedge_width_manually',
+                                        checked : false,
+                                        label:'Wedge Width',
+                                        handler :
+                                            function(checkbox, checked){
+                                                Ext.getCmp('circvis_tick_wedge_width').setDisabled(!checked);
+                                                re.display_options.circvis.ticks.wedge_width_manually = checked;
+                                                re.display_options.circvis.ticks.wedge_width = Ext.getCmp('circvis_tick_wedge_width').getValue();
+                                            }
+                                    },
+                                    {
+                                        xtype:'label',
+                                        text:'Wedge Width'
+                                    },{
+                                    id:'circvis_tick_wedge_width',
+                                    xtype:'numberfield',
+                                    minValue:0.1,
+                                    maxValue:360,
+                                    value: 0.5,
+                                    width: 75,
+                                        disabled : true,
+                                    listeners: {
+                                        change: function(field,value) {
+                                                re.display_options.circvis.ticks.wedge_width = value;
+                                        }
+                                    }
+                                },{
+                                    xtype:'label',
+                                    text:'degrees'
+                                }]
+                            }]
+                        },    {
+                            text:'Rotate Clockwise',
+                            menu:[{
+                                xtype:'compositefield',
+                                width: 140,
+                                items:[ {
+                                    id:'circvis_rotation_degrees',
+                                    xtype:'numberfield',
+                                    minValue:0,
+                                    maxValue:360,
+                                    value: 0,
+                                    width: 75,
+                                    listeners: {
+                                        change:function(field,value) {
+                                                re.display_options.circvis.rotation = value;
+                                        }
+                                    }
+                                },{
+                                    xtype:'label',
+                                    text:'degrees'
+                                }]
+                            }]
+                        },{
+                            text:'Rings:',
+                            menu:[{
                                 xtype:'menucheckitem',
-                                handler:networkLayoutHandler,
-                                group:'networklayout_group'
+                                handler: ringHandler,
+                                checked:!re.isRingHidden('karyotype'),
+                                id:'karyotype',
+                                text:'Karyotype Bands'
+                            },{
+                                xtype:'menucheckitem',
+                                handler: ringHandler,
+                                checked:!re.isRingHidden('cnvr'),
+                                id:'cnvr',
+                                text:'CNVR tiles'
                             },
-                                { text:'Radial',
+                                {
                                     xtype:'menucheckitem',
-                                    handler:networkLayoutHandler,
-                                    checked: false,
-                                    group:'networklayout_group'},
-                                { text:'Tree',
-                                    xtype:'menucheckitem',
-                                    handler:networkLayoutHandler,
-                                    checked: false,
-                                    group:'networklayout_group'}
-                            ]
-                        }, {
+                                    handler: ringHandler,
+                                    checked:!re.isRingHidden('pairwise_scores'),
+                                    id:'pairwise_scores',
+                                    text:'Pairwise Scores'
+                                }]
+
+                        },{
                             id:'circularScatterplotMenu',
                             text:'Circular Scatterplot',
                             labelStyle: 'font-weight:bold;',
@@ -937,6 +1075,11 @@ Ext.onReady(function() {
         ],
         renderTo:Ext.getBody()
     });
+
+    function ringHandler(item){
+        re.setRingHidden(item.getId(),item.checked);  //hidden if true!
+        requestFeatureFilteredRedraw();
+    }
 
     function userGuideHandler(item) {
         openBrowserTab('/help/re/user_guide.html');

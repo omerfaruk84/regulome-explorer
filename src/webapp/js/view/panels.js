@@ -114,8 +114,8 @@ vq.utils.VisUtils.extend(re.ui, {
                                                 triggerAction : 'all',
                                                 forceSelection : true,
                                                 emptyText : 'Select a Type...',
-                                                defaultValue : 'GEXP',
-                                                value : 'GEXP',
+                                                defaultValue : '*',
+                                                value : '*',
                                                 listeners : {
                                                     select : function(field,record, index) {
                                                         switch(record.id)  {

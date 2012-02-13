@@ -3,7 +3,7 @@ if (re.model === undefined) re.model = {};
 re.model.association =  {
 	types : [
         { 	id : 'score',
-      			label : 'Aggressiveness Score',
+      			label : 'Aggressiveness',
       			ui : {
       			filter : {
       				 					component:   new re.multirangeField(
@@ -11,18 +11,19 @@ re.model.association =  {
                                                           label: 'Agg. Score',
                                                           default_value: 2.00,
                                                           min_value: -10,
-                                                          max_value: 10}
+                                                          max_value: 10
+                                                        }
                                                   )
       			},
       			grid : {
-      				column : { header: 'Agg. Score', width:50, id:'score',dataIndex:'score'},
+      				column : { header: 'Aggressiveness', width:50, id:'score',dataIndex:'score'},
       				store_index : 'score'
       			}
       			},
       			query : {
       				id : 'score',
       				clause : flex_field_query,
-                      order_id : ' floorlogged_pvalue',
+                      order_id : 'score * association',
       				order_direction : 'DESC'
       			},
       			vis : {
@@ -30,7 +31,7 @@ re.model.association =  {
       					edgeSchema : { name: "score", type: "number" }
       				},
       				tooltip : {
-      					entry : {  'Aggressiveness Score' : 'score'}
+      					entry : {  'Aggressiveness' : 'score'}
       				},
                       scatterplot : {
                           scale_type :'linear',
