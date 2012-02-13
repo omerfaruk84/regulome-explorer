@@ -31,7 +31,9 @@ function selectDataset(set_label) {
 
 function loadDatasetLabels() {
 
-    var dataset_labels = {feature_sources : null, clin_labels : null, patients: null};
+//    var dataset_labels = {feature_sources : null, clin_labels : null, patients: null};
+    var dataset_labels = {feature_sources : null, clin_labels : null};
+
     var clin_label_query_str = '?' + re.params.query + 'select `label`' + re.params.json_out;
     var clin_label_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.clin_uri + re.rest.query +clin_label_query_str;
     var timer = new vq.utils.SyncDatasources(200,40,loadComplete,dataset_labels,loadFailed);
@@ -67,19 +69,19 @@ function loadDatasetLabels() {
 
     Ext.Ajax.request({url:sources_query,success:featureSourceQueryHandler, failure: function(response) { queryFailed('feature_source',response); }});
 
-    var patient_query_str = '?' + re.params.query + 'limit 1'+re.params.json_out;
-    var patient_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.patient_uri + re.rest.query +patient_query_str;
+    // var patient_query_str = '?' + re.params.query + 'limit 1'+re.params.json_out;
+    // var patient_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.patient_uri + re.rest.query +patient_query_str;
 
-    function patientQueryHandle(response) {
-        try {
-            dataset_labels['patients'] = Ext.decode(response.responseText)[0]['barcode'].split(':');
-        } catch (err) {
-            throwQueryError('patients_barcode',response);
-        }
-    }
+    // function patientQueryHandle(response) {
+    //     try {
+    //         dataset_labels['patients'] = Ext.decode(response.responseText)[0]['barcode'].split(':');
+    //     } catch (err) {
+    //         throwQueryError('patients_barcode',response);
+    //     }
+    // }
 
     timer.start_poll();
-    Ext.Ajax.request({url:patient_query,success:patientQueryHandle, failure: function(response) { queryFailed('patient_labels',response); }});
+    // Ext.Ajax.request({url:patient_query,success:patientQueryHandle, failure: function(response) { queryFailed('patient_labels',response); }});
 
 }
 
@@ -254,7 +256,8 @@ function loadNetworkDataSingleFeature(params) {
     feature_types.forEach(function(f){
         var obj = vq.utils.VisUtils.clone(query_obj);
         obj[f +'_label'] = params['t_label'];
-        obj[f +'_type'] = params['t_type'];
+        obj[f +'_type'] = params['t_type'];   
+        re.state.filter_params = params; 
         re.state.network_query=buildSingleFeatureGQLQuery(obj, f == 't' ? re.ui.feature1.id : re.ui.feature2.id);
         var association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
         var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
@@ -325,7 +328,7 @@ function loadNetworkDataByAssociation(params) {
 function  loadDirectedNetworkDataByAssociation(params) {
 
     var responses = [];
-
+    re.state.filter_params = params;
     re.state.network_query=buildGQLQuery(params);
     var association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
     var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
@@ -384,7 +387,7 @@ function  loadUndirectedNetworkDataByAssociation(params) {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','associations',{msg:'Retrieval Timeout'}));
     }
 
-
+    re.state.filter_params = params;
     re.state.network_query=buildGQLQuery(params);
     var association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
     var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
@@ -517,8 +520,10 @@ function buildGQLQuery(args) {
 
 
 function buildSingleFeatureGQLQuery(args,feature) {
+    var all_columns = false, query = '';
+    if (arguments.length > 2) { all_columns = arguments[2];}
     //var query = 'select ' + (feature == re.ui.feature2.id ? 'alias1' : 'alias2');
-    var query = 'select ' + (feature == re.ui.feature1.id ? 'alias1' : 'alias2');
+    query = all_columns ?  ('select f1type, f1label, f1source, f1chr, f1start, f1end, ' + (feature == re.ui.feature1.id ? 'alias1' : 'alias2')) : 'select ' + (feature == re.ui.feature1.id ? 'alias1' : 'alias2');
     re.model.association.types.forEach( function(obj) {
         query += ', ' + obj.query.id;
     });
@@ -606,9 +611,11 @@ function buildSingleFeatureGQLQuery(args,feature) {
 function downloadNetworkData(target_frame,output) {
     var output_label = output;
     var output_extension=output;
+    var params = re.state.filter_params;
+    var query = params['isolate'] ? buildSingleFeatureGQLQuery(params,re.ui.feature1.id,true) : buildGQLQuery(params,true);
     if (output_label =='tsv') {output_extension=output_label;output_label='tsv-excel';}
     target_frame.src = 'http://' + window.location.host + encodeURI(re.databases.base_uri +
-        re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query+ '?tq=' + re.state.network_query + '&tqx=out:' +output_label+';outFileName:'+re.tables.current_data+'_query.'+output_extension);
+        re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query+ '?tq=' + query + '&tqx=out:' +output_label+';outFileName:'+re.tables.current_data+'_query.'+output_extension);
 }
 
 

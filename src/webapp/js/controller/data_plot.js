@@ -367,8 +367,7 @@ function singlefeature_circvis(parsed_data,div) {
                 listener : wedge_listener,
                 stroke_style :stroke_style,
                 fill_style : function(tick) {return re.plot.colors.node_colors(tick.source); },
-                tooltip_items : {Tick : function(node) { return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
-                    '-' + node.end + ' ' + node.label_mod;}},
+                tooltip_items :  re.display_options.circvis.tooltips.feature,
                 tooltip_links : {
                     'UCSC Genome Browser' :  function(feature){
                         return  ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
@@ -388,7 +387,8 @@ function singlefeature_circvis(parsed_data,div) {
             show_legend: false,
             legend_include_genome : false,
             legend_corner : 'ne',
-            legend_radius  : width / 15
+            legend_radius  : width / 15,
+            rotate_degrees : re.display_options.circvis.rotation
         },
         WEDGE:[
             {
@@ -584,10 +584,7 @@ function wedge_plot(parsed_data,div) {
                     legend_label : 'Karyotype Bands' ,
                     legend_description : 'Chromosomal Karyotype',
                     outer_padding : 10,
-//                    fill_style : function(feature) { return feature.value;},
-//                    stroke_style : function(feature) { return feature.value;},
                     tooltip_items : karyotype_tooltip_items
-//                    listener : wedge_listener
                 }
             },{
                 PLOT : {
@@ -632,8 +629,7 @@ function wedge_plot(parsed_data,div) {
                 link_stroke_style : function(link) {
                     return re.plot.colors.link_sources_colors([link.sourceNode.source,link.targetNode.source]);},
                 constant_link_alpha : 0.7,
-                node_tooltip_items :  {Node : function(node) { return node.label+ ' ' + node.source + ' Chr' + node.chr + ' ' + node.start +
-                    '-' + node.end + ' ' + node.label_mod;}},
+                node_tooltip_items :   re.display_options.circvis.tooltips.feature,
                 node_tooltip_links : {
                     'UCSC Genome Browser' :  function(feature){
                         return  ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
@@ -1145,5 +1141,42 @@ function populateGraph(obj) {
 
         // set the style at initialisation
         visualStyle: visual_style });
+}
+
+function buildCircvisObject(filter) {
+    var data = {PLOT:{},GENOME:{},TICKS{OPTIONS:{}}};
+    data.PLOT.width=re.display_options.circvis.width, data.PLOT.height=re.display_options.circvis.height;
+    var ring_radius = re.display_options.circvis.ring_radius;
+    var chrom_keys = re.display_options.circvis.chrom_keys;
+    
+    data.TICKS.OPTIONS.tile_ticks  = re.display_options.circvis.ticks.tile_ticks_manually,
+    data.TICKS.OPTIONS.overlap_distance = re.display_options.circvis.ticks.tick_overlap_distance;      
+  
+    try {
+        if (filter.chr !="*") {
+            var filter_chr = filter.chr.split(',');
+            data.GENOME.chrom_keys=chrom_keys.filter(function(f) { return filter_chr.some(function(key) {return key == f;}); });
+            data.GENOME.chrom_leng=chrom_leng.filter(function(f) { return filter_chr.some(function(key) {return key == f.chr_name;});});
+        }
+    } catch(e) {
+
+    }
+    function feature_circvis_wedge_listener(feature) {
+        var chr = feature.chr;
+        var start = bpToMb(feature.start) - 2.5;
+        var range_length = bpToMb(feature.end) - start + 2.5;
+        vq.events.Dispatcher.dispatch(new vq.events.Event('render_linearbrowser','feature_circvis',{data:features,chr:chr,start:start,range:range_length}));
+    }
+
+    function genome_listener(chr) {
+        var e = new vq.events.Event('render_linearbrowser','feature_circvis',{data:features,chr:chr});
+        e.dispatch();
+    }
+    
+    data.TICKS.OPTIONS.wedge_width = re.display_options.circvis.ticks.wedge_width;
+    data.TICKS.OPTIONS.wedge_height = re.display_options.circvis.ticks.wedge_height;
+    
+    return data;
+}
 
 }

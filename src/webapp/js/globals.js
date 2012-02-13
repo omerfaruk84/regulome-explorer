@@ -59,7 +59,7 @@ vq.utils.VisUtils.extend(re, {
                     hidden :false
                 },
                 cnvr : {
-                    hidden : false
+                    hidden : true
                 },
                 pairwise_scores : {
                     value_field : re.model.association.types[0].query.id,
@@ -72,7 +72,7 @@ vq.utils.VisUtils.extend(re, {
                     return pos > 0 ? node.label.slice(0,pos) : node.label;},
                     Source : function(node) { return re.label_map[node.source]},
                     'Location' : function(node) { return 'Chr' + node.chr + ' ' + node.start + '-' + node.end + ' ';} ,
-                    Other : function(node) { return node.label_mod.replace(/_/g,', ');}
+                    Annotations : function(node) { return node.label_mod.replace(/_/g,', ');}
                 },
                 edge : function(edge) {}
 
@@ -145,7 +145,7 @@ vq.utils.VisUtils.extend(re, {
          *               label - String - id to be used by UI
          */
         limit_list : [{value:10,label:'10'},{value:20,label:'20'},{value:40, label:'40'},{value:100, label:'100'},{value:200, label:'200'},
-            {value:1000, label:'1000'},{value:2000, label:'2000'}],
+            {value:1000, label:'1000'},{value:2000, label:'2000'},{value:4000, label:'4000'},{value:8000, label:'8000'}],
         /*
          *        Limit combo list
          *          Objects consist of fields:
@@ -174,6 +174,14 @@ vq.utils.VisUtils.extend(re, {
         patients : {data : null}
     }
 });
+
+re.setRingHidden = function(ring,value) {
+    re.display_options.circvis.rings[ring].hidden = value;
+};
+
+re.isRingHidden = function(ring) {
+    return re.display_options.circvis.rings[ring]['hidden'];
+};
 
 
 (function() {
