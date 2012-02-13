@@ -75,7 +75,7 @@ vq.utils.VisUtils.extend(re.ui, {
                                         { xtype:'checkbox',
                                         	id:'isolate',
                                         	fieldLabel:'Isolate',
-                                            defaultValue:false,
+                                            defaultValue:true,
                                         	checked:true,
                                             hidden : true,
                                         	listeners: { check: function(cb, checked) {

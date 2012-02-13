@@ -8,7 +8,7 @@ re.model.association =  {
       			filter : {
       				 					component:   new re.multirangeField(
                                                       {   id:'score',
-                                                          label: 'Agg. Score',
+                                                          label: 'Aggressiveness',
                                                           default_value: 2.00,
                                                           min_value: -10,
                                                           max_value: 10
