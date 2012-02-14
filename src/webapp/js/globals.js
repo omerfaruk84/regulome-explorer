@@ -56,14 +56,17 @@ vq.utils.VisUtils.extend(re, {
         circvis : {
             rings:{
                 karyotype: {
-                    hidden :false
+                    hidden :false,
+                    radius : 28
                 },
                 cnvr : {
-                    hidden : true
+                    hidden : true,
+                    radius : 28
                 },
                 pairwise_scores : {
                     value_field : re.model.association.types[0].query.id,
-                    hidden : false
+                    hidden : false,
+                    radius:80
                 }
             },
             tooltips:{
@@ -109,7 +112,7 @@ vq.utils.VisUtils.extend(re, {
             },
             width : 800,
             height : 800,
-            ring_radius : 55,
+            //ring_radius : 55,
             rotation : 0,
             chrom_keys : ["1","2","3","4","5","6","7","8","9","10",
                 "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"]
@@ -258,7 +261,7 @@ re.isRingHidden = function(ring) {
         re.ui.feature1 = {label : 'Target', id :'target'};
         re.ui.feature2 = {label : 'Predictor', id : 'predictor'};
     } else {
-        re.ui.feature1 = {label : 'Feature 1', id : 'feature1'};
+        re.ui.feature1 = {label : 'Molecular Feature', id : 'feature1'};
         re.ui.feature2 = {label : 'Feature 2', id : 'feature2'};
     }
 

@@ -309,7 +309,7 @@ function singlefeature_circvis(features,filter,div) {
     },
         scatterplot_tooltips =  re.display_options.circvis.tooltips.feature;
 
-    var scatterplot_data = vq.utils.VisUtils.clone(features);
+    var scatterplot_data = features;
 
     var field = re.display_options.circvis.rings.pairwise_scores.value_field;
     var association  = re.model.association.types[re.model.association_map[field]];
@@ -320,12 +320,12 @@ function singlefeature_circvis(features,filter,div) {
     var scale_type = settings.scale_type;
 
     var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
-    var ticks = vq.utils.VisUtils.clone(scatterplot_data);
+    var ticks = scatterplot_data;
 
     var floor = settings.values.floor === undefined ? min : settings.values.floor;
     var ceil = settings.values.ceil === undefined ? max : settings.values.ceil;
     if ( floor != min || ceil != max)  {
-        scatterplot_data = parsed_data['features'].map(function(obj){
+        scatterplot_data = features.map(function(obj){
             var return_obj = vq.utils.VisUtils.clone(obj);
             return_obj[field+'_plot'] = Math.max(floor,Math.min(return_obj[field],ceil));
             return return_obj;
@@ -397,7 +397,7 @@ function singlefeature_circvis(features,filter,div) {
         WEDGE:[
             {
                 PLOT : {
-                    height : ring_radius/2,
+                    height : re.display_options.circvis.rings.karyotype.radius,
                     type :   'karyotype'
                 },
                 DATA:{
@@ -411,7 +411,7 @@ function singlefeature_circvis(features,filter,div) {
                 }
             },{
                 PLOT : {
-                    height : ring_radius,
+                    height : re.display_options.circvis.rings.karyotype.pairwise_scores,
                     type :   'scatterplot'
                 },
                 DATA:{
@@ -431,15 +431,15 @@ function singlefeature_circvis(features,filter,div) {
                     fill_style  : function(feature) {return settings.color_scale(feature[field]); },
                     stroke_style  : function(feature) {return settings.color_scale(feature[field]); },
                     tooltip_items : scatterplot_tooltips,
-                    tooltip_links :  re.display_options.circvis.tooltips.links
-                    // listener : initiateDetailsPopup
+                    tooltip_links :  re.display_options.circvis.tooltips.links,
+                     listener : wedge_listener
                 }
             }
         ]
     };
     var circle_vis = new vq.CircVis();
-    var dataObject ={DATATYPE : "vq.models.CircVisData", CONTENTS : data };
-    vq.utils.VisUtils.extend(dataObject,buildCircvisObject(filter));
+    var obj = modifyCircvisObject(data,filter);
+    var dataObject ={DATATYPE : "vq.models.CircVisData", CONTENTS : obj };
     circle_vis.draw(dataObject);
 
     var e = new vq.events.Event('render_complete','circvis',circle_vis);
@@ -501,7 +501,7 @@ function wedge_plot(parsed_data,div) {
 
 
     var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
-    var ticks = vq.utils.VisUtils.clone(parsed_data['features']);
+    var ticks = vq.utils.VisUtils.clone(features);
 
     var types = re.model.association.types.map(function(assoc) { return assoc.query.id;});
 
@@ -1274,39 +1274,43 @@ function populateGraph(obj) {
         visualStyle: visual_style });
 }
 
-function buildCircvisObject(filter) {
-    var data = {PLOT:{},GENOME:{},TICKS:{OPTIONS:{}}};
-    data.PLOT.width=re.display_options.circvis.width, data.PLOT.height=re.display_options.circvis.height;
-    var ring_radius = re.display_options.circvis.ring_radius;
+function modifyCircvisObject(obj,filter) {
+    if (re.display_options.circvis.ticks.wedge_width_manually) {
+        obj.PLOT.width=re.display_options.circvis.width;
+    }
+    if (re.display_options.circvis.ticks.wedge_width_manually) {
+        obj.PLOT.height=re.display_options.circvis.height;
+     }
     var chrom_keys = re.display_options.circvis.chrom_keys;
+
+    var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
     
-    data.TICKS.OPTIONS.tile_ticks  = re.display_options.circvis.ticks.tile_ticks_manually,
-    data.TICKS.OPTIONS.overlap_distance = re.display_options.circvis.ticks.tick_overlap_distance;      
+    if (re.display_options.circvis.ticks.tile_ticks_manually) {
+        obj.TICKS.OPTIONS.tile_ticks  = true;
+        obj.TICKS.OPTIONS.overlap_distance = re.display_options.circvis.ticks.tick_overlap_distance;
+    }
   
     try {
         if (filter.chr !="*") {
             var filter_chr = filter.chr.split(',');
-            data.GENOME.chrom_keys=chrom_keys.filter(function(f) { return filter_chr.some(function(key) {return key == f;}); });
-            data.GENOME.chrom_leng=chrom_leng.filter(function(f) { return filter_chr.some(function(key) {return key == f.chr_name;});});
+            obj.GENOME.chrom_keys=chrom_keys.filter(function(f) { return filter_chr.some(function(key) {return key == f;}); });
+            obj.GENOME.chrom_leng=chrom_leng.filter(function(f) { return filter_chr.some(function(key) {return key == f.chr_name;});});
         }
     } catch(e) {
 
     }
-    function feature_circvis_wedge_listener(feature) {
-        var chr = feature.chr;
-        var start = bpToMb(feature.start) - 2.5;
-        var range_length = bpToMb(feature.end) - start + 2.5;
-        vq.events.Dispatcher.dispatch(new vq.events.Event('render_linearbrowser','feature_circvis',{data:features,chr:chr,start:start,range:range_length}));
+
+    obj.PLOT.rotate_degrees = re.display_options.circvis.rotation;
+    if (re.display_options.circvis.ticks.wedge_width_manually) {
+        obj.TICKS.OPTIONS.wedge_width = re.display_options.circvis.ticks.wedge_width;
+    }
+    if (re.display_options.circvis.ticks.wedge_height_manually) {
+        obj.TICKS.OPTIONS.wedge_height = re.display_options.circvis.ticks.wedge_height;
     }
 
-    function genome_listener(chr) {
-        var e = new vq.events.Event('render_linearbrowser','feature_circvis',{data:features,chr:chr});
-        e.dispatch();
-    }
-    
-    data.TICKS.OPTIONS.wedge_width = re.display_options.circvis.ticks.wedge_width;
-    data.TICKS.OPTIONS.wedge_height = re.display_options.circvis.ticks.wedge_height;
-    
-    return data;
+//    obj.WEDGE.forEach(function(wedge) {
+//        wedge.PLOT.height = re.display_options.circvis.ring_radius /2;
+//    });
+    return obj;
 }
 
