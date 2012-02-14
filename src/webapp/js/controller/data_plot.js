@@ -648,11 +648,11 @@ function wedge_plot(parsed_data,div) {
 }
 
 function bpToMb(bp) {
-    return bp != null ? (bp == 0 ? 0 : bp / 1000000): null;
+    return !isNaN(bp) ? (bp == 0 ? 0 : bp / 1000000): '';
 }
 
 function mbpToBp(num) {
-    return Math.floor(num* 1000000);
+    return !isNaN(num) ? Math.floor(num* 1000000) : '';
 }
 
 function linear_plot(obj) {
@@ -1068,13 +1068,16 @@ function plotFeatureDataLinear(obj) {
 
     var tooltip_links = { };
     for (var link in re.display_options.circvis.tooltips.links ) {
-            tooltip_links[link] = function(feature) { return re.display_options.circvis.tooltips.links[link](
+        var l = link;
+            tooltip_links[l] = (function(name) { var f = function(feature) {
+                return re.display_options.circvis.tooltips.links[name](
                 {
                     chr:feature.chr,
                     start: mbpToBp(feature.start),
-                    end:mbpToBp(feature.end)
+                    end:(feature.end == '' ? '' : mbpToBp(feature.end))
                 });
     };
+     return f;})(l);
     }
 
 
