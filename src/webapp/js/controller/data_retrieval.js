@@ -245,10 +245,7 @@ function loadNetworkDataSingleFeature(params) {
 
     }
 
-    var query_obj = {
-        order: params['order'],
-        limit: (parseInt(params['limit']) / feature_types.length) + ''
-    };
+    var query_obj = vq.utils.VisUtils.clone(params);
     re.model.association.types.forEach( function(obj) {
         query_obj[obj.query.id] = params[obj.query.id];
         if (obj.ui.filter.component instanceof re.multirangeField)  {
@@ -257,11 +254,8 @@ function loadNetworkDataSingleFeature(params) {
     });
 
     feature_types.forEach(function(f){
-        var obj = vq.utils.VisUtils.clone(query_obj);
-        obj[f +'_label'] = params['t_label'];
-        obj[f +'_type'] = params['t_type'];   
-        re.state.filter_params = params; 
-        re.state.network_query=buildSingleFeatureGQLQuery(obj, f == 't' ? re.ui.feature1.id : re.ui.feature2.id);
+        re.state.filter_params = params;
+        re.state.network_query=buildSingleFeatureGQLQuery(query_obj, f == 't' ? re.ui.feature1.id : re.ui.feature2.id);
         var association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
         var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
         Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: function(response) { queryFailed('associations',response); }});
