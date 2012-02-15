@@ -9,6 +9,7 @@ vq.utils.VisUtils.extend(re, {
 
     title : 'CRC Aggressiveness Explorer',
 
+
     analysis : {
         dataset_method_clause : ' where method=\'crc_agg\'',
         directed_association : false
@@ -16,6 +17,7 @@ vq.utils.VisUtils.extend(re, {
     state : {
         once_loaded : false,
         query_cancel : false,
+        demo_first : true,
         network_query : ''
     },
     rest : {
@@ -75,7 +77,7 @@ vq.utils.VisUtils.extend(re, {
                         return pos > 0 ? node.label.slice(0,pos) : node.label;},
                     Source : function(node) { return re.label_map[node.source]},
                     'Location' : function(node) { return 'Chr' + node.chr + ' ' + node.start + (node.end == '' ? '' : '-'+ node.end) + ' ';} ,
-                    Annotations : function(node) { return node.label_mod.replace(/_/g,', ');}
+                    Annotations :  parseAnnotationList
                 },
                 edge : function(edge) {},
                 link_objects: [
@@ -94,7 +96,14 @@ vq.utils.VisUtils.extend(re, {
                         config_object :  function(feature) {
                             return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr +
                                 ':' +  feature.start + (feature.end == '' ? '' : '-'+ feature.end);  }
-                    }//ensemble
+                    },//ensemble
+                   {
+                       label :'Cosmic',
+                       url : 'http://www.sanger.ac.uk/perl/genetics/CGP/cosmic',
+                       uri : '?action=bygene&ln=',
+                       config_object :  function(feature) {
+                           return  'http://www.sanger.ac.uk/perl/genetics/CGP/cosmic?action=bygene&ln=' + feature.label;  }
+                   }
                 ], //link_objects
                 links : {}
             },

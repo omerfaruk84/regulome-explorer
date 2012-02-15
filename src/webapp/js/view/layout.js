@@ -85,6 +85,11 @@ function checkDatasetURL()   {
 function checkFormURL() {
     var json = extractURL();
     if (json != null) setFormState(json);
+    var a = vq.utils.VisUtils.clone(json);
+        delete a.dataset;
+    if (Object.keys(a).length > 0) { re.state.demo_first = false;}
+
+    return;
 }
 
 function setFormState(json) {
@@ -94,7 +99,7 @@ function setFormState(json) {
             delete json[f+'_label']
         }
     });
-    Ext.iterate(json,setComponentState)
+    Ext.iterate(json,setComponentState);
 }
 
 function setComponentState(key, value){
@@ -162,7 +167,7 @@ function openDetailsWindow(association) {
     re.windows.details_window.show();
     re.windows.masks.details_window_mask =  new Ext.LoadMask('details-window', {msg:"Loading Data..."});
     re.windows.masks.details_window_mask.show();
-    renderMedlineDocuments(association);
+//    renderMedlineDocuments(association);
     //renderPathways(association);
 }
 
@@ -305,6 +310,10 @@ function packFilterSelections() {
             return_obj[obj.id + '_fn'] =  Ext.getCmp(obj.id + '_fn').getValue();
         }
     });
+    if (re.state.demo_first) {
+        return_obj.demo = true;
+        re.state.demo_first = false;
+    }
     return return_obj;
 }
 
@@ -513,40 +522,40 @@ function renderScatterPlot() {
  MEDLINE functions
  */
 
-function renderMedlineDocuments(association) {
-    var term1 = association.sourceNode.label;
-    var term2 = association.targetNode.label;
-    retrieveMedlineDocuments(term1,term2);
-    Ext.StoreMgr.get('dataDocument_grid_store').load({params: {start:0, rows:20}});
-}
-
-function retrieveMedlineDocuments(term1,term2){
-    Ext.StoreMgr.get('dataDocument_grid_store').on({
-        beforeload:{
-            fn: function(store,options){
-                store.proxy.setUrl(re.databases.solr.uri + re.databases.solr.select + '?q=%2Btext%3A\"' + term1 + '\" %2Btext%3A\"' + term2 + '\"&fq=%2Bpub_date_year%3A%5B1991 TO 2011%5D&wt=json' +
-                    '&hl=true&hl.fl=article_title,abstract_text&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true');
-            }
-        }
-    });
-}
+//function renderMedlineDocuments(association) {
+//    var term1 = association.sourceNode.label;
+//    var term2 = association.targetNode.label;
+//    retrieveMedlineDocuments(term1,term2);
+//    Ext.StoreMgr.get('dataDocument_grid_store').load({params: {start:0, rows:20}});
+//}
+//
+//function retrieveMedlineDocuments(term1,term2){
+//    Ext.StoreMgr.get('dataDocument_grid_store').on({
+//        beforeload:{
+//            fn: function(store,options){
+//                store.proxy.setUrl(re.databases.solr.uri + re.databases.solr.select + '?q=%2Btext%3A\"' + term1 + '\" %2Btext%3A\"' + term2 + '\"&fq=%2Bpub_date_year%3A%5B1991 TO 2011%5D&wt=json' +
+//                    '&hl=true&hl.fl=article_title,abstract_text&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true');
+//            }
+//        }
+//    });
+//}
 
 /*
  Grid Column rendering functions
  */
 
-function renderPMID(value, p, record) {
-    return String.format('<b><a href="http://www.ncbi.nlm.nih.gov/pubmed/{0}" target="_blank">{0}</a></b>', record.data.pmid);
-}
-
-function renderTitle(value, p, record) {
-    var jsonData = record.store.reader.jsonData;
-    if (jsonData.highlighting[record.id] != undefined && jsonData.highlighting[record.id].article_title != undefined) {
-        return jsonData.highlighting[record.id].article_title[0];
-    }
-    else
-        return record.data.article_title;
-}
+//function renderPMID(value, p, record) {
+//    return String.format('<b><a href="http://www.ncbi.nlm.nih.gov/pubmed/{0}" target="_blank">{0}</a></b>', record.data.pmid);
+//}
+//
+//function renderTitle(value, p, record) {
+//    var jsonData = record.store.reader.jsonData;
+//    if (jsonData.highlighting[record.id] != undefined && jsonData.highlighting[record.id].article_title != undefined) {
+//        return jsonData.highlighting[record.id].article_title[0];
+//    }
+//    else
+//        return record.data.article_title;
+//}
 
 /*clean divs*/
 
@@ -582,14 +591,6 @@ function exposeLinearPlot(chr,start,range_length) {
         rf.scroll('b',d.scrollHeight - d.offsetHeight,true);
     });
     task.delay(300);
-}
-
-function openRFPanel() {
-    loadDataLabelLists(function() {
-        if (Ext.get('circle-panel').dom.firstChild.id != ""){
-            getFilterSelections();
-        }
-    });
 }
 
 function registerAllListeners() {
@@ -1213,18 +1214,6 @@ Ext.onReady(function() {
         });
     re.windows.dataset_window.hide();
 
-    var medlineStore= new Ext.data.JsonStore({
-        root: 'response.docs',
-        totalProperty:'response.numFound',
-        idProperty:'pmid',
-        remoteSort: true,
-        storeId:'dataDocument_grid_store',
-        fields : ['pmid','article_title','abstract_text','pub_date_month','pub_date_year'],
-        proxy: new Ext.data.HttpProxy({
-            url: re.databases.solr.uri + re.databases.solr.select + '?'
-        })
-    });
-
     re.windows.details_window =
         new Ext.Window({
             id          : 'details-window',
@@ -1322,80 +1311,80 @@ Ext.onReady(function() {
                                     }]
                             }]
                         }]
-                },
-                    {
-                        xtype:'panel',
-                        id:'medline_parent',
-                        name:'medline_parent',
-                        title:'MEDLINE',
-                        layout: 'anchor',
-                        margins:'3 0 3 3',
-                        height : 500,
-                        width: 600,
-                        frame : true,
-                        items:[  {
-                            id:'dataDocument-panel',
-                            name : 'dataDocument-panel',
-                            layout : 'anchor',
-                            anchor: '100% 100%',
-                            collapsible : false,
-                            items : [
-                                {
-                                    xtype:'grid',
-                                    id : 'dataDocument_grid',
-                                    name : 'dataDocument_grid',
-                                    autoScroll:true,
-                                    autoWidth : true,
-//                                    height: 425,
-                                    loadMask: true,
-                                    anchor: '100% 100%',
-                                    store: medlineStore,
-                                    viewConfig: {
-                                        forceFit : true,
-                                        enableRowBody:true,
-                                        showPreview:true,
-                                        getRowClass: function(record, rowIndex, p, store) {
-                                            var jsonData = store.reader.jsonData;
-                                            if (jsonData.highlighting[record.id] != undefined && jsonData.highlighting[record.id].abstract_text != undefined) {
-                                                p.body = '<p>' + jsonData.highlighting[record.id].abstract_text[0] + '</p>';
-                                            }
-                                            else
-                                                p.body = '<p>' + record.data.abstract_text + '</p>';
-                                            return 'x-grid3-row-expanded';
-                                        }
-                                    },
-                                    cm : new Ext.grid.ColumnModel({
-                                        columns: [
-                                            {header : "PMID", width:50,  id:'pmid', dataIndex:'pmid', groupName: 'Documents',renderer:renderPMID},
-                                            { header: "Title", width: 300,  id:'article_title', dataIndex:'article_title',groupName:'Documents', renderer: renderTitle},
-                                            { header: "Month", width:75 , id:'pub_date_month', dataIndex:'pub_date_month',groupName:'Documents'},
-                                            { header: "Year", width:75, id:'pub_date_year',dataIndex:'pub_date_year',groupName:'Documents'}
-                                        ],
-                                        defaults: {
-                                            sortable: true
-                                        }
-                                    }),
-                                    bbar: new Ext.PagingToolbar({
-                                        pageSize: 20,
-                                        store: medlineStore,
-                                        displayInfo: true,
-                                        displayMsg: 'Displaying documents {0} - {1} of {2}',
-                                        emptyMsg: "No documents",
-                                        items:[
-                                            '-',{
-                                                pressed:true,
-                                                enableToggle:true,
-                                                text: 'Show Preview',
-                                                cls: 'x-btn-text-icon details',
-                                                toggleHandler: function(btn,pressed){
-                                                    var view = Ext.getCmp('dataDocument_grid').getView();
-                                                    view.showPreview = pressed;
-                                                    view.refresh();
-                                                }
-                                            }]
-                                    })
-                                }]
-                        }]
+//                },
+//                    {
+//                        xtype:'panel',
+//                        id:'medline_parent',
+//                        name:'medline_parent',
+//                        title:'MEDLINE',
+//                        layout: 'anchor',
+//                        margins:'3 0 3 3',
+//                        height : 500,
+//                        width: 600,
+//                        frame : true,
+//                        items:[  {
+//                            id:'dataDocument-panel',
+//                            name : 'dataDocument-panel',
+//                            layout : 'anchor',
+//                            anchor: '100% 100%',
+//                            collapsible : false,
+//                            items : [
+//                                {
+//                                    xtype:'grid',
+//                                    id : 'dataDocument_grid',
+//                                    name : 'dataDocument_grid',
+//                                    autoScroll:true,
+//                                    autoWidth : true,
+////                                    height: 425,
+//                                    loadMask: true,
+//                                    anchor: '100% 100%',
+//                                    store: medlineStore,
+//                                    viewConfig: {
+//                                        forceFit : true,
+//                                        enableRowBody:true,
+//                                        showPreview:true,
+//                                        getRowClass: function(record, rowIndex, p, store) {
+//                                            var jsonData = store.reader.jsonData;
+//                                            if (jsonData.highlighting[record.id] != undefined && jsonData.highlighting[record.id].abstract_text != undefined) {
+//                                                p.body = '<p>' + jsonData.highlighting[record.id].abstract_text[0] + '</p>';
+//                                            }
+//                                            else
+//                                                p.body = '<p>' + record.data.abstract_text + '</p>';
+//                                            return 'x-grid3-row-expanded';
+//                                        }
+//                                    },
+//                                    cm : new Ext.grid.ColumnModel({
+//                                        columns: [
+//                                            {header : "PMID", width:50,  id:'pmid', dataIndex:'pmid', groupName: 'Documents',renderer:renderPMID},
+//                                            { header: "Title", width: 300,  id:'article_title', dataIndex:'article_title',groupName:'Documents', renderer: renderTitle},
+//                                            { header: "Month", width:75 , id:'pub_date_month', dataIndex:'pub_date_month',groupName:'Documents'},
+//                                            { header: "Year", width:75, id:'pub_date_year',dataIndex:'pub_date_year',groupName:'Documents'}
+//                                        ],
+//                                        defaults: {
+//                                            sortable: true
+//                                        }
+//                                    }),
+//                                    bbar: new Ext.PagingToolbar({
+//                                        pageSize: 20,
+//                                        store: medlineStore,
+//                                        displayInfo: true,
+//                                        displayMsg: 'Displaying documents {0} - {1} of {2}',
+//                                        emptyMsg: "No documents",
+//                                        items:[
+//                                            '-',{
+//                                                pressed:true,
+//                                                enableToggle:true,
+//                                                text: 'Show Preview',
+//                                                cls: 'x-btn-text-icon details',
+//                                                toggleHandler: function(btn,pressed){
+//                                                    var view = Ext.getCmp('dataDocument_grid').getView();
+//                                                    view.showPreview = pressed;
+//                                                    view.refresh();
+//                                                }
+//                                            }]
+//                                    })
+//                                }]
+//                        }]
                     }] // medline tab
             }] //tabpanel
         });
