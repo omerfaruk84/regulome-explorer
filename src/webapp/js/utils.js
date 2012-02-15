@@ -48,16 +48,15 @@ function parseLabel(label) {
 function parseAnnotationList(feature) {
     var list =[];
     var annotations = '';
-    if (feature.type == 'GNAB') {
+    if (feature.source == 'GNAB') {
         list = feature.label_mod.split('_');
-        var pd = '';
-        annotations = list[0] == 'dom' ? list[1] + '-' + list[2] : '';
-        list = pd == '' ? list.slice(0) : list.slice(3);
-        var mt= list.length > 0 ? list.join(', ') :'any';
-        annotations = annotations +  list.map(translateGNABAnnotation).join(', ');
+        annotations = (list[0] == 'dom' ? list[1] + '-' + list[2] : '');
+        list = ( annotations == '' ? list : list.slice(3));
+//        annotations = annotations + (list.length > 0 ? list.join(', ') :'any');
+        annotations = annotations +  list.map(translateGNABAnnotation).filter(function(a) { return a != '';}).join(', ');
     }
 
-    if (feature.type == 'CNVR') {
+    if (feature.source == 'CNVR') {
             list = feature.label_mod.split('_');
             annotations = list.map(translateCNVRAnnotation).join(', ');
         }
