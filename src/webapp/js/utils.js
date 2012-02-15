@@ -44,3 +44,58 @@ function parseLabel(label) {
         return '=\'' + return_label + '\'';
     }
 }
+
+function parseAnnotationList(feature) {
+    var list =[];
+    var annotations = '';
+    if (feature.type == 'GNAB') {
+        list = feature.label_mod.split('_');
+        var pd = '';
+        annotations = list[0] == 'dom' ? list[1] + '-' + list[2] : '';
+        list = pd == '' ? list.slice(0) : list.slice(3);
+        var mt= list.length > 0 ? list.join(', ') :'any';
+        annotations = annotations +  list.map(translateGNABAnnotation).join(', ');
+    }
+
+    if (feature.type == 'CNVR') {
+            list = feature.label_mod.split('_');
+            annotations = list.map(translateCNVRAnnotation).join(', ');
+        }
+
+    return annotations;
+}
+
+function translateGNABAnnotation(annotation) {
+    switch(annotation){
+        case('mut'):
+            return '';
+            break;
+        case('nonsilent'):
+            return 'nonsilent';
+            break;
+        case('dna_bin'):
+                    return 'any';
+                    break;
+        default:
+            return annotation;
+            break;
+    }
+}
+
+
+function translateCNVRAnnotation(annotation) {
+    switch(annotation){
+        case('del'):
+            return 'deletion';
+            break;
+        case('amp'):
+            return 'amplification';
+            break;
+        case('ins') :
+                return 'insertion';
+                break;
+        default:
+                return annotation;
+                break;
+    }
+}

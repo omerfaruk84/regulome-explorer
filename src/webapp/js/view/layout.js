@@ -1028,7 +1028,7 @@ Ext.onReady(function() {
                         },
                             {
                                 text:'Quick Start Guide',
-                                handler: function() {openBrowserTab('/help/re/quick_start.html') }
+                                handler: function() {openBrowserTab('/help/crc_agg/quick_start.html') }
                             },
                             {
                                 text: 'Circular Ideogram'
@@ -1049,7 +1049,8 @@ Ext.onReady(function() {
                                 handler: openCodeRepository,
                                 text:'Code Repository'
                             },{
-                                text:'Analyses'
+                                text:'This Analysis',
+                                handler: function() {openBrowserTab('/help/crc_agg/analysis/analysis_summary.html') }
                             }
                         ]
                     },'->',
@@ -1057,7 +1058,7 @@ Ext.onReady(function() {
                         id:'quickStart',
                         text:'Quick Start Guide',
                         labelStyle: 'font-weight:bold;color:yellow;text-decoration:underline;',
-                        handler: function() {openBrowserTab('/help/re/quick_start.html') }
+                        handler: function() {openBrowserTab('/help/crc_agg/quick_start.html') }
                     }]
             },
             { region:'center',
@@ -1082,10 +1083,7 @@ Ext.onReady(function() {
     }
 
     function userGuideHandler(item) {
-        openBrowserTab('/help/re/user_guide.html');
-    }
-    function circularViewHelpHandler(item) {
-        openBrowserTab('/help/re/user_guide.html');
+        openBrowserTab('/help/crc_agg/user_guide.html');
     }
 
     function openIssueHandler(item){
@@ -1107,22 +1105,6 @@ Ext.onReady(function() {
     }
     function scatterplotFieldHandler(item) {
         re.display_options.circvis.rings.pairwise_scores.value_field = re.model.association.types[re.model.association_map[item.value]].id;
-    }
-
-    function networkLayoutHandler(item) {
-        switch(item.text) {
-            case('Radial'):
-                re.display_options.cytoscape.layout = 'radial';
-                break;
-            case('Tree'):
-                re.display_options.cytoscape.layout = 'tree';
-                break;
-            case('Force Directed') :
-            default:
-                re.display_options.cytoscape.layout = 'force_directed';
-                break;
-        }
-        vq.events.Dispatcher.dispatch(new vq.events.Event('layout_network','main_menu',{}));
     }
 
     re.windows.export_window = new Ext.Window( {
