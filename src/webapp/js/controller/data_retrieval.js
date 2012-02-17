@@ -241,8 +241,15 @@ function loadNetworkDataSingleFeature(params) {
         re.state.filter_params = params;
         var query = buildSingleFeatureGQLQuery(query_obj, re.ui.feature1.id );
         var start = query.indexOf('where ');
+        if (start < 0) {
+            start = query.indexOf('order ');
+            query = query.slice(0,start) + 'where ' + query.slice(start);
+            re.state.network_query = query.slice(0,start + 6) +
+                            '((floorlogged_pvalue > 8 and f1source = \'METH\') or (f1source != \'METH\')) ' + query.slice(start+6);
+        } else {
         re.state.network_query = query.slice(0,start + 6) +
                 '((floorlogged_pvalue > 8 and f1source = \'METH\') or (f1source != \'METH\')) and ' + query.slice(start+6);
+        }
         var association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
         var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
         Ext.Ajax.request({url:association_query,success:handleNetworkQuery,failure: function(response) { queryFailed('associations',response); }});

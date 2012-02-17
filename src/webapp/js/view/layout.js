@@ -84,11 +84,12 @@ function checkDatasetURL()   {
 
 function checkFormURL() {
     var json = extractURL();
-    if (json != null) setFormState(json);
-    var a = vq.utils.VisUtils.clone(json);
+    if (json != null) {
+        setFormState(json);
+        var a = vq.utils.VisUtils.clone(json);
         delete a.dataset;
     if (Object.keys(a).length > 0) { re.state.demo_first = false;}
-
+    }
     return;
 }
 
