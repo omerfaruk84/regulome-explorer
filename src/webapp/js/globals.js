@@ -45,6 +45,7 @@ vq.utils.VisUtils.extend(re, {
         dataset :   '/regulome_explorer_dataset',
         label_lookup : '/refgene',
         chrom_info : '/chrom_info',
+        entrez_gene : '/entrez_gene',
         current_data : '',
         network_uri : '',
         feature_uri : '',
@@ -97,13 +98,20 @@ vq.utils.VisUtils.extend(re, {
                             return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr +
                                 ':' +  feature.start + (feature.end == '' ? '' : '-'+ feature.end);  }
                     },//ensemble
-                   {
-                       label :'Cosmic',
-                       url : 'http://www.sanger.ac.uk/perl/genetics/CGP/cosmic',
-                       uri : '?action=bygene&ln=',
-                       config_object :  function(feature) {
-                           return  'http://www.sanger.ac.uk/perl/genetics/CGP/cosmic?action=bygene&ln=' + feature.label;  }
-                   }
+                    {
+                        label :'Cosmic',
+                        url : 'http://www.sanger.ac.uk/perl/genetics/CGP/cosmic',
+                        uri : '?action=bygene&ln=',
+                        config_object :  function(feature) {
+                            return  'http://www.sanger.ac.uk/perl/genetics/CGP/cosmic?action=bygene&ln=' + feature.label;  }
+                    }, {
+                        label: 'OMIM',
+                        url : 'http://omim.org/search/',
+                        uri : '?index=entry&start=1&limit=10&search=',
+                        config_object : function(feature) {
+                            return 'http://omim.org/search?index=entry&start=1&limit=10&search=' + feature.label;
+                        }
+                    }
                 ], //link_objects
                 links : {}
             },
@@ -274,9 +282,9 @@ re.isRingHidden = function(ring) {
         re.ui.feature2 = {label : 'Feature 2', id : 'feature2'};
     }
 
-        re.display_options.circvis.tooltips.link_objects.forEach(function(link){
-            re.display_options.circvis.tooltips.links[link.label] = link.config_object;
-        });
+    re.display_options.circvis.tooltips.link_objects.forEach(function(link){
+        re.display_options.circvis.tooltips.links[link.label] = link.config_object;
+    });
 
     re.model.association.types.forEach( function(assoc) {
         vq.utils.VisUtils.extend(re.display_options.circvis.tooltips.feature, assoc.vis.tooltip.entry);
