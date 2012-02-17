@@ -465,8 +465,8 @@ vq.utils.VisUtils.extend(re.ui, {
                                                     typeAhead : true,
                                                     selectOnFocus:true,
                                                     triggerAction : 'all',
-                                                    defaultValue : 2000,
-                                                    value : 2000
+                                                    defaultValue : 6000,
+                                                    value : 6000
                                                 }
                                             ])
                                     },
