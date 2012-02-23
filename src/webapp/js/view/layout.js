@@ -88,7 +88,7 @@ function checkFormURL() {
         setFormState(json);
         var a = vq.utils.VisUtils.clone(json);
         delete a.dataset;
-    if (Object.keys(a).length > 0) { re.state.demo_first = false;}
+        if (Object.keys(a).length > 0) { re.state.demo_first = false;}
     }
     return;
 }
@@ -843,7 +843,7 @@ Ext.onReady(function() {
                                         disabled : true,
                                         listeners : {
                                             change:  function(field,value) {
-                                                    re.display_options.circvis.ticks.tick_overlap_distance =value;
+                                                re.display_options.circvis.ticks.tick_overlap_distance =value;
 
                                             }
                                         }
@@ -859,72 +859,72 @@ Ext.onReady(function() {
                                 xtype:'compositefield',
                                 width: 240,
                                 items:[   {
-                                        xtype:'checkbox',
-                                        id: 'tick_wedge_height_manually',
-                                        checked : false,
-                                        label:'Wedge Height',
-                                        handler :
-                                            function(checkbox, checked){
-                                                Ext.getCmp('circvis_tick_wedge_height').setDisabled(!checked);
-                                                re.display_options.circvis.ticks.wedge_height_manually = checked;
-                                                re.display_options.circvis.ticks.wedge_height = Ext.getCmp('circvis_tick_wedge_height').getValue();
-                                            }
-                                    },
+                                    xtype:'checkbox',
+                                    id: 'tick_wedge_height_manually',
+                                    checked : false,
+                                    label:'Wedge Height',
+                                    handler :
+                                        function(checkbox, checked){
+                                            Ext.getCmp('circvis_tick_wedge_height').setDisabled(!checked);
+                                            re.display_options.circvis.ticks.wedge_height_manually = checked;
+                                            re.display_options.circvis.ticks.wedge_height = Ext.getCmp('circvis_tick_wedge_height').getValue();
+                                        }
+                                },
                                     {
                                         xtype:'label',
                                         text:'Wedge Height'
                                     },{
-                                    id:'circvis_tick_wedge_height',
-                                    xtype:'numberfield',
-                                    minValue:1,
-                                    maxValue:30,
-                                    value: 10,
-                                    width: 75,
+                                        id:'circvis_tick_wedge_height',
+                                        xtype:'numberfield',
+                                        minValue:1,
+                                        maxValue:30,
+                                        value: 10,
+                                        width: 75,
                                         disabled : true,
-                                    listeners: {
-                                        change: function(field,value) {
+                                        listeners: {
+                                            change: function(field,value) {
                                                 re.display_options.circvis.ticks.wedge_height = value;
+                                            }
                                         }
-                                    }
-                                },{
-                                    xtype:'label',
-                                    text:'pixels'
-                                }]
+                                    },{
+                                        xtype:'label',
+                                        text:'pixels'
+                                    }]
                             },{
                                 xtype:'compositefield',
                                 width: 240,
                                 items:[   {
-                                        xtype:'checkbox',
-                                        id: 'tick_wedge_width_manually',
-                                        checked : false,
-                                        label:'Wedge Width',
-                                        handler :
-                                            function(checkbox, checked){
-                                                Ext.getCmp('circvis_tick_wedge_width').setDisabled(!checked);
-                                                re.display_options.circvis.ticks.wedge_width_manually = checked;
-                                                re.display_options.circvis.ticks.wedge_width = Ext.getCmp('circvis_tick_wedge_width').getValue();
-                                            }
-                                    },
+                                    xtype:'checkbox',
+                                    id: 'tick_wedge_width_manually',
+                                    checked : false,
+                                    label:'Wedge Width',
+                                    handler :
+                                        function(checkbox, checked){
+                                            Ext.getCmp('circvis_tick_wedge_width').setDisabled(!checked);
+                                            re.display_options.circvis.ticks.wedge_width_manually = checked;
+                                            re.display_options.circvis.ticks.wedge_width = Ext.getCmp('circvis_tick_wedge_width').getValue();
+                                        }
+                                },
                                     {
                                         xtype:'label',
                                         text:'Wedge Width'
                                     },{
-                                    id:'circvis_tick_wedge_width',
-                                    xtype:'numberfield',
-                                    minValue:0.1,
-                                    maxValue:360,
-                                    value: 0.5,
-                                    width: 75,
+                                        id:'circvis_tick_wedge_width',
+                                        xtype:'numberfield',
+                                        minValue:0.1,
+                                        maxValue:360,
+                                        value: 0.5,
+                                        width: 75,
                                         disabled : true,
-                                    listeners: {
-                                        change: function(field,value) {
+                                        listeners: {
+                                            change: function(field,value) {
                                                 re.display_options.circvis.ticks.wedge_width = value;
+                                            }
                                         }
-                                    }
-                                },{
-                                    xtype:'label',
-                                    text:'degrees'
-                                }]
+                                    },{
+                                        xtype:'label',
+                                        text:'degrees'
+                                    }]
                             }]
                         },    {
                             text:'Rotate Clockwise',
@@ -940,7 +940,7 @@ Ext.onReady(function() {
                                     width: 75,
                                     listeners: {
                                         change:function(field,value) {
-                                                re.display_options.circvis.rotation = value;
+                                            re.display_options.circvis.rotation = value;
                                         }
                                     }
                                 },{
@@ -970,22 +970,21 @@ Ext.onReady(function() {
                                     id:'pairwise_scores',
                                     text:'Pairwise Scores'
                                 }]
-
-                        },{
-                            id:'circularScatterplotMenu',
-                            text:'Circular Scatterplot',
-                            labelStyle: 'font-weight:bold;',
-                            menu:        re.model.association.types.map(function (obj,index){
-                                var return_obj = {
-                                    text:obj.label,
-                                    value:obj.id,
-                                    xtype:'menucheckitem',
-                                    handler:scatterplotFieldHandler,
-                                    checked: false,
-                                    group:'scatterplot_group'};
-                                if (index ==0) { return_obj.checked = true; }
-                                return     return_obj;
-                            })
+//                        },{
+//                            id:'circularScatterplotMenu',
+//                            text:'Circular Scatterplot',
+//                            labelStyle: 'font-weight:bold;',
+//                            menu:        re.model.association.types.map(function (obj,index){
+//                                var return_obj = {
+//                                    text:obj.label,
+//                                    value:obj.id,
+//                                    xtype:'menucheckitem',
+//                                    handler:scatterplotFieldHandler,
+//                                    checked: false,
+//                                    group:'scatterplot_group'};
+//                                if (index ==0) { return_obj.checked = true; }
+//                                return     return_obj;
+//                            })
                         }
                         ]
                     },{
@@ -1027,7 +1026,7 @@ Ext.onReady(function() {
                         menu:[{
                             text:'User Guide',
                             handler: userGuideHandler
-                        },
+                            },
                             {
                                 text:'Quick Start Guide',
                                 handler: function() {openBrowserTab('/help/crc_agg/quick_start.html') }
@@ -1036,8 +1035,12 @@ Ext.onReady(function() {
                                 text: 'Circular Ideogram'
                             },
                             {
+                                handler:  function() {openBrowserTab('http://groups.google.com/group/regulome-explorer') },
+                                text:'Questions & Answers'
+                            },
+                            {
                                 handler: openIssueHandler,
-                                text:'Submit an Issue/Bug'
+                                text:'Report an Issue/Bug'
                             }]
                     }, {
                         id:'aboutMenu',
@@ -1386,7 +1389,7 @@ Ext.onReady(function() {
 //                                    })
 //                                }]
 //                        }]
-                    }] // medline tab
+                }] // medline tab
             }] //tabpanel
         });
     re.windows.details_window.hide();

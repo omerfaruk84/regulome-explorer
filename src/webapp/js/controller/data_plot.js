@@ -373,12 +373,7 @@ function singlefeature_circvis(features,filter,div) {
                 stroke_style :stroke_style,
                 fill_style : function(tick) {return re.plot.colors.node_colors(tick.source); },
                 tooltip_items :  re.display_options.circvis.tooltips.feature,
-                tooltip_links : {
-                    'UCSC Genome Browser' :  function(feature){
-                        return  ucsc_genome_url + '?db=hg18&position=chr' + feature.chr + ':' +  feature.start +'-'+ feature.end;  },
-                    'Ensemble' : function(feature) {
-                        return  'http://uswest.ensembl.org/Homo_sapiens/Location/View?r=' + feature.chr + ':' +  feature.start +'-'+ feature.end;  }
-                }
+                tooltip_links : re.display_options.circvis.tooltips.links
             }
         },
         PLOT: {

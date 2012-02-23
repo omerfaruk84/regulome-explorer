@@ -75,7 +75,9 @@ vq.utils.VisUtils.extend(re, {
             tooltips:{
                 feature :  {
                     Feature : function(node) { var pos = node.label.indexOf('_');
-                        return pos > 0 ? node.label.slice(0,pos) : node.label;},
+                        var label = (pos > 0 ? node.label.slice(0,pos) : node.label);
+                        label = (label =='GisticArm' ? "Arm " + node.label.split('_')[1] : label);
+                    return label;},
                     Source : function(node) { return re.label_map[node.source]},
                     'Location' : function(node) { return 'Chr' + node.chr + ' ' + node.start + (node.end == '' ? '' : '-'+ node.end) + ' ';} ,
                     Annotations :  parseAnnotationList
@@ -103,13 +105,21 @@ vq.utils.VisUtils.extend(re, {
                         url : 'http://www.sanger.ac.uk/perl/genetics/CGP/cosmic',
                         uri : '?action=bygene&ln=',
                         config_object :  function(feature) {
-                            return  'http://www.sanger.ac.uk/perl/genetics/CGP/cosmic?action=bygene&ln=' + feature.label;  }
+                            return ['CNVR','MIRN'].indexOf(feature.source)< 0 ? 'http://www.sanger.ac.uk/perl/genetics/CGP/cosmic?action=bygene&ln=' + feature.label : null;
+                        }
                     }, {
                         label: 'OMIM',
                         url : 'http://omim.org/search/',
                         uri : '?index=entry&start=1&limit=10&search=',
                         config_object : function(feature) {
-                            return 'http://omim.org/search?index=entry&start=1&limit=10&search=' + feature.label;
+                            return ['CNVR','MIRN'].indexOf(feature.source) < 0 ? 'http://omim.org/search?index=entry&start=1&limit=10&search=' + feature.label: null;
+                        }
+                    },{
+                        label:'miRBase',
+                        url: 'http://mirbase.org/cgi-bin/query.pl',
+                        uri : '?terms=',
+                        config_object : function(feature) {
+                            return feature.source == 'MIRN' ? 'http://www.mirbase.org/cgi-bin/query.pl?terms=' + feature.label : null;
                         }
                     }
                 ], //link_objects
