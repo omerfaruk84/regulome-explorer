@@ -600,20 +600,3 @@ function buildSingleFeatureGQLQuery(args,feature) {
 
     return query;
 }
-
-
-/*
- Misc data/file retrieval
- */
-
-function downloadNetworkData(target_frame,output) {
-    var output_label = output;
-    var output_extension=output;
-    var params = re.state.filter_params;
-    var query = params['isolate'] ? buildSingleFeatureGQLQuery(params,re.ui.feature1.id,true) : buildGQLQuery(params,true);
-    if (output_label =='tsv') {output_extension=output_label;output_label='tsv-excel';}
-    target_frame.src = 'http://' + window.location.host + encodeURI(re.databases.base_uri +
-        re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query+ '?tq=' + query + '&tqx=out:' +output_label+';outFileName:'+re.tables.current_data+'_query.'+output_extension);
-}
-
-
