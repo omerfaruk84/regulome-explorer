@@ -175,22 +175,23 @@ function openDetailsWindow(association) {
     //renderPathways(association);
 }
 
-function retrieveSVG() {
+function retrieveSVG(parent_panel) {
     var serializer = new XMLSerializer();
     var svg_tags;
-    var panel_dom = Ext.DomQuery.selectNode('div#circle-panel>svg');
+    var panel_dom = Ext.DomQuery.selectNode('div#' + parent_panel + '>svg');
     if (panel_dom !== undefined) {
         svg_tags = serializeSVG(panel_dom);
     }
     return svg_tags;
 }
 
-function exportSVG() {
-    downloadData(retrieveSVG(), 'export.svg', 'svg');
-}
-
-function exportPNG() {
-    convertData(retrieveSVG(), 'export.svg', 'svg', 'png');
+function exportImage() {
+    var parent_panel = 'circle-panel';
+    if (this.parentMenu.parentMenu.activeItem.id == 'linear-export-menu') parent_panel = 'linear-panel';
+    var svg = retrieveSVG(parent_panel);
+    if (svg === undefined) {Ext.Msg.alert('SVG does not exist', 'SVG cannot be exported.');; return;}
+    if (this.value == 'svg') downloadData(svg, 'export.svg', 'svg');
+    else convertData(svg, 'export.svg', 'svg', this.value);
 }
 
 function loadDataDialog() {
@@ -894,626 +895,553 @@ Ext.onReady(function() {
                         text: 'CSV',
                         value: 'csv',
                         handler: exportData
-                    }, {
+                        }, {
                         text: 'TSV',
                         value: 'tsv',
                         handler: exportData
-                    }, {
-                        text: 'SVG',
-                        value: 'svg',
-                        handler: exportSVG
-                    }, {
-                        text: 'PNG',
-                        value: 'png',
-                        handler: exportPNG
+                        }, {
+                        text: 'Circular',
+                        id: 'circular-export-menu',
+                        menu: [{
+                            text: 'SVG',
+                            value: 'svg',
+                            handler: exportImage
+                        },{
+                            text: 'PNG',
+                            value: 'png',
+                            handler: exportImage
+                        }]
+                    },{
+                        text: 'Linear',
+                        id: 'linear-export-menu',
+                        menu: [{
+                            text: 'SVG',
+                            value: 'svg',
+                            handler: exportImage
+                        }, {
+                            text: 'PNG',
+                            value: 'png',
+                            handler: exportImage
+                        }]
                     }]
-                }]
-            }, {
-                id: 'displayMenu',
-                text: 'Display',
-                labelStyle: 'font-weight:bold;',
-                menu: [{
-                    text: 'Outer Ticks:',
+            }]
+                }, {
+                    id: 'displayMenu',
+                    text: 'Display',
+                    labelStyle: 'font-weight:bold;',
                     menu: [{
+                        text: 'Outer Ticks:',
+                        menu: [{
 
-                        xtype: 'compositefield',
-                        items: [{
-                            xtype: 'checkbox',
-                            id: 'tile_ticks_checkbox',
-                            checked: false,
-                            label: 'Specifiy Tick Tiling',
-                            handler: function(checkbox, checked) {
-                                Ext.getCmp('tile_ticks_field').setDisabled(!checked);
-                                re.display_options.circvis.ticks.tile_ticks_manually = checked;
-                                re.display_options.circvis.ticks.tick_overlap_distance = Ext.getCmp('tile_ticks_field').getValue();
-                            }
-                        }, {
-                            xtype: 'label',
-                            text: 'Overlap Distance'
-                        }, {
-                            id: 'tile_ticks_field',
-                            xtype: 'numberfield',
-                            width: 75,
-                            value: '7200',
-                            minValue: -2,
-                            maxValue: 20000000.0,
-                            disabled: true,
-                            listeners: {
-                                change: function(field, value) {
-                                    re.display_options.circvis.ticks.tick_overlap_distance = value;
+                            xtype: 'compositefield',
+                            items: [{
+                                xtype: 'checkbox',
+                                id: 'tile_ticks_checkbox',
+                                checked: false,
+                                label: 'Specifiy Tick Tiling',
+                                handler: function(checkbox, checked) {
+                                    Ext.getCmp('tile_ticks_field').setDisabled(!checked);
+                                    re.display_options.circvis.ticks.tile_ticks_manually = checked;
+                                    re.display_options.circvis.ticks.tick_overlap_distance = Ext.getCmp('tile_ticks_field').getValue();
+                                }
+                            }, {
+                                xtype: 'label',
+                                text: 'Overlap Distance'
+                            }, {
+                                id: 'tile_ticks_field',
+                                xtype: 'numberfield',
+                                width: 75,
+                                value: '7200',
+                                minValue: -2,
+                                maxValue: 20000000.0,
+                                disabled: true,
+                                listeners: {
+                                    change: function(field, value) {
+                                        re.display_options.circvis.ticks.tick_overlap_distance = value;
 
+                                    }
                                 }
-                            }
+                            }, {
+                                xtype: 'label',
+                                text: 'bp'
+                            }],
+                            text: 'Tile Overlap',
+                            width: 220
                         }, {
-                            xtype: 'label',
-                            text: 'bp'
-                        }],
-                        text: 'Tile Overlap',
-                        width: 220
+                            xtype: 'compositefield',
+                            width: 240,
+                            items: [{
+                                xtype: 'checkbox',
+                                id: 'tick_wedge_height_manually',
+                                checked: false,
+                                label: 'Wedge Height',
+                                handler: function(checkbox, checked) {
+                                    Ext.getCmp('circvis_tick_wedge_height').setDisabled(!checked);
+                                    re.display_options.circvis.ticks.wedge_height_manually = checked;
+                                    re.display_options.circvis.ticks.wedge_height = Ext.getCmp('circvis_tick_wedge_height').getValue();
+                                }
+                            }, {
+                                xtype: 'label',
+                                text: 'Wedge Height'
+                            }, {
+                                id: 'circvis_tick_wedge_height',
+                                xtype: 'numberfield',
+                                minValue: 1,
+                                maxValue: 30,
+                                value: 10,
+                                width: 75,
+                                disabled: true,
+                                listeners: {
+                                    change: function(field, value) {
+                                        re.display_options.circvis.ticks.wedge_height = value;
+                                    }
+                                }
+                            }, {
+                                xtype: 'label',
+                                text: 'pixels'
+                            }]
+                        }, {
+                            xtype: 'compositefield',
+                            width: 240,
+                            items: [{
+                                xtype: 'checkbox',
+                                id: 'tick_wedge_width_manually',
+                                checked: false,
+                                label: 'Wedge Width',
+                                handler: function(checkbox, checked) {
+                                    Ext.getCmp('circvis_tick_wedge_width').setDisabled(!checked);
+                                    re.display_options.circvis.ticks.wedge_width_manually = checked;
+                                    re.display_options.circvis.ticks.wedge_width = Ext.getCmp('circvis_tick_wedge_width').getValue();
+                                }
+                            }, {
+                                xtype: 'label',
+                                text: 'Wedge Width'
+                            }, {
+                                id: 'circvis_tick_wedge_width',
+                                xtype: 'numberfield',
+                                minValue: 0.1,
+                                maxValue: 360,
+                                value: 0.5,
+                                width: 75,
+                                disabled: true,
+                                listeners: {
+                                    change: function(field, value) {
+                                        re.display_options.circvis.ticks.wedge_width = value;
+                                    }
+                                }
+                            }, {
+                                xtype: 'label',
+                                text: 'degrees'
+                            }]
+                        }]
                     }, {
-                        xtype: 'compositefield',
-                        width: 240,
-                        items: [{
-                            xtype: 'checkbox',
-                            id: 'tick_wedge_height_manually',
-                            checked: false,
-                            label: 'Wedge Height',
-                            handler: function(checkbox, checked) {
-                                Ext.getCmp('circvis_tick_wedge_height').setDisabled(!checked);
-                                re.display_options.circvis.ticks.wedge_height_manually = checked;
-                                re.display_options.circvis.ticks.wedge_height = Ext.getCmp('circvis_tick_wedge_height').getValue();
-                            }
+                        text: 'Rotate Clockwise',
+                        menu: [{
+                            xtype: 'compositefield',
+                            width: 140,
+                            items: [{
+                                id: 'circvis_rotation_degrees',
+                                xtype: 'numberfield',
+                                minValue: 0,
+                                maxValue: 360,
+                                value: 0,
+                                width: 75,
+                                listeners: {
+                                    change: function(field, value) {
+                                        re.display_options.circvis.rotation = value;
+                                    }
+                                }
+                            }, {
+                                xtype: 'label',
+                                text: 'degrees'
+                            }]
+                        }]
+                    }, {
+                        text: 'Rings:',
+                        menu: [{
+                            xtype: 'menucheckitem',
+                            handler: ringHandler,
+                            checked: !re.isRingHidden('karyotype'),
+                            id: 'karyotype',
+                            text: 'Karyotype Bands'
                         }, {
-                            xtype: 'label',
-                            text: 'Wedge Height'
+                            xtype: 'menucheckitem',
+                            handler: ringHandler,
+                            checked: !re.isRingHidden('cnvr'),
+                            id: 'cnvr',
+                            text: 'CNVR tiles'
                         }, {
-                            id: 'circvis_tick_wedge_height',
-                            xtype: 'numberfield',
-                            minValue: 1,
-                            maxValue: 30,
-                            value: 10,
-                            width: 75,
+                            xtype: 'menucheckitem',
+                            handler: ringHandler,
+                            checked: !re.isRingHidden('pairwise_scores'),
+                            id: 'pairwise_scores',
+                            text: 'Pairwise Scores'
+                        }]
+                    }]
+                }, {
+                    id: 'modalMenu',
+                    text: 'Mode',
+                    labelStyle: 'font-weight:bold;',
+                    menu: [{
+                        text: 'Circular Plot',
+                        menu: [{
+                            xtype: 'menucheckitem',
+                            handler: modeHandler,
+                            checked: true,
+                            id: 'explore_check',
+                            group: 'mode_group',
+                            text: 'Explore',
+                            value: 'explore'
+                        }, {
+                            xtype: 'menucheckitem',
+                            handler: modeHandler,
+                            group: 'mode_group',
+                            id: 'nav_check',
+                            text: 'Navigate',
+                            value: 'navigate'
+                        }, {
+                            xtype: 'menucheckitem',
+                            handler: modeHandler,
+                            group: 'mode_group',
                             disabled: true,
-                            listeners: {
-                                change: function(field, value) {
-                                    re.display_options.circvis.ticks.wedge_height = value;
-                                }
-                            }
-                        }, {
-                            xtype: 'label',
-                            text: 'pixels'
-                        }]
-                    }, {
-                        xtype: 'compositefield',
-                        width: 240,
-                        items: [{
-                            xtype: 'checkbox',
-                            id: 'tick_wedge_width_manually',
-                            checked: false,
-                            label: 'Wedge Width',
-                            handler: function(checkbox, checked) {
-                                Ext.getCmp('circvis_tick_wedge_width').setDisabled(!checked);
-                                re.display_options.circvis.ticks.wedge_width_manually = checked;
-                                re.display_options.circvis.ticks.wedge_width = Ext.getCmp('circvis_tick_wedge_width').getValue();
-                            }
-                        }, {
-                            xtype: 'label',
-                            text: 'Wedge Width'
-                        }, {
-                            id: 'circvis_tick_wedge_width',
-                            xtype: 'numberfield',
-                            minValue: 0.1,
-                            maxValue: 360,
-                            value: 0.5,
-                            width: 75,
-                            disabled: true,
-                            listeners: {
-                                change: function(field, value) {
-                                    re.display_options.circvis.ticks.wedge_width = value;
-                                }
-                            }
-                        }, {
-                            xtype: 'label',
-                            text: 'degrees'
+                            id: 'select_check',
+                            text: 'Select',
+                            value: 'Select'
                         }]
                     }]
                 }, {
-                    text: 'Rotate Clockwise',
+                    id: 'helpMenu',
+                    text: 'Help',
+                    labelStyle: 'font-weight:bold;',
                     menu: [{
-                        xtype: 'compositefield',
-                        width: 140,
-                        items: [{
-                            id: 'circvis_rotation_degrees',
-                            xtype: 'numberfield',
-                            minValue: 0,
-                            maxValue: 360,
-                            value: 0,
-                            width: 75,
-                            listeners: {
-                                change: function(field, value) {
-                                    re.display_options.circvis.rotation = value;
-                                }
-                            }
-                        }, {
-                            xtype: 'label',
-                            text: 'degrees'
-                        }]
+                        text: 'User Guide',
+                        handler: userGuideHandler
+                    }, {
+                        text: 'Quick Start Guide',
+                        handler: function() {
+                            openBrowserTab(re.help.links.quick_start)
+                        }
+                    }, {
+                        text: 'Circular Ideogram'
+                    }, {
+                        handler: function() {
+                            openBrowserTab(re.help.links.user_group)
+                        },
+                        text: 'User Group'
+                    }, {
+                        handler: openIssueHandler,
+                        text: 'Report an Issue/Bug'
                     }]
                 }, {
-                    text: 'Rings:',
+                    id: 'aboutMenu',
+                    text: 'About',
+                    labelStyle: 'font-weight:bold;',
                     menu: [{
-                        xtype: 'menucheckitem',
-                        handler: ringHandler,
-                        checked: !re.isRingHidden('karyotype'),
-                        id: 'karyotype',
-                        text: 'Karyotype Bands'
+                        text: 'CSACR',
+                        handler: function() {
+                            openBrowserTab('http://www.cancerregulome.org/')
+                        }
                     }, {
-                        xtype: 'menucheckitem',
-                        handler: ringHandler,
-                        checked: !re.isRingHidden('cnvr'),
-                        id: 'cnvr',
-                        text: 'CNVR tiles'
+                        handler: openCodeRepository,
+                        text: 'Code Repository'
                     }, {
-                        xtype: 'menucheckitem',
-                        handler: ringHandler,
-                        checked: !re.isRingHidden('pairwise_scores'),
-                        id: 'pairwise_scores',
-                        text: 'Pairwise Scores'
+                        text: 'This Analysis',
+                        handler: function() {
+                            openBrowserTab(re.help.links.analysis_summary)
+                        }
+                    }, {
+                        text: 'Contact Us',
+                        handler: function() {
+                            openBrowserTab(re.help.links.contact_us)
+                        }
                     }]
-                    //                        },{
-                    //                            id:'circularScatterplotMenu',
-                    //                            text:'Circular Scatterplot',
-                    //                            labelStyle: 'font-weight:bold;',
-                    //                            menu:        re.model.association.types.map(function (obj,index){
-                    //                                var return_obj = {
-                    //                                    text:obj.label,
-                    //                                    value:obj.id,
-                    //                                    xtype:'menucheckitem',
-                    //                                    handler:scatterplotFieldHandler,
-                    //                                    checked: false,
-                    //                                    group:'scatterplot_group'};
-                    //                                if (index ==0) { return_obj.checked = true; }
-                    //                                return     return_obj;
-                    //                            })
-                }]
-            }, {
-                id: 'modalMenu',
-                text: 'Mode',
-                labelStyle: 'font-weight:bold;',
-                menu: [{
-                    text: 'Circular Plot',
-                    menu: [{
-                        xtype: 'menucheckitem',
-                        handler: modeHandler,
-                        checked: true,
-                        id: 'explore_check',
-                        group: 'mode_group',
-                        text: 'Explore',
-                        value: 'explore'
-                    }, {
-                        xtype: 'menucheckitem',
-                        handler: modeHandler,
-                        group: 'mode_group',
-                        id: 'nav_check',
-                        text: 'Navigate',
-                        value: 'navigate'
-                    }, {
-                        xtype: 'menucheckitem',
-                        handler: modeHandler,
-                        group: 'mode_group',
-                        disabled: true,
-                        id: 'select_check',
-                        text: 'Select',
-                        value: 'Select'
-                    }]
-                }]
-            }, {
-                id: 'helpMenu',
-                text: 'Help',
-                labelStyle: 'font-weight:bold;',
-                menu: [{
-                    text: 'User Guide',
-                    handler: userGuideHandler
-                }, {
+                }, '->',
+                {
+                    id: 'quickStart',
                     text: 'Quick Start Guide',
+                    labelStyle: 'font-weight:bold;color:yellow;text-decoration:underline;',
                     handler: function() {
                         openBrowserTab(re.help.links.quick_start)
                     }
-                }, {
-                    text: 'Circular Ideogram'
-                }, {
-                    handler: function() {
-                        openBrowserTab(re.help.links.user_group)
-                    },
-                    text: 'User Group'
-                }, {
-                    handler: openIssueHandler,
-                    text: 'Report an Issue/Bug'
                 }]
             }, {
-                id: 'aboutMenu',
-                text: 'About',
-                labelStyle: 'font-weight:bold;',
-                menu: [{
-                    text: 'CSACR',
-                    handler: function() {
-                        openBrowserTab('http://www.cancerregulome.org/')
-                    }
-                }, {
-                    handler: openCodeRepository,
-                    text: 'Code Repository'
-                }, {
-                    text: 'This Analysis',
-                    handler: function() {
-                        openBrowserTab(re.help.links.analysis_summary)
-                    }
-                }, {
-                    text: 'Contact Us',
-                    handler: function() {
-                        openBrowserTab(re.help.links.contact_us)
-                    }
-                }]
-            }, '->',
-            {
-                id: 'quickStart',
-                text: 'Quick Start Guide',
-                labelStyle: 'font-weight:bold;color:yellow;text-decoration:underline;',
-                handler: function() {
-                    openBrowserTab(re.help.links.quick_start)
-                }
-            }]
-        }, {
-            region: 'center',
-            id: 'center-panel',
-            name: 'center-panel',
-            layout: 'card',
-            border: false,
-            closable: false,
-            activeItem: 0,
-            height: 800,
-            margins: '0 5 5 0',
-            items: [
-            randomforestPanel]
-        }],
-        renderTo: Ext.getBody()
-    });
+                region: 'center',
+                id: 'center-panel',
+                name: 'center-panel',
+                layout: 'card',
+                border: false,
+                closable: false,
+                activeItem: 0,
+                height: 800,
+                margins: '0 5 5 0',
+                items: [
+                randomforestPanel]
+            }],
+            renderTo: Ext.getBody()
+        });
 
-    function ringHandler(item) {
-        re.setRingHidden(item.getId(), item.checked); //hidden if true!
-        requestFeatureFilteredRedraw();
-    }
-
-    function userGuideHandler(item) {
-        openBrowserTab(re.help.links.user_guide);
-    }
-
-    function openIssueHandler(item) {
-        openBrowserTab(re.help.links.bug_report);
-    }
-
-    function openCodeRepository(item) {
-        openBrowserTab('http://code.google.com/p/regulome-explorer/');
-    }
-
-    function modeHandler(item) {
-        switch (item.getId()) {
-        case ('nav_check'):
-            vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis', 'main_menu', {
-                pan_enable: true,
-                zoom_enable: true
-            }));
-            break;
-        case ('explore_check'):
-        default:
-            vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis', 'main_menu', {
-                pan_enable: false,
-                zoom_enable: false
-            }));
+        function ringHandler(item) {
+            re.setRingHidden(item.getId(), item.checked); //hidden if true!
+            requestFeatureFilteredRedraw();
         }
-    }
 
-    function scatterplotFieldHandler(item) {
-        re.display_options.circvis.rings.pairwise_scores.value_field = re.model.association.types[re.model.association_map[item.value]].id;
-    }
+        function userGuideHandler(item) {
+            openBrowserTab(re.help.links.user_guide);
+        }
 
-    re.windows.export_window = new Ext.Window({
-        id: 'export-window',
-        renderTo: 'view-region',
-        modal: true,
-        closeAction: 'hide',
-        layout: 'anchor',
-        width: 600,
-        height: 500,
-        title: "Export Image",
-        closable: true,
-        tools: [{
-            id: 'help',
-            handler: function(event, toolEl, panel) {
-                openHelpWindow('Export', exportHelpString);
+        function openIssueHandler(item) {
+            openBrowserTab(re.help.links.bug_report);
+        }
+
+        function openCodeRepository(item) {
+            openBrowserTab('http://code.google.com/p/regulome-explorer/');
+        }
+
+        function modeHandler(item) {
+            switch (item.getId()) {
+            case ('nav_check'):
+                vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis', 'main_menu', {
+                    pan_enable: true,
+                    zoom_enable: true
+                }));
+                break;
+            case ('explore_check'):
+            default:
+                vq.events.Dispatcher.dispatch(new vq.events.Event('modify_circvis', 'main_menu', {
+                    pan_enable: false,
+                    zoom_enable: false
+                }));
             }
-        }],
-        layoutConfig: {
-            animate: true
-        },
-        maximizable: false,
-        items: {
-            xtype: 'textarea',
-            id: 'export-textarea',
-            name: 'export-textarea',
-            padding: '5 0 0 0',
-            autoScroll: true,
-            anchor: '100% 100%'
         }
-    });
-    re.windows.export_window.hide();
 
-    var loadListener = function(store, records) {
-            store.removeListener('load', loadListener);
-            var e = new vq.events.Event('data_request', 'annotations', {});
-            e.dispatch();
-        };
+        function scatterplotFieldHandler(item) {
+            re.display_options.circvis.rings.pairwise_scores.value_field = re.model.association.types[re.model.association_map[item.value]].id;
+        }
 
-    re.windows.dataset_window = new Ext.Window({
-        id: 'dataset-window',
-        renderTo: 'view-region',
-        modal: false,
-        closeAction: 'hide',
-        layout: 'fit',
-        width: 600,
-        height: 300,
-        title: "Load Dataset",
-        closable: true,
-        layoutConfig: {
-            animate: true
-        },
-        maximizable: false,
-        items: {
-            xtype: 'grid',
-            id: 'dataset_grid',
-            autoScroll: true,
-            loadMask: true,
-            monitorResize: true,
-            autoWidth: true,
-            height: 250,
-            viewConfig: {
-                forceFit: true
+        re.windows.export_window = new Ext.Window({
+            id: 'export-window',
+            renderTo: 'view-region',
+            modal: true,
+            closeAction: 'hide',
+            layout: 'anchor',
+            width: 600,
+            height: 500,
+            title: "Export Image",
+            closable: true,
+            tools: [{
+                id: 'help',
+                handler: function(event, toolEl, panel) {
+                    openHelpWindow('Export', exportHelpString);
+                }
+            }],
+            layoutConfig: {
+                animate: true
             },
-            cm: new Ext.grid.ColumnModel({
-                columns: [{
-                    header: "Description",
-                    width: 120,
-                    id: 'description',
-                    dataIndex: 'description'
-                }, {
-                    header: "Date",
-                    width: 90,
-                    id: 'dataset_date',
-                    dataIndex: 'dataset_date',
-                    hidden: false
-                }, {
-                    header: "Label",
-                    width: 120,
-                    id: 'label',
-                    dataIndex: 'label',
-                    hidden: true
-                }, {
-                    header: "Method",
-                    width: 70,
-                    id: 'method',
-                    dataIndex: 'method'
-                }, {
-                    header: "Source",
-                    width: 70,
-                    id: 'source',
-                    dataIndex: 'source'
-                }, {
-                    header: "Contact",
-                    width: 200,
-                    id: 'contact',
-                    dataIndex: 'contact'
-                }, {
-                    header: "Comments",
-                    width: 100,
-                    id: 'comments',
-                    dataIndex: 'comments'
-                }],
-                defaults: {
-                    sortable: true,
-                    width: 100
-                }
-            }),
-            store: new Ext.data.JsonStore({
-                autoLoad: true,
-                storeId: 'dataset_grid_store',
-                idProperty: 'label',
-                proxy: new Ext.data.HttpProxy({
-                    url: re.databases.base_uri + re.databases.rf_ace.uri + re.tables.dataset + re.rest.query + '?' + re.params.query + 'select `description`, `dataset_date`,`label`, `method`, `source`, `contact`, `comments`' + re.analysis.dataset_method_clause + ' order by default_display DESC' + re.params.json_out
-                }),
-                fields: ['description', 'label', 'dataset_date', 'method', 'source', 'contact', 'comments'],
-                listeners: {
-                    load: loadListener
-                }
-            })
-        },
-        bbar: [{
-            text: 'Load',
-            handler: manualLoadSelectedDataset
-        }, {
-            text: 'Cancel',
-            handler: hideDatasetWindow
-        }]
-    });
-    re.windows.dataset_window.hide();
+            maximizable: false,
+            items: {
+                xtype: 'textarea',
+                id: 'export-textarea',
+                name: 'export-textarea',
+                padding: '5 0 0 0',
+                autoScroll: true,
+                anchor: '100% 100%'
+            }
+        });
+        re.windows.export_window.hide();
 
-    re.windows.details_window = new Ext.Window({
-        id: 'details-window',
-        renderTo: 'view-region',
-        modal: false,
-        closeAction: 'hide',
-        layout: 'fit',
-        width: 600,
-        height: 500,
-        title: "Details",
-        closable: true,
-        layoutConfig: {
-            animate: true
-        },
-        maximizable: false,
-        items: [{
-            xtype: 'tabpanel',
-            id: 'details-tabpanel',
-            name: 'details-tabpanel',
-            activeTab: 'scatterplot_parent',
-            layoutOnCardChange: true,
+        var loadListener = function(store, records) {
+                store.removeListener('load', loadListener);
+                var e = new vq.events.Event('data_request', 'annotations', {});
+                e.dispatch();
+            };
+
+        re.windows.dataset_window = new Ext.Window({
+            id: 'dataset-window',
+            renderTo: 'view-region',
+            modal: false,
+            closeAction: 'hide',
+            layout: 'fit',
+            width: 600,
+            height: 300,
+            title: "Load Dataset",
+            closable: true,
+            layoutConfig: {
+                animate: true
+            },
+            maximizable: false,
+            items: {
+                xtype: 'grid',
+                id: 'dataset_grid',
+                autoScroll: true,
+                loadMask: true,
+                monitorResize: true,
+                autoWidth: true,
+                height: 250,
+                viewConfig: {
+                    forceFit: true
+                },
+                cm: new Ext.grid.ColumnModel({
+                    columns: [{
+                        header: "Description",
+                        width: 120,
+                        id: 'description',
+                        dataIndex: 'description'
+                    }, {
+                        header: "Date",
+                        width: 90,
+                        id: 'dataset_date',
+                        dataIndex: 'dataset_date',
+                        hidden: false
+                    }, {
+                        header: "Label",
+                        width: 120,
+                        id: 'label',
+                        dataIndex: 'label',
+                        hidden: true
+                    }, {
+                        header: "Method",
+                        width: 70,
+                        id: 'method',
+                        dataIndex: 'method'
+                    }, {
+                        header: "Source",
+                        width: 70,
+                        id: 'source',
+                        dataIndex: 'source'
+                    }, {
+                        header: "Contact",
+                        width: 200,
+                        id: 'contact',
+                        dataIndex: 'contact'
+                    }, {
+                        header: "Comments",
+                        width: 100,
+                        id: 'comments',
+                        dataIndex: 'comments'
+                    }],
+                    defaults: {
+                        sortable: true,
+                        width: 100
+                    }
+                }),
+                store: new Ext.data.JsonStore({
+                    autoLoad: true,
+                    storeId: 'dataset_grid_store',
+                    idProperty: 'label',
+                    proxy: new Ext.data.HttpProxy({
+                        url: re.databases.base_uri + re.databases.rf_ace.uri + re.tables.dataset + re.rest.query + '?' + re.params.query + 'select `description`, `dataset_date`,`label`, `method`, `source`, `contact`, `comments`' + re.analysis.dataset_method_clause + ' order by default_display DESC' + re.params.json_out
+                    }),
+                    fields: ['description', 'label', 'dataset_date', 'method', 'source', 'contact', 'comments'],
+                    listeners: {
+                        load: loadListener
+                    }
+                })
+            },
+            bbar: [{
+                text: 'Load',
+                handler: manualLoadSelectedDataset
+            }, {
+                text: 'Cancel',
+                handler: hideDatasetWindow
+            }]
+        });
+        re.windows.dataset_window.hide();
+
+        re.windows.details_window = new Ext.Window({
+            id: 'details-window',
+            renderTo: 'view-region',
+            modal: false,
+            closeAction: 'hide',
+            layout: 'fit',
+            width: 600,
+            height: 500,
+            title: "Details",
+            closable: true,
+            layoutConfig: {
+                animate: true
+            },
+            maximizable: false,
             items: [{
-                xtype: 'panel',
-                id: 'scatterplot_parent',
-                name: 'scatterplot_parent',
-                title: 'Data Plot',
-                layout: 'anchor',
-                margins: '3 0 3 3',
-                height: 500,
-                width: 600,
-                frame: true,
+                xtype: 'tabpanel',
+                id: 'details-tabpanel',
+                name: 'details-tabpanel',
+                activeTab: 'scatterplot_parent',
+                layoutOnCardChange: true,
                 items: [{
                     xtype: 'panel',
-                    id: 'scatterplot_panel',
-                    name: 'scatterplot_panel',
-                    anchor: '100% -100'
-                }, {
-                    xtype: 'panel',
-                    id: 'scatterplot_controls',
-                    name: 'scatterplot_controls',
-                    layout: 'form',
+                    id: 'scatterplot_parent',
+                    name: 'scatterplot_parent',
+                    title: 'Data Plot',
+                    layout: 'anchor',
+                    margins: '3 0 3 3',
+                    height: 500,
+                    width: 600,
+                    frame: true,
                     items: [{
-                        xtype: 'radiogroup',
-                        id: 'scatterplot_regression_radiogroup',
-                        fieldLabel: 'Regression',
-                        items: [{
-                            checked: true,
-                            boxLabel: 'None',
-                            inputValue: 'none',
-                            name: 'sp_rb'
-                        }, {
-                            boxLabel: 'Linear',
-                            inputValue: 'linear',
-                            name: 'sp_rb'
-                        }],
-                        listeners: {
-                            change: function(checked_radio) {
-                                renderScatterPlot();
-                            }
-                        }
+                        xtype: 'panel',
+                        id: 'scatterplot_panel',
+                        name: 'scatterplot_panel',
+                        anchor: '100% -100'
                     }, {
-                        xtype: 'compositefield',
-                        defaultMargins: '0 20 0 0',
+                        xtype: 'panel',
+                        id: 'scatterplot_controls',
+                        name: 'scatterplot_controls',
+                        layout: 'form',
                         items: [{
-                            xtype: 'checkbox',
-                            id: 'scatterplot_axes_checkbox',
-                            boxLabel: 'Reverse Axes',
+                            xtype: 'radiogroup',
+                            id: 'scatterplot_regression_radiogroup',
+                            fieldLabel: 'Regression',
+                            items: [{
+                                checked: true,
+                                boxLabel: 'None',
+                                inputValue: 'none',
+                                name: 'sp_rb'
+                            }, {
+                                boxLabel: 'Linear',
+                                inputValue: 'linear',
+                                name: 'sp_rb'
+                            }],
                             listeners: {
-                                check: function(checked) {
+                                change: function(checked_radio) {
                                     renderScatterPlot();
                                 }
                             }
                         }, {
-                            xtype: 'checkbox',
-                            id: 'scatterplot_discrete_x_checkbox',
-                            boxLabel: 'Discretize Target',
-                            listeners: {
-                                check: function(checked) {
-                                    renderScatterPlot();
+                            xtype: 'compositefield',
+                            defaultMargins: '0 20 0 0',
+                            items: [{
+                                xtype: 'checkbox',
+                                id: 'scatterplot_axes_checkbox',
+                                boxLabel: 'Reverse Axes',
+                                listeners: {
+                                    check: function(checked) {
+                                        renderScatterPlot();
+                                    }
                                 }
-                            }
-                        }, {
-                            xtype: 'checkbox',
-                            id: 'scatterplot_discrete_y_checkbox',
-                            boxLabel: 'Discretize Predictor',
-                            listeners: {
-                                check: function(checked) {
-                                    renderScatterPlot();
+                            }, {
+                                xtype: 'checkbox',
+                                id: 'scatterplot_discrete_x_checkbox',
+                                boxLabel: 'Discretize Target',
+                                listeners: {
+                                    check: function(checked) {
+                                        renderScatterPlot();
+                                    }
                                 }
-                            }
+                            }, {
+                                xtype: 'checkbox',
+                                id: 'scatterplot_discrete_y_checkbox',
+                                boxLabel: 'Discretize Predictor',
+                                listeners: {
+                                    check: function(checked) {
+                                        renderScatterPlot();
+                                    }
+                                }
+                            }]
                         }]
                     }]
-                }]
-                //                },
-                //                    {
-                //                        xtype:'panel',
-                //                        id:'medline_parent',
-                //                        name:'medline_parent',
-                //                        title:'MEDLINE',
-                //                        layout: 'anchor',
-                //                        margins:'3 0 3 3',
-                //                        height : 500,
-                //                        width: 600,
-                //                        frame : true,
-                //                        items:[  {
-                //                            id:'dataDocument-panel',
-                //                            name : 'dataDocument-panel',
-                //                            layout : 'anchor',
-                //                            anchor: '100% 100%',
-                //                            collapsible : false,
-                //                            items : [
-                //                                {
-                //                                    xtype:'grid',
-                //                                    id : 'dataDocument_grid',
-                //                                    name : 'dataDocument_grid',
-                //                                    autoScroll:true,
-                //                                    autoWidth : true,
-                ////                                    height: 425,
-                //                                    loadMask: true,
-                //                                    anchor: '100% 100%',
-                //                                    store: medlineStore,
-                //                                    viewConfig: {
-                //                                        forceFit : true,
-                //                                        enableRowBody:true,
-                //                                        showPreview:true,
-                //                                        getRowClass: function(record, rowIndex, p, store) {
-                //                                            var jsonData = store.reader.jsonData;
-                //                                            if (jsonData.highlighting[record.id] != undefined && jsonData.highlighting[record.id].abstract_text != undefined) {
-                //                                                p.body = '<p>' + jsonData.highlighting[record.id].abstract_text[0] + '</p>';
-                //                                            }
-                //                                            else
-                //                                                p.body = '<p>' + record.data.abstract_text + '</p>';
-                //                                            return 'x-grid3-row-expanded';
-                //                                        }
-                //                                    },
-                //                                    cm : new Ext.grid.ColumnModel({
-                //                                        columns: [
-                //                                            {header : "PMID", width:50,  id:'pmid', dataIndex:'pmid', groupName: 'Documents',renderer:renderPMID},
-                //                                            { header: "Title", width: 300,  id:'article_title', dataIndex:'article_title',groupName:'Documents', renderer: renderTitle},
-                //                                            { header: "Month", width:75 , id:'pub_date_month', dataIndex:'pub_date_month',groupName:'Documents'},
-                //                                            { header: "Year", width:75, id:'pub_date_year',dataIndex:'pub_date_year',groupName:'Documents'}
-                //                                        ],
-                //                                        defaults: {
-                //                                            sortable: true
-                //                                        }
-                //                                    }),
-                //                                    bbar: new Ext.PagingToolbar({
-                //                                        pageSize: 20,
-                //                                        store: medlineStore,
-                //                                        displayInfo: true,
-                //                                        displayMsg: 'Displaying documents {0} - {1} of {2}',
-                //                                        emptyMsg: "No documents",
-                //                                        items:[
-                //                                            '-',{
-                //                                                pressed:true,
-                //                                                enableToggle:true,
-                //                                                text: 'Show Preview',
-                //                                                cls: 'x-btn-text-icon details',
-                //                                                toggleHandler: function(btn,pressed){
-                //                                                    var view = Ext.getCmp('dataDocument_grid').getView();
-                //                                                    view.showPreview = pressed;
-                //                                                    view.refresh();
-                //                                                }
-                //                                            }]
-                //                                    })
-                //                                }]
-                //                        }]
-            }] // medline tab
-        }] //tabpanel
-    });
-    re.windows.details_window.hide();
+                }] // medline tab
+            }] //tabpanel
+        });
+        re.windows.details_window.hide();
 
-});
+    });

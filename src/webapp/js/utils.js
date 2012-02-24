@@ -213,7 +213,7 @@ function convertData(data, filename, in_format, out_format) {
 
 }
 
-serializeSVG = function(elem) {
+var serializeSVG = function(elem) {
     var out = "",
         indent = 0;
 
@@ -255,4 +255,4 @@ serializeSVG = function(elem) {
     };
 
     return SvgToString(elem);
-}
+};
