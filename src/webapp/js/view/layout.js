@@ -1026,17 +1026,17 @@ Ext.onReady(function() {
                         menu:[{
                             text:'User Guide',
                             handler: userGuideHandler
-                            },
+                        },
                             {
                                 text:'Quick Start Guide',
-                                handler: function() {openBrowserTab('/help/crc_agg/quick_start.html') }
+                                handler: function() {openBrowserTab(re.help.links.quick_start) }
                             },
                             {
                                 text: 'Circular Ideogram'
                             },
                             {
-                                handler:  function() {openBrowserTab('http://groups.google.com/group/regulome-explorer') },
-                                text:'Questions & Answers'
+                                handler:  function() {openBrowserTab(re.help.links.user_group) },
+                                text:'User Group'
                             },
                             {
                                 handler: openIssueHandler,
@@ -1055,7 +1055,10 @@ Ext.onReady(function() {
                                 text:'Code Repository'
                             },{
                                 text:'This Analysis',
-                                handler: function() {openBrowserTab('/help/crc_agg/analysis/analysis_summary.html') }
+                                handler: function() {openBrowserTab(re.help.links.analysis_summary) }
+                            },{
+                                text:'Contact Us',
+                                handler: function() {openBrowserTab(re.help.links.contact_us) }
                             }
                         ]
                     },'->',
@@ -1063,7 +1066,7 @@ Ext.onReady(function() {
                         id:'quickStart',
                         text:'Quick Start Guide',
                         labelStyle: 'font-weight:bold;color:yellow;text-decoration:underline;',
-                        handler: function() {openBrowserTab('/help/crc_agg/quick_start.html') }
+                        handler: function() {openBrowserTab(re.help.links.quick_start) }
                     }]
             },
             { region:'center',
@@ -1088,11 +1091,11 @@ Ext.onReady(function() {
     }
 
     function userGuideHandler(item) {
-        openBrowserTab('/help/crc_agg/user_guide.html');
+        openBrowserTab(re.help.links.user_guide);
     }
 
     function openIssueHandler(item){
-        openBrowserTab('http://code.google.com/p/regulome-explorer/issues/entry');
+        openBrowserTab(re.help.links.bug_report);
     }
     function openCodeRepository(item){
         openBrowserTab('http://code.google.com/p/regulome-explorer/');

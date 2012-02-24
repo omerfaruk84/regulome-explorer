@@ -8,8 +8,9 @@ if (re === undefined) { re = {};}
 vq.utils.VisUtils.extend(re, {
 
     title : 'CRC Aggressiveness Explorer',
-
-
+    google :{
+           analytics_id: 'UA-29436140-1'
+       },
     analysis : {
         dataset_method_clause : ' where method=\'crc_agg\'',
         directed_association : false
@@ -20,8 +21,12 @@ vq.utils.VisUtils.extend(re, {
         demo_first : true,
         network_query : ''
     },
+    node : { data : '/data'
+        },
     rest : {
-        query : '/query'
+        query : '/query',
+        echo : '/echo',
+        convert:'/convert'
     },
     params: {
         json_out:'&tqx=out:json_array',
@@ -54,7 +59,16 @@ vq.utils.VisUtils.extend(re, {
         feature_data_uri : '',
         pathway_uri : ''
     },
-
+    help: {
+        links: {
+            user_guide: '/help/crc_agg/user_guide.html',
+            quick_start: '/help/crc_agg/quick_start.html',
+            contact_us :'/help/crc_agg/contact_us.html',
+            analysis_summary : '/help/crc_agg/analysis/analysis_summary.html',
+            bug_report : 'http://code.google.com/p/regulome-explorer/issues/entry',
+            user_group : 'http://groups.google.com/group/regulome-explorer'
+        }
+    },
     display_options : {
         circvis : {
             rings:{
