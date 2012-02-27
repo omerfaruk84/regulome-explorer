@@ -1122,7 +1122,7 @@ function plotFeatureDataLinear(obj) {
                 },
                 data_array : data
             },{ type: 'scatter',
-                label : 'Aggressivess Scores',
+                label : 'Aggressiveness Scores',
                 description : 'Clinical Scores of Features',
                 CONFIGURATION: {
                     fill_style : function (feature) {  return settings.color_scale(feature[field]);  },          //required
