@@ -17,8 +17,6 @@ function flex_field_query(label, value, fn) {
 
 }
 
-
-
 function parseLabelList(labellist) {
     return labellist.replace(new RegExp(' ', 'g'), '').split(',');
 }
@@ -48,6 +46,9 @@ function parseLabel(label) {
 function parseAnnotationList(feature) {
     var list = [];
     var annotations = null;
+    if (feature.source == 'METH') {
+       return feature.label_mod.split('_')[0];
+    }
     if (feature.source == 'GNAB') {
         list = feature.label_mod.split('_');
         annotations = (list[0] == 'dom' ? 'domain ' + list[1] + '-' + list[2] : '');
@@ -256,3 +257,32 @@ var serializeSVG = function(elem) {
 
     return SvgToString(elem);
 };
+
+/*
+query functions
+*/
+
+function queryFailed(data_type, response) {
+    vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail', data_type, {
+        msg: 'Query Error: ' + response.status + ': ' + response.responseText
+    }));
+}
+
+/* Handler functions */
+
+function noResults(query_type) {
+    vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail', query_type, {
+        msg: 'No matching results found.'
+    }));
+}
+
+function throwQueryError(query_type, response) {
+    var text = response.responseText;
+    var json_index = text.indexOf('(') + 1;
+    // -2 because we want to cut the ); out of the end of the message
+    var json = Ext.decode(text.slice(json_index, -2));
+    var error = json.errors[0];
+    vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail', query_type, {
+        msg: error.message + error.detailed_message
+    }));
+}

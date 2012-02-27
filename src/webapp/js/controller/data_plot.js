@@ -874,7 +874,6 @@ function linear_plot(obj) {
     };
     var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
     var chr_match = chrom_leng.filter(function(chr_obj) { return chr_obj.chr_name == chrom;});
-//    var maxPos = Math.ceil(bpToMb(chr_match[0]['chr_length']));
     var maxPos = Math.ceil(chr_match[0]['chr_length']);
 
     var lin_browser = new vq.LinearBrowser();
@@ -886,8 +885,8 @@ function linear_plot(obj) {
         lin_browser.setFocusRange(start,range_length);
     }
 
-
-    var e = new vq.events.Event('render_complete','linear',lin_browser);
+    obj.vis = lin_browser;
+    var e = new vq.events.Event('render_complete','linear',obj);
     e.dispatch();
 
     return lin_browser;
@@ -1069,36 +1068,6 @@ function plotFeatureDataLinear(obj) {
     var div = obj.div || null, features = obj.data || [], chrom = obj.chr || '1', start = obj.start || null, range_length = obj.range || null;
 
     features=features.filter(function(f) { return f.chr == chrom;});
-
-
-//    var tooltip_links = { };
-//    for (var link in re.display_options.circvis.tooltips.links ) {
-//        var l = link;
-//            tooltip_links[l] = (function(name) { var f = function(feature) {
-//                return re.display_options.circvis.tooltips.links[name](
-//                {
-//                    chr:feature.chr,
-//                    start: mbpToBp(feature.start),
-//                    end:(feature.end == '' ? '' : mbpToBp(feature.end))
-//                });
-//    };
-//     return f;})(l);
-//    }
-
-//    var tooltip_items = vq.utils.VisUtils.clone(re.display_options.circvis.tooltips.feature);
-//    tooltip_items['']
-
-//
-//    var tile_listener = function(feature){
-//        window.open(re.display_options.circvis.tooltips.links['UCSC Genome Browser'](
-//            {
-//                chr:feature.chr,
-//                start: mbpToBp(feature.start),
-//                end:mbpToBp(feature.end)
-//            }),'_blank');
-//        return false;
-//    };
-
    var stroke_style_fn = re.plot.colors.getStrokeStyleAttribute();
 
    var field = re.display_options.circvis.rings.pairwise_scores.value_field;
@@ -1107,12 +1076,8 @@ function plotFeatureDataLinear(obj) {
    if (settings.values === undefined) { settings.values = {};}
    var min = settings.values.min === undefined ? pv.min(features, function(o) { return o[field];}) : settings.values.min;
    var max = settings.values.max === undefined ? pv.max(features, function(o) { return o[field];}) : settings.values.max;
-//   var data = vq.utils.VisUtils.clone(features).map(function (location)  {
-//                        var node =location;
-//                        node.start = bpToMb(node.start);node.end = bpToMb(node.end);
-//                        return node;
-//                    });
-    var data = vq.utils.VisUtils.clone(features);
+
+   var data = vq.utils.VisUtils.clone(features);
 
     var data_obj = function() { return {
         PLOT :     {
@@ -1157,7 +1122,7 @@ function plotFeatureDataLinear(obj) {
                 },
                 data_array : data
             },{ type: 'scatter',
-                label : 'Feature Scores',
+                label : 'Aggressivess Scores',
                 description : 'Clinical Scores of Features',
                 CONFIGURATION: {
                     fill_style : function (feature) {  return settings.color_scale(feature[field]);  },          //required
@@ -1185,7 +1150,6 @@ function plotFeatureDataLinear(obj) {
     var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
     var chr_match = chrom_leng.filter(function(chr_obj) { return chr_obj.chr_name == chrom;});
     var maxPos = Math.ceil(chr_match[0]['chr_length']);
-
     var lin_browser = new vq.LinearBrowser();
     var lin_data = {DATATYPE: 'vq.models.LinearBrowserData',CONTENTS: data_obj()};
 

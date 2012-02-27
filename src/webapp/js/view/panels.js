@@ -18,7 +18,7 @@ vq.utils.VisUtils.extend(re.ui, {
                 tools: [{
                     id: 'help',
                     handler: function(event, toolEl, panel){
-                        openHelpWindow('Tools',toolsHelpString);
+                        openHelpWindow('Tools',re.help.strings.tools);
                     }}],
                 items: [
                     {
@@ -26,11 +26,6 @@ vq.utils.VisUtils.extend(re.ui, {
                         title : 'Filter Associations',
                         autoScroll : true,
                         height : 250,
-                        tools: [{
-                            id: 'help',
-                            handler: function(event, toolEl, panel){
-                                openHelpWindow('Filtering',filteringHelpString);
-                            }}],
                         items :[
                             { xtype:'form',
                                 id :'association_filter_panel',
@@ -442,6 +437,7 @@ vq.utils.VisUtils.extend(re.ui, {
                                                     valueField:'value',
                                                     displayField:'label',
                                                     tabIndex : 2,
+                                                    hidden: true,
                                                     typeAhead : true,
                                                     selectOnFocus:true,
                                                     triggerAction : 'all',
