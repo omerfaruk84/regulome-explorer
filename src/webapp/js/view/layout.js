@@ -36,7 +36,7 @@ function registerLayoutListeners() {
         loadDataTableStore(data);
     });
     d.addListener('render_complete', 'linear', function(linear) {
-        exposeLinearPlot();
+        exposeLinearPlot(linear.chr,linear.start,linear.range);
     });
     d.addListener('render_complete', 'scatterplot', function(obj) {
         scatterplot_obj = obj;
