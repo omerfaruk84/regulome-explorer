@@ -170,9 +170,7 @@ function parseSFValues(responses) {
         vq.events.Dispatcher.dispatch(new vq.events.Event('load_fail','associations',{msg:'Zero mappable features found.'}));
     }
 
-    var data = [];
-
-    data = responses.data.map(parseFeatureAlias);
+    var data = responses.data.map(parseFeatureAlias);
     if (data.length < 1)loadFailed();
 
     parsed_data.features = data.filter(function(feature) { return feature.chr != '' && feature.start != '';});
