@@ -1076,7 +1076,7 @@ Ext.onReady(function() {
                             handler: ringHandler,
                             checked: !re.isRingHidden('pairwise_scores'),
                             id: 'pairwise_scores',
-                            text: 'Pairwise Scores'
+                            text: 'Aggressiveness Scores'
                         }]
                     }]
                 }, {
