@@ -286,3 +286,24 @@ function throwQueryError(query_type, response) {
         msg: error.message + error.detailed_message
     }));
 }
+
+
+function openHelpWindow(subject, text) {
+    if (re.windows.helpWindowReference == null || re.windows.helpWindowReference.closed) {
+        re.windows.helpWindowReference = window.open('', 'help-popup', 'width=400,height=300,resizable=1,scrollbars=1,status=0,' + 'titlebar=0,toolbar=0,location=0,directories=0,menubar=0,copyhistory=0');
+    }
+    re.windows.helpWindowReference.document.title = 'Help - ' + subject;
+    re.windows.helpWindowReference.document.body.innerHTML = '<b>' + subject + '</b><p><div style=width:350>' + text + '</div>';
+    re.windows.helpWindowReference.focus();
+}
+
+function openBrowserWindow(url, width, height) {
+    var w = width || 640,
+        h = height || 480;
+    window.open(url, 'help-popup', 'width=' + w + ',height=' + h + ',resizable=1,scrollbars=1,status=0,' + 'titlebar=0,toolbar=0,location=0,directories=0,menubar=0,copyhistory=0');
+}
+
+function openBrowserTab(url) {
+    var new_window = window.open(url, '_blank');
+    new_window.focus();
+}

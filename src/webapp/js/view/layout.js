@@ -18,10 +18,6 @@ function registerLayoutListeners() {
     d.addListener('click_association', function(link) {
         openDetailsWindow(link);
     });
-    d.addListener('data_ready', 'features', function(obj) {
-        renderScatterPlot(obj);
-        re.windows.masks.details_window_mask.hide();
-    });
     d.addListener('data_ready', 'annotations', function(obj) {
         loadDataset();
     });
@@ -37,9 +33,6 @@ function registerLayoutListeners() {
     });
     d.addListener('render_complete', 'linear', function(linear) {
         exposeLinearPlot(linear.chr,linear.start,linear.range);
-    });
-    d.addListener('render_complete', 'scatterplot', function(obj) {
-        scatterplot_obj = obj;
     });
     d.addListener('query_complete', 'label_position', function(obj) {
         completeLabelLookup(obj);
@@ -165,16 +158,6 @@ function hideDatasetWindow() {
  hide mask after scatterplot dispatches a 'completion' event?
  */
 
-function openDetailsWindow(association) {
-    re.windows.details_window.show();
-    re.windows.masks.details_window_mask = new Ext.LoadMask('details-window', {
-        msg: "Loading Data..."
-    });
-    re.windows.masks.details_window_mask.show();
-    //    renderMedlineDocuments(association);
-    //renderPathways(association);
-}
-
 function retrieveSVG(parent_panel) {
     var serializer = new XMLSerializer();
     var svg_tags;
@@ -219,25 +202,6 @@ function retrieveEdges() {
     })));
 }
 
-function openHelpWindow(subject, text) {
-    if (re.windows.helpWindowReference == null || re.windows.helpWindowReference.closed) {
-        re.windows.helpWindowReference = window.open('', 'help-popup', 'width=400,height=300,resizable=1,scrollbars=1,status=0,' + 'titlebar=0,toolbar=0,location=0,directories=0,menubar=0,copyhistory=0');
-    }
-    re.windows.helpWindowReference.document.title = 'Help - ' + subject;
-    re.windows.helpWindowReference.document.body.innerHTML = '<b>' + subject + '</b><p><div style=width:350>' + text + '</div>';
-    re.windows.helpWindowReference.focus();
-}
-
-function openBrowserWindow(url, width, height) {
-    var w = width || 640,
-        h = height || 480;
-    window.open(url, 'help-popup', 'width=' + w + ',height=' + h + ',resizable=1,scrollbars=1,status=0,' + 'titlebar=0,toolbar=0,location=0,directories=0,menubar=0,copyhistory=0');
-}
-
-function openBrowserTab(url) {
-    var new_window = window.open(url, '_blank');
-    new_window.focus();
-}
 
 /*
  Filters
@@ -523,68 +487,7 @@ function failedLabelLookup() {
     task.delay(1300);
 }
 
-/*
- renderScatterPlot
- should be wrapped in an event listener external to the ui layout code
- */
-function renderScatterPlot() {
-    var regression_type = Ext.getCmp('scatterplot_regression_radiogroup').getValue().getRawValue();
-    var reverse_axes = Ext.getCmp('scatterplot_axes_checkbox').getValue();
-    var discretize_x = Ext.getCmp('scatterplot_discrete_x_checkbox').getValue();
-    var discretize_y = Ext.getCmp('scatterplot_discrete_y_checkbox').getValue();
-    var event_obj = {
-        div: document.getElementById('scatterplot_panel'),
-        regression_type: regression_type,
-        reverse_axes: reverse_axes,
-        discretize_x: discretize_x,
-        discretize_y: discretize_y
-    };
-    if (arguments.length == 1) //data passed into function
-    event_obj['data'] = arguments[0];
 
-    Ext.getCmp('details-tabpanel').layout.setActiveItem('scatterplot_parent');
-    Ext.getCmp('scatterplot_parent').show();
-    vq.events.Dispatcher.dispatch(
-    new vq.events.Event('render_scatterplot', 'details', event_obj));
-}
-
-/*
- MEDLINE functions
- */
-
-//function renderMedlineDocuments(association) {
-//    var term1 = association.sourceNode.label;
-//    var term2 = association.targetNode.label;
-//    retrieveMedlineDocuments(term1,term2);
-//    Ext.StoreMgr.get('dataDocument_grid_store').load({params: {start:0, rows:20}});
-//}
-//
-//function retrieveMedlineDocuments(term1,term2){
-//    Ext.StoreMgr.get('dataDocument_grid_store').on({
-//        beforeload:{
-//            fn: function(store,options){
-//                store.proxy.setUrl(re.databases.solr.uri + re.databases.solr.select + '?q=%2Btext%3A\"' + term1 + '\" %2Btext%3A\"' + term2 + '\"&fq=%2Bpub_date_year%3A%5B1991 TO 2011%5D&wt=json' +
-//                    '&hl=true&hl.fl=article_title,abstract_text&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true');
-//            }
-//        }
-//    });
-//}
-/*
- Grid Column rendering functions
- */
-
-//function renderPMID(value, p, record) {
-//    return String.format('<b><a href="http://www.ncbi.nlm.nih.gov/pubmed/{0}" target="_blank">{0}</a></b>', record.data.pmid);
-//}
-//
-//function renderTitle(value, p, record) {
-//    var jsonData = record.store.reader.jsonData;
-//    if (jsonData.highlighting[record.id] != undefined && jsonData.highlighting[record.id].article_title != undefined) {
-//        return jsonData.highlighting[record.id].article_title[0];
-//    }
-//    else
-//        return record.data.article_title;
-//}
 /*clean divs*/
 
 function prepareVisPanels() {
@@ -1347,102 +1250,5 @@ Ext.onReady(function() {
             }]
         });
         re.windows.dataset_window.hide();
-
-        re.windows.details_window = new Ext.Window({
-            id: 'details-window',
-            renderTo: 'view-region',
-            modal: false,
-            closeAction: 'hide',
-            layout: 'fit',
-            width: 600,
-            height: 500,
-            title: "Details",
-            closable: true,
-            layoutConfig: {
-                animate: true
-            },
-            maximizable: false,
-            items: [{
-                xtype: 'tabpanel',
-                id: 'details-tabpanel',
-                name: 'details-tabpanel',
-                activeTab: 'scatterplot_parent',
-                layoutOnCardChange: true,
-                items: [{
-                    xtype: 'panel',
-                    id: 'scatterplot_parent',
-                    name: 'scatterplot_parent',
-                    title: 'Data Plot',
-                    layout: 'anchor',
-                    margins: '3 0 3 3',
-                    height: 500,
-                    width: 600,
-                    frame: true,
-                    items: [{
-                        xtype: 'panel',
-                        id: 'scatterplot_panel',
-                        name: 'scatterplot_panel',
-                        anchor: '100% -100'
-                    }, {
-                        xtype: 'panel',
-                        id: 'scatterplot_controls',
-                        name: 'scatterplot_controls',
-                        layout: 'form',
-                        items: [{
-                            xtype: 'radiogroup',
-                            id: 'scatterplot_regression_radiogroup',
-                            fieldLabel: 'Regression',
-                            items: [{
-                                checked: true,
-                                boxLabel: 'None',
-                                inputValue: 'none',
-                                name: 'sp_rb'
-                            }, {
-                                boxLabel: 'Linear',
-                                inputValue: 'linear',
-                                name: 'sp_rb'
-                            }],
-                            listeners: {
-                                change: function(checked_radio) {
-                                    renderScatterPlot();
-                                }
-                            }
-                        }, {
-                            xtype: 'compositefield',
-                            defaultMargins: '0 20 0 0',
-                            items: [{
-                                xtype: 'checkbox',
-                                id: 'scatterplot_axes_checkbox',
-                                boxLabel: 'Reverse Axes',
-                                listeners: {
-                                    check: function(checked) {
-                                        renderScatterPlot();
-                                    }
-                                }
-                            }, {
-                                xtype: 'checkbox',
-                                id: 'scatterplot_discrete_x_checkbox',
-                                boxLabel: 'Discretize Target',
-                                listeners: {
-                                    check: function(checked) {
-                                        renderScatterPlot();
-                                    }
-                                }
-                            }, {
-                                xtype: 'checkbox',
-                                id: 'scatterplot_discrete_y_checkbox',
-                                boxLabel: 'Discretize Predictor',
-                                listeners: {
-                                    check: function(checked) {
-                                        renderScatterPlot();
-                                    }
-                                }
-                            }]
-                        }]
-                    }]
-                }] // medline tab
-            }] //tabpanel
-        });
-        re.windows.details_window.hide();
 
     });
