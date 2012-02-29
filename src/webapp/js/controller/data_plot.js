@@ -321,13 +321,11 @@ function singlefeature_circvis(features,filter,div) {
     var association  = re.model.association.types[re.model.association_map[field]];
     var settings = association.vis.scatterplot;
     if (settings.values === undefined) { settings.values = {};}
-    var min = settings.values.min === undefined ? pv.min(scatterplot_data, function(o) { return o[field];}) : settings.values.min;
-    var max = settings.values.max === undefined ? pv.max(scatterplot_data, function(o) { return o[field];}) : settings.values.max;
+    var min = pv.min(scatterplot_data, function(o) { return o[field];}) ;
+    var max = pv.max(scatterplot_data, function(o) { return o[field];}) ;
     var scale_type = settings.scale_type;
 
     var chrom_leng = vq.utils.VisUtils.clone(re.plot.chrom_length);
-   // var ticks = scatterplot_data;
-
     var floor = settings.values.floor === undefined ? min : settings.values.floor;
     var ceil = settings.values.ceil === undefined ? max : settings.values.ceil;
     if ( floor != min || ceil != max)  {
@@ -339,8 +337,8 @@ function singlefeature_circvis(features,filter,div) {
 
         field = field+'_plot';
     }
-    settings.values.min = min = floor;
-    settings.values.max = max = ceil;
+    min = floor;
+    max = ceil;
 
 
     function re_interpolate(new_domain) {
@@ -646,8 +644,8 @@ function plotFeatureDataLinear(obj) {
    var association  = re.model.association.types[re.model.association_map[field]];
    var settings = association.vis.scatterplot;
    if (settings.values === undefined) { settings.values = {};}
-   var min = settings.values.min === undefined ? pv.min(features, function(o) { return o[field];}) : settings.values.min;
-   var max = settings.values.max === undefined ? pv.max(features, function(o) { return o[field];}) : settings.values.max;
+   var min =  settings.values.floor;
+    var max =  settings.values.ceil;
 
     if (features[0][field+'_plot'] !== undefined) field = field+'_plot';
 
