@@ -571,7 +571,7 @@ Ext.onReady(function() {
                     tools: [{
                         id: 'help',
                         handler: function(event, toolEl, panel) {
-                            openHelpWindow('Genome-level View', genomeLevelHelpString);
+                            openBrowserTab(re.help.links.user_guide);
                         }
                     }],
                     items: [{
@@ -611,7 +611,7 @@ Ext.onReady(function() {
                     tools: [{
                         id: 'help',
                         handler: function(event, toolEl, panel) {
-                            openHelpWindow('Chromosome-level View', chromosomeLevelHelpString);
+                            openBrowserTab(re.help.links.user_guide+'#chromosome')
                         }
                     }],
                     items: [{
@@ -645,7 +645,7 @@ Ext.onReady(function() {
                 tools: [{
                     id: 'help',
                     handler: function(event, toolEl, panel) {
-                        openHelpWindow('Data-level View', dataLevelViewHelpString);
+                        openBrowserTab(re.help.links.user_guide);
                     }
                 }],
                 items: [{
@@ -748,7 +748,7 @@ Ext.onReady(function() {
                         }))
                     }),
                     listeners: {
-                        rowclick: function(grid, rowIndex, event) {
+                        /*rowclick: function(grid, rowIndex, event) {
                             var record = grid.getStore().getAt(rowIndex);
                             var link = {};
                             link.sourceNode = {};
@@ -760,7 +760,7 @@ Ext.onReady(function() {
                             //initiateDetailsPopup(link);
                             vq.events.Dispatcher.dispatch(new vq.events.Event('click_association', 'associations_table', link));
                         }
-                    }
+                    */}
                 }]
             }]
         },
@@ -967,7 +967,7 @@ Ext.onReady(function() {
                             handler: ringHandler,
                             checked: !re.isRingHidden('karyotype'),
                             id: 'karyotype',
-                            text: 'Karyotype Bands'
+                            text: 'Cytogenetic Bands'
                         }, {
                             xtype: 'menucheckitem',
                             handler: ringHandler,
@@ -1026,7 +1026,10 @@ Ext.onReady(function() {
                             openBrowserTab(re.help.links.quick_start)
                         }
                     }, {
-                        text: 'Circular Ideogram'
+                        text: 'Circular Ideogram',
+                        handler: function() {
+                            openBrowserTab(re.help.links.circular_ideogram)
+                        }
                     }, {
                         handler: function() {
                             openBrowserTab(re.help.links.user_group)
@@ -1135,7 +1138,7 @@ Ext.onReady(function() {
             tools: [{
                 id: 'help',
                 handler: function(event, toolEl, panel) {
-                    openHelpWindow('Export', exportHelpString);
+                    openBrowserTab(re.help.links.user_guide);
                 }
             }],
             layoutConfig: {
