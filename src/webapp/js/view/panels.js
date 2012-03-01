@@ -18,7 +18,7 @@ vq.utils.VisUtils.extend(re.ui, {
                 tools: [{
                     id: 'help',
                     handler: function(event, toolEl, panel){
-                        openHelpWindow('Tools',re.help.strings.tools);
+                        openBrowserTab(re.help.links.user_guide+'#filtering');
                     }}],
                 items: [
                     {

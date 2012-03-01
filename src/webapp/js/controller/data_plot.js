@@ -309,7 +309,7 @@ function singlefeature_circvis(features,filter,div) {
     }
 
     var karyotype_tooltip_items = {
-        'Karyotype Label' : function(feature) { return  vq.utils.VisUtils.options_map(feature)['label'];},
+        'Cytogenetic Band' : function(feature) { return  vq.utils.VisUtils.options_map(feature)['label'];},
         Location :  function(feature) { return 'Chr' + feature.chr + ' ' + feature.start + '-' + feature.end;}
     },
         scatterplot_tooltips =  re.display_options.circvis.tooltips.feature;
@@ -404,8 +404,8 @@ function singlefeature_circvis(features,filter,div) {
                     data_array : cytoband
                 },
                 OPTIONS: {
-                    legend_label : 'Karyotype Bands' ,
-                    legend_description : 'Chromosomal Karyotype',
+                    legend_label : 'Cytogenetic Bands' ,
+                    legend_description : 'Chromosomal Cytogenetic Bands',
                     outer_padding : 10,
                     tooltip_items : karyotype_tooltip_items
                 }

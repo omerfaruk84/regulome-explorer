@@ -71,6 +71,7 @@ vq.utils.VisUtils.extend(re, {
             user_guide: '/help/crc_agg/user_guide.html',
             quick_start: '/help/crc_agg/quick_start.html',
             contact_us: '/help/crc_agg/contact_us.html',
+            circular_ideogram:'/help/crc_agg/images/genome_view.png',
             analysis_summary: '/help/crc_agg/analysis/analysis_summary.html',
             bug_report: 'http://code.google.com/p/regulome-explorer/issues/entry',
             user_group: 'http://groups.google.com/group/regulome-explorer'
