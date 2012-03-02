@@ -146,7 +146,7 @@ vq.utils.VisUtils.extend(re, {
 
                         function lookupFailed() {
                             var node = re.display_options.circvis.tooltips.link_objects[3].selector('')[0];
-                              node.setAttribute('href','http://www.ncbi.nlm.nih.gov/gene?term='+feature.label);
+                            if (node !== undefined) node.setAttribute('href','http://www.ncbi.nlm.nih.gov/gene?term='+feature.label);
                         }
 
                         function entrezHandler(response) {

@@ -448,17 +448,10 @@ function singlefeature_circvis(features,filter,div) {
     return circle_vis;
 }
 
-function bpToMb(bp) {
-    return !isNaN(bp) ? (bp == 0 ? 0 : bp / 1000000): '';
-}
-
-function mbpToBp(num) {
-    return !isNaN(num) ? Math.floor(num* 1000000) : '';
-}
 function getFeatureNeighborhood(feature,window_size) {
     var f= vq.utils.VisUtils.clone(feature);
     f.start = f.start - window_size;
-    f.end = f.end + window_size;
+    f.end = (f.end || feature.start) + window_size;
     return f;
 }
 
