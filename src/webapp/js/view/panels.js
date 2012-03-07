@@ -203,7 +203,7 @@ vq.utils.VisUtils.extend(re.ui, {
                                                 displayField:'label',
                                                 tabIndex : 2,
                                                 selectOnFocus:true,
-                                                forceSelection : true,
+                                                forceSelection : false,
                                                 triggerAction : 'all',
                                                 emptyText : 'Select Chr...',
                                                 defaultValue:'*',

@@ -87,7 +87,7 @@ vq.utils.VisUtils.extend(re, {
                 },
                 cnvr: {
                     hidden: true,
-                    radius: 28
+                    radius: 40
                 },
                 pairwise_scores: {
                     value_field: re.model.association.types[0].query.id,
