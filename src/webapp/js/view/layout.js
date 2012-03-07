@@ -232,6 +232,10 @@ function requestFilteredData() {
     prepareVisPanels();
 }
 
+function requestFeatureFilteredRedraw() {
+
+}
+
 /*
  getFilterSelections
  gathers the selections of each filter widget, packs it into a single object, and returns it
@@ -973,7 +977,7 @@ Ext.onReady(function() {
                             handler: ringHandler,
                             checked: !re.isRingHidden('cnvr'),
                             id: 'cnvr',
-                            text: 'CNVR tiles'
+                            text: 'Somatic Copy Number Alteration'
                         }, {
                             xtype: 'menucheckitem',
                             handler: ringHandler,

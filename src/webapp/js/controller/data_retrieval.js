@@ -306,11 +306,11 @@ function buildSingleFeatureGQLQuery(args,feature) {
     }
     if (args['t_chr'] && args['t_chr'] != '' && args['t_chr'] != '*') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f1chr = \'' +args['t_chr']+'\'';
+        where += '(' + chrWhereClause('f1chr',args['t_chr']) + ')';
     }
     if (args['p_chr']  && args['p_chr'] != '' && args['p_chr'] != '*') {
         where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f2chr = \'' +args['p_chr']+'\'';
+        where += '(' + chrWhereClause('f2chr',args['p_chr']) + ')';
     }
     if (args['t_start'] && args['t_start'] != '') {
         where += (where.length > whst.length ? ' and ' : ' ');
@@ -357,4 +357,12 @@ function buildSingleFeatureGQLQuery(args,feature) {
     query += ' label ' + (feature == re.ui.feature1.id ? 'alias1 \'alias\'' : 'alias2 \'alias\'');
 
     return query;
+}
+
+function chrWhereClause(param,chr_string) {
+    return parseChromosome(chr_string).map(function(chr) { return param + ' = \'' + chr + '\''}).join(' or ');
+}
+
+function parseChromosome(chr_string) {
+    return chr_string.replace(' ','').split(',');
 }
