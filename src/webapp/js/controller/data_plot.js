@@ -311,9 +311,8 @@ function singlefeature_circvis(features,filter,div) {
     var karyotype_tooltip_items = {
         'Cytogenetic Band' : function(feature) { return  vq.utils.VisUtils.options_map(feature)['label'];},
         Location :  function(feature) { return 'Chr' + feature.chr + ' ' + feature.start + '-' + feature.end;}
-    },
-        scatterplot_tooltips =  re.display_options.circvis.tooltips.feature;
-
+    };
+        
     var scatterplot_data = features;
 
     var field = re.display_options.circvis.rings.pairwise_scores.value_field;
@@ -451,7 +450,7 @@ function singlefeature_circvis(features,filter,div) {
                     shape : function(feature) {return (feature[true_value_field] < min || feature[true_value_field] > max) ? 'diamond' : 'circle';},
                     fill_style  : function(feature) {return settings.color_scale(feature[field]); },
                     stroke_style  : function(feature) {return settings.color_scale(feature[field]); },
-                    tooltip_items : scatterplot_tooltips,
+                    tooltip_items : re.display_options.circvis.tooltips.feature,
                     tooltip_links :  re.display_options.circvis.tooltips.links,
                     listener : wedge_listener
                 }
