@@ -34,7 +34,7 @@ function loadDatasetLabels() {
     var dataset_labels = {feature_sources : null, clin_labels : null};
     var clin_label_query_str = '?' + re.params.query + 'select `label`' + re.params.json_out;
     var clin_label_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.clin_uri + re.rest.query +clin_label_query_str;
-    var timer = new vq.utils.SyncDatasources(200,40,loadComplete,dataset_labels,loadFailed);
+    var synchronizer = new vq.utils.SyncCallbacks(loadComplete,this);
 
     function clinicalLabelQueryHandler(response) {
         try {
@@ -52,7 +52,7 @@ function loadDatasetLabels() {
         vq.events.Dispatcher.dispatch(new vq.events.Event('query_fail','dataset_labels',{msg:'Failed to load dataset labels.'}));
     }
 
-    Ext.Ajax.request({url:clin_label_query,success:clinicalLabelQueryHandler, failure: function(response) { queryFailed('dataset_labels',response);}});
+    Ext.Ajax.request({url:clin_label_query,success:synchronizer.add(clinicalLabelQueryHandler,this), failure: function(response) { queryFailed('dataset_labels',response);}});
 
     var sources_query_str = '?' + re.params.query + 'select source' + re.params.json_out;
     var sources_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.feature_uri + re.rest.query + sources_query_str;
@@ -65,9 +65,8 @@ function loadDatasetLabels() {
         }
     }
 
-    Ext.Ajax.request({url:sources_query,success:featureSourceQueryHandler, failure: function(response) { queryFailed('feature_source',response); }});
+    Ext.Ajax.request({url:sources_query,success:synchronizer.add(featureSourceQueryHandler,this), failure: function(response) { queryFailed('feature_source',response); }});
 
-    timer.start_poll();
 }
 
 function lookupLabelPosition(label_obj) {
@@ -75,21 +74,21 @@ function lookupLabelPosition(label_obj) {
     var query_str = 'select chr, start, end, alias where alias = \'' + label + '\' limit 1';
     var position_query_str = '?' + re.params.query + query_str + re.params.json_out;
     var position_url = re.databases.base_uri  + re.databases.metadata.uri + re.tables.label_lookup + re.rest.query + position_query_str;
-    var  position_array = [];
+    var position_array = [];
 
     function positionQueryHandle(response) {
         try {
             position_array = Ext.decode(response.responseText);
+            }
+            catch (err) {
+                    throwQueryError('label_position',response);
+            }
             if (position_array.length ==1) {
                 loadComplete();
             }
             else{
                 noResults('label_position');
             }
-        }
-        catch (err) {
-            throwQueryError('label_position',response);
-        }
     }
 
     function loadComplete() {
@@ -116,16 +115,17 @@ function loadFeatureData(link) {
     function patientQueryHandle(response) {
         try {
             patients['data'] = Ext.decode(response.responseText);
+        }
+        catch (err) {
+                    throwQueryError('features',response);
+                }
             if (patients['data'].length ==1) {
                 loadComplete();
             }
             else {
                 noResults('features');
             }
-        }
-        catch (err) {
-            throwQueryError('features',response);
-        }
+
     }
 
     function loadComplete() {
@@ -148,17 +148,16 @@ function loadAnnotations() {
     function handleChromInfoQuery(response) {
         try {
             annotations['chrom_leng'] = Ext.decode(response.responseText);
-            if (annotations['chrom_leng'].length >=1) {
+            }
+        catch (err) {
+            throwQueryError('annotations',response);
+        }
+        if (annotations['chrom_leng'].length >=1) {
                 loadComplete();
             }
             else{
                 noResults('annotations');
             }
-
-        }
-        catch (err) {
-            throwQueryError('annotations',response);
-        }
     }
 
     function loadComplete() {

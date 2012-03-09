@@ -425,7 +425,7 @@ function singlefeature_circvis(features,filter,div) {
                     tile_overlap_distance:1000000,
                     fill_style  : function(feature) {return re.plot.colors.node_colors(feature.source);  },
                     stroke_style  : function(feature) {return re.plot.colors.node_colors(feature.source);  },
-                    tooltip_items : scatterplot_tooltips,
+                    tooltip_items : re.display_options.circvis.tooltips.feature,
                     tooltip_links :  re.display_options.circvis.tooltips.links,
                     listener : wedge_listener
                 }
