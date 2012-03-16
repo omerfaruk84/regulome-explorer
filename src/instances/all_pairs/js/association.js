@@ -21,8 +21,9 @@ re.model.association =  {
             },
             query : {
                 id : 'rho_score',
+                order_id:'logged_pvalue',
                 clause : flex_field_query,
-                order_direction : 'DESC'
+                order_direction : 'ASC'
             },
             vis : {
                 network : {
