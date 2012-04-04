@@ -375,7 +375,7 @@ table .span24{float:none;width:1884px;margin-left:0;}
 .dropdown:hover .caret,.open.dropdown .caret{border-top-color:#f48234;border-bottom-color:#f48234;opacity:1;filter:alpha(opacity=100);}
 .dropdown-menu{position:absolute;top:100%;left:0;z-index:1000;float:left;display:none;min-width:160px;padding:4px 0;margin:0;list-style:none;background-color:#ffffff;border-color:#ccc;border-color:rgba(0, 0, 0, 0.2);border-style:solid;border-width:1px;-webkit-border-radius:0 0 5px 5px;-moz-border-radius:0 0 5px 5px;border-radius:0 0 5px 5px;-webkit-box-shadow:0 5px 10px rgba(0, 0, 0, 0.2);-moz-box-shadow:0 5px 10px rgba(0, 0, 0, 0.2);box-shadow:0 5px 10px rgba(0, 0, 0, 0.2);-webkit-background-clip:padding-box;-moz-background-clip:padding;background-clip:padding-box;*border-right-width:2px;*border-bottom-width:2px;}.dropdown-menu.pull-right{right:0;left:auto;}
 .dropdown-menu .divider{height:1px;margin:8px 1px;overflow:hidden;background-color:#e5e5e5;border-bottom:1px solid #ffffff;*width:100%;*margin:-5px 0 5px;}
-.dropdown-menu a{display:block;padding:3px 15px;clear:both;font-weight:normal;line-height:18px;color:#333333;white-space:nowrap;}
+.dropdown-menu a{display:block;padding:3px 15px;clear:both;font-weight:bold;line-height:18px;color:#333333;white-space:nowrap;}
 .dropdown-menu li>a:hover,.dropdown-menu .active>a,.dropdown-menu .active>a:hover{color:#ffffff;text-decoration:none;background-color:#f48234;}
 .dropdown.open{*z-index:1000;}.dropdown.open .dropdown-toggle{color:#f48234;background:#ccc;background:rgba(0, 0, 0, 0.3);}
 .dropdown.open .dropdown-menu{display:block;}
@@ -521,7 +521,7 @@ button.btn.btn-mini,input[type="submit"].btn.btn-mini{*padding-top:1px;*padding-
 .nav-collapse.collapse{height:auto;}
 .navbar{color:#999999;}.navbar .brand:hover{text-decoration:none;}
 .navbar .brand{float:left;display:block;padding:8px 20px 12px;margin-left:-20px;font-size:20px;font-weight:bold;line-height:1;color:#ffffff;}
-.navbar .navbar-text{margin-bottom:0;line-height:40px;}
+.navbar .navbar-text{margin-bottom:0;line-height:40px;font-weight:bold;}
 .navbar .btn,.navbar .btn-group{margin-top:5px;}
 .navbar .btn-group .btn{margin-top:0;}
 .navbar-form{margin-bottom:0;*zoom:1;}.navbar-form:before,.navbar-form:after{display:table;content:"";}
