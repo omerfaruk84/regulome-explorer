@@ -10,13 +10,7 @@
     <!-- Le styles -->
     <link href="assets/css/bootstrap.css" rel="stylesheet">
     <style type="text/css">
-        body {
-            padding-top: 60px;
-            padding-bottom: 40px;
-        }
-        .sidebar-nav {
-            padding: 9px 0;
-        }
+      
     </style>
     <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
 
@@ -28,15 +22,14 @@
 </head>
 
 <body>
-
-<div class="navbar navbar-fixed-top collapse" id="topbar">
+<div class="navbar" id="topbar">
     <div class="navbar-inner">
         <div class="container-fluid">
             <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span></a>
-            <a class="brand btn btn-navbar" data-toggle="collapse" data-target="#topbar">RE</a>
+            <a class="brand topbar-toggle" href="#">RE</a>
             <div class="nav-collapse in">
                 <ul class="nav">
                     <li class="data dropdown">
@@ -107,11 +100,26 @@
         </div>
     </div>
 </div>
+<div id="topbar-btn" class="hide"><i class="pull-left icon-arrow-down"></i>
+<i class="pull-right icon-arrow-down"></i></div>
 
 <!-- Le javascript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="assets/js/jquery.js"></script>
 <script src="assets/js/bootstrap.js"></script>
+<script src="assets/js/jquery-ui.min.js"></script>
+<script type="text/javascript">
+$('.topbar-toggle').click(function() {
+  $('#topbar').slideUp( 800,'easeOutQuad',function(){
+    $('#topbar-btn').show();
+});
+});
+$('#topbar-btn').click(function() {
+    $('#topbar').slideDown( 800,'easeOutQuad',function(){});
+    $('#topbar-btn').hide();
+
+});
+</script>
 </body>
 </html>
