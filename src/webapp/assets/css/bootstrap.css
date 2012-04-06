@@ -2781,6 +2781,10 @@ input[type="submit"].btn.btn-mini {
   overflow: visible;
   margin-bottom: 18px;
 }
+.navbar.topbar {
+  height: 40px;
+  margin-bottom: 0px;
+}
 .navbar-inner {
   padding-left: 20px;
   padding-right: 20px;
