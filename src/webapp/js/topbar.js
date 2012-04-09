@@ -9,7 +9,7 @@ var topbar_div = [
 '                    <span class="icon-bar"></span>',
 '                    <span class="icon-bar"></span></a>',
 '                <a class="pull-left brand topbar-toggle" href="#">RE</a>',
-'                <div class="nav-collapse in">',
+'                <div class="nav-collapse">',
 '                    <ul class="nav">',
 '                        <li class="data dropdown">',
 '                            <a href="#"',
@@ -85,23 +85,27 @@ var topbar_div = [
 
 $(document).ready(function() {
 
-
+var topbar_height = '40';
     $('head').append('<meta name="viewport" content="width=device-width, initial-scale=1.0">',
         '<meta name="description" content="">',
         '<meta name="author" content="">',
         '<link href="assets/css/bootstrap.css" rel="stylesheet">',
+        '<link href="assets/css/topbar.css" rel="stylesheet">',
         '<link href="assets/css/bootstrap-responsive.css" rel="stylesheet">');
 
     $('body').prepend(topbar_div);
     $('body').append('<script src="assets/js/bootstrap.js"></script>');
     $('.topbar-toggle').click(function() {
+        topbar_height = $('#topbar').outerHeight();
       $('#topbar').slideUp( 800,'easeInQuad',function(){
         $('#topbar-btn').show();
+          $('#topbar').height(topbar_height);
     });
     });
     $('#topbar-btn').click(function() {
         $('#topbar').slideDown( 800,'easeInQuad',function(){});
         $('#topbar-btn').hide();
+        $('#topbar').height('auto');
     });
 
 });
