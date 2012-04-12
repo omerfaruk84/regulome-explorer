@@ -1,15 +1,15 @@
 var topbar_div = [
+    '                <a class="btn btn-mini btn-info topbar-toggle" href="#"><i id="collapse_icon" class="icon-plus icon-white"></i></a>',
     '    <div class="navbar topbar" id="topbar" style="display:none">',
     '        <div class="navbar-inner">',
     '            <div class="container-fluid">',
-    '                <a class="pull-left topbar-toggle"><i class="icon-arrow-up icon-white"></i></a>',
-    '                <a class="pull-right topbar-toggle"><i class="icon-arrow-up icon-white"></i></a>',
+ //   '                <a class="pull-right topbar-toggle"><i class="icon-arrow-up icon-white"></i></a>',
     '                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">',
     '                    <span class="icon-bar"></span>',
     '                    <span class="icon-bar"></span>',
     '                    <span class="icon-bar"></span></a>',
     '                    <p class="navbar-text pull-right"><a href="#">Login</a></p>',
-    '                <a class="pull-left brand topbar-toggle" href="#">RE</a>',
+    '                <a class="brand " href="#">RE</a>',
     '                <div class="nav-collapse">',
     '                    <ul class="nav">',
     '                        <li class="data dropdown">',
@@ -77,9 +77,9 @@ var topbar_div = [
     '                </div><!--/.nav-collapse -->',
     '            </div>',
     '        </div>',
-    '    </div>',
-    '    <div id="topbar-btn" class="hide"><i class="pull-left icon-arrow-down"></i>',
-    '    <i class="pull-right icon-arrow-down"></i></div>'
+    '    </div>'
+    //'    <div id="topbar-btn" class="hide"><i class="pull-left icon-arrow-down"></i>',
+    //'    <i class="pull-right icon-arrow-down"></i></div>'
 ].join('');
 
 $(document).ready(function() {
