@@ -101,17 +101,19 @@ $(document).ready(function() {
     });
      $('.topbar-toggle').click(function() {
         topbar_height = $('#topbar').outerHeight();
+        
+        if (!$('#collapse_icon').hasClass('icon-minus')) {
         $('#topbar').slideUp( 800,'easeInQuad',function(){
-            $('#topbar-btn').show();
             $('#topbar').height(topbar_height);
+            $('#collapse_icon').toggleClass('icon-minus');
         });
+        
+       } else { 
+            $('#topbar').slideDown( 800,'easeInQuad',function(){            
+            $('#topbar').height('auto');    
+            $('#collapse_icon').toggleClass('icon-minus');    
+            });
+        }
     });
-    $('#topbar-btn').click(function() {
-        $('#topbar').slideDown( 800,'easeInQuad',function(){
-            $('#topbar-btn').hide();
-            $('#topbar').height('auto');
-        });
-    });
-
 
 });
