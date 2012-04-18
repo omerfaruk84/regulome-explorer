@@ -1,7 +1,39 @@
 #RE-Config and MySql Data Import notes and requirements
 #Requires python 2.5, 2.6, or 2.7 and libraries MySQLdb 
 
+Data Requirements:
+/dataimport/data/[label]/
+matrix.afm
+method.associations
+features.annotation
+pathways.group - optional
+META - one META file per folder as this indicates the build
+
+matrix.afm is the input into the method 
+/tsample_list values
+f1id
+...
+fnid
+
+method.associations
+f1id\tf2id\t[method scores and rank]
+
+features.annotation - chromosomal position is optional, dependent on type
+f1id\ttype\tlabel\tchr\tstart\tend\tstrand
+
+pathways.group
+grpname\tf1id,f2id,...
+
+META
+description=string
+build=matrix.afm,method.associations,features.annotation,pathways.group
+
+
+
 The python executable is explicitly set to /tools/bin/python2.7 in the sh scripts, update it as needed
+
+
+
 
 Set up the RE admin dependencies and set permissions by executing rfex_admin.sql with root on the mysql server:
 
