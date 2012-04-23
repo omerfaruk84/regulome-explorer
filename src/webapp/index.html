@@ -1,0 +1,167 @@
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>jQuery UI Explorer</title>
+    <!--<link rel="stylesheet" type="text/css" href="http://vis.systemsbiology.net/jquery/1.6.2/css/isb_theme/jq.isb.css"  />-->
+    <link rel="stylesheet" type="text/css" href="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/themes/base/jquery.ui.all.css"  />
+    <link rel="stylesheet" type="text/css" href="css/icons.css" />
+
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/1.6.2/js/jquery.min.js"></script>
+    <!--<script type="text/javascript" src="http://vis.systemsbiology.net/jquery/1.6.2/js/jquery-ui.isb.js"></script>-->
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.core.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.widget.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.position.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.menu.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.tabs.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/jquery/jquery-ui-bleeding/ui/jquery.ui.menubar.js"></script>
+
+    <script type="text/javascript" src="http://vis.systemsbiology.net/js/visquick/data/cytoband.hg18.json"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/js/protovis/protovis-r3.3.1.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/js/visquick/vq.min.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/js/visquick/vq.linear_browser.min.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/js/visquick/vq.circvis.min.js"></script>
+
+<!--
+    <script type="text/javascript" src="js/globals.js"></script>
+    <script type="text/javascript" src="js/controller/data_retrieval.js"></script>
+    <script type="text/javascript" src="js/controller/data_plot.js"></script>
+    <script type="text/javascript" src="js/model/data_loader.js"></script>
+    <script type="text/javascript" src="js/view/layout.js"></script>
+ -->
+    <style>
+        html {
+            overflow-y: scroll;
+        }
+        body {
+            margin: 0;
+            padding: 0 0 20px;
+            min-height: 100%;
+            font-family: "Arial", "Helvetica", "Verdana", "sans-serif";
+            font-size: 10px;
+        }
+        #wrapper {
+            margin: 0 20px;
+            width: 1200px;
+            position: relative;
+            background-color:#DDD;
+        }
+
+        #header {
+            background-color:#FFF;
+            margin-top: 1em;
+            border: 1px solid #DDD;
+            height: 60px;
+        }
+        #nav {
+            height: 25px;
+            float: left;
+            position: absolute;
+            top: 36px;
+            right: 0;
+
+        }
+        #nav .left {
+            float: left;
+            width: 5px;
+            height: 25px;
+        }
+        #nav ul ,
+        #nav ul li{
+            float: left;
+        }
+        #content {
+            background-color:#DDD;
+            border: 1px solid #DDD;
+        }
+    </style>
+
+    <script>
+        function renderWidgets() {
+            function select(event, ui) {
+                ui.close();
+                return false;
+            }
+            $(".menubar").menubar({
+                select : function(evt, ui) {
+                    return;
+                },
+                my : "left top",
+                at:"right center",
+                collision:"none none"
+            });
+            $("#tab_menu").tabs();
+        }
+        $(function() {
+            renderWidgets();
+        });
+    </script>
+</head>
+<body>
+<!-- check for IE8 or older and ask to install Google Chrome Frame -->
+<script type="text/javascript">vq.utils.VisUtils.insertGCFCode();</script>
+
+<div id="wrapper">
+
+    <div id="header">
+
+        <div id="nav">
+            <div class="left"></div>
+            <ul id="top_menu_icons" class="menubar">
+                <li><a href="#Data">Data</a>
+                    <ul>
+                        <li><a href="#">Select</a></li>
+                        <li><a href="#">Export</a></li>
+                    </ul>
+                </li>
+                <li><a href="#">Display</a>
+                    <ul>
+                        <li><a href="#">Circular</a>
+                        <ul>
+                            <li>
+                                <a href="#">Rings</a>
+                                <ul>
+                                    <li><a href="#">Karyotype Bands</a></li>
+                                    <li><a href="#">Copy Number Variation Tiles</a></li>
+                                    <li><a href="#">Unmapped Associations</a></li>
+                                </ul>
+                            </li>
+                        </ul></li>
+                        <li><a href="#">Linear</a></li>
+                        <li><a href="#">Scatter</a></li>
+                        <li><a href="#">All</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#">Mode</a>
+                    <ul>
+                        <li><a href="#">Explore</a></li>
+                        <li><a href="#">Navigate</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div> <!-- end nav -->
+        <div id="banner">
+            <img src="http://code.google.com/p/visquick/logo?cct=1313688157">
+        </div>
+    </div>
+
+    <div id="content">
+
+        <div id="tab_menu">
+            <ul>
+                <li><a href="#circle-tab">Circular</a></li>
+                <li><a href="#network-tab">Network</a></li>
+                <li><a href="#table-tab">Table</a></li>
+            </ul>
+            <div id="circle-tab"></div>
+            <div id="network-tab"></div>
+            <div id="table-tab"></div>
+        </div>
+
+
+    </div>
+</div>
+
+</body>
+</html>

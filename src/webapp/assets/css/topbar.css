@@ -1,0 +1,4 @@
+.topbar-toggle {
+    position: absolute;
+    z-index: 10000;
+}

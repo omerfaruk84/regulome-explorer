@@ -1,0 +1,9 @@
+#glob syntax
+
+syntax: glob
+
+*.jpg
+*.ico
+*.gif
+*.pom
+.idea*

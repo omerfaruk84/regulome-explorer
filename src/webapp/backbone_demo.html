@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>RE technology demo</title>
+
+    <link rel="stylesheet" href="assets/css/bootstrap.css">
+    <link rel="stylesheet" href="assets/css/bootstrap-responsive.css">
+
+    <script type="text/javascript" src="assets/js/jquery.js"></script>
+    <script type="text/javascript" src="assets/js/underscore.js"></script>
+    <script type="text/javascript" src="assets/js/backbone.js"></script>
+    <script type="text/javascript" src="assets/js/bootstrap.js"></script>
+
+    <script type="text/javascript" src="http://vis.systemsbiology.net/visquick/js/visquick-core-1.0/google-code.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/visquick/js/visquick-core-1.0/protovis-d3.3.1.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/visquick/js/visquick-core-1.0/visquick-utils.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/visquick/js/scatterplot/scatterplot.js"></script>
+    <script type="text/javascript" src="http://vis.systemsbiology.net/visquick/examples/scatterplot/js/data/mass_spec.json"></script>
+
+    <script type="text/javascript" src="backbone_demo/js/demo_app.js"></script>
+    <script type="text/javascript" src="backbone_demo/js/data_retrieval.js"></script>
+    <script type="text/javascript" src="backbone_demo/js/data_loader.js"></script>
+    <script type="text/javascript" src="backbone_demo/js/filtersettings_view.js"></script>
+    <script type="text/javascript" src="backbone_demo/js/scatterplot_view.js"></script>
+    <script type="text/javascript" src="backbone_demo/js/data_summary_view.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span7">
+                <div id="div_visualization">
+
+                </div>
+            </div>
+            <div class="span5">
+                <form id="filter_settings" class="form-horizontal">
+                    <fieldset>
+                        <legend>Filter</legend>
+                        <div class="control-group">
+                            <label class="control-label" for="dropdown_predictor">Predictor</label>
+                            <div class="controls">
+                                <select id="dropdown_predictor" class="span2">
+                                    <option>GEXP</option>
+                                    <option>MIRN</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="dropdown_target">Target</label>
+                            <div class="controls">
+                                <select id="dropdown_target" class="span2">
+                                    <option>GEXP</option>
+                                    <option>MIRN</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="buttons" class="form-actions">
+                            <button id="go_button" class="btn" type="button">Go</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span3">
+                <div id="data_summary">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var app = BackboneDemoApp.create({
+                filter_settings_id: 'filter_settings',
+                plot_id: 'div_visualization',
+                summary_id: 'data_summary'
+            });
+        });
+    </script>
+</body>
+</html>
