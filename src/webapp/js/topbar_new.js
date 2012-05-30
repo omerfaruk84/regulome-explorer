@@ -12,60 +12,29 @@ var topbar_div = [
     '                <a class="brand " href="#">RE</a>',
     '                <div class="nav-collapse">',
     '                    <ul class="nav">',
-    '                        <li class="data dropdown">',
-    '                            <a href="features.cancceregulome.org"',
-    '                               class="dropdown-toggle"',
-    '                               data-toggle="dropdown">',
+    '                        <li class="data">',
+    '                            <a href="http://features.cancerregulome.org"',
     '                                Features',
     '                                <b class="caret"></b>',
     '                            </a>',
-    '                            <ul class="dropdown-menu">',
-    '                                <li><a href="#">Browse</a></li>',
-    '                                <li>By</li>',
-    '                                <li><a href="#">Disease</a></li>',
-    '                                <li><a href="#">Analysis</a></li>',
-    '                                <li><a href="#">Patients</a></li>',
-    '                                <li class="divider"></li>',
-    '                                <li><a href="#">Favorites</a></li>',
-    '                                <li><a href="#">Shared</a></li>',
-    '                            </ul>',
     '                        </li>',
-    '                        <li class="queries dropdown">',
+    '                        <li class="queries">',
     '                            <a href="http://analysis.cancerregulome.org"',
-    '                               class="dropdown-toggle"',
-    '                               data-toggle="dropdown">',
     '                                Analyses',
     '                                <b class="caret"></b>',
     '                            </a>',
-    '                            <ul class="dropdown-menu">',
-    '                                <li><a href="#">Most Recent</a></li>',
-    '                                <li><a href="#">Favorites</a></li>',
-    '                                <li><a href="#">History</a></li>',
-    '                            </ul>',
     '                        </li>',
-    '                        <li class="results dropdown">',
-    '                            <a href="http://sets.cancerregulome.org"',
-    '                               class="dropdown-toggle"',
-    '                               data-toggle="dropdown">',
+    '                        <li class="results">',
+    '                            <a href="http://sets.cancerregulome.org',
     '                                mySets',
     '                                <b class="caret"></b>',
     '                            </a>',
-    '                            <ul class="dropdown-menu">',
-    '                                <li><a href="#">Most Recent</a></li>',
-    '                                <li><a href="#">Favorites</a></li>',
-    '                                <li><a href="#">History</a></li>',
-    '                            </ul>',
     '                        </li>',
-    '                       <li class="results dropdown">',
-       '                            <a href="http://igraph.cancerregulome.org"',
+    '                       <li class="results">',
+       '                            <a href="http://igraphs.cancerregulome.org"',
        '                                iGraphs',
        '                                <b class="caret"></b>',
        '                            </a>',
-       '                            <ul class="dropdown-menu">',
-       '                                <li><a href="#">Most Recent</a></li>',
-       '                                <li><a href="#">Favorites</a></li>',
-       '                                <li><a href="#">History</a></li>',
-       '                            </ul>',
        '                        </li>',
     '                    </ul>',
     '',
@@ -112,17 +81,17 @@ $(document).ready(function() {
     });
      $('.topbar-toggle').click(function() {
         topbar_height = $('#topbar').outerHeight();
-        
+
         if (!$('#collapse_icon').hasClass('icon-minus')) {
         $('#topbar').slideUp( 800,'easeInQuad',function(){
             $('#topbar').height(topbar_height);
             $('#collapse_icon').toggleClass('icon-minus');
         });
-        
-       } else { 
-            $('#topbar').slideDown( 800,'easeInQuad',function(){            
-            $('#topbar').height('auto');    
-            $('#collapse_icon').toggleClass('icon-minus');    
+
+       } else {
+            $('#topbar').slideDown( 800,'easeInQuad',function(){
+            $('#topbar').height('auto');
+            $('#collapse_icon').toggleClass('icon-minus');
             });
         }
     });
