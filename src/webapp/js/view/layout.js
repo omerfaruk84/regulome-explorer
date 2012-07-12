@@ -653,9 +653,9 @@ function exposeCirclePlot() {
     re.windows.masks.network_mask.hide();
 }
 
-function exposeLinearPlot(chr, start, range_length) {
+function exposeLinearPlot(feature_obj) {
     Ext.getCmp('linear-parent').expand(true);
-    Ext.getCmp('linear-parent').setTitle('Chromosome-level View: Chromosome ' + chr);
+    Ext.getCmp('linear-parent').setTitle('Chromosome-level View: Chromosome ' + feature_obj.chr);
     var task = new Ext.util.DelayedTask(function() {
         var rf = Ext.getCmp('rf-graphical').body;
         var d = rf.dom;

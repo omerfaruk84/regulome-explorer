@@ -264,7 +264,6 @@ function legend_draw(div,anchor) {
     var vis= new pv.Panel()
         .left(left)
         .top(top)
-
         .width(legend_width)
         .height(legend_height)
         .lineWidth(1)
@@ -347,7 +346,8 @@ function singlefeature_circvis(parsed_data,div) {
     var ticks = vq.utils.VisUtils.clone(parsed_data['features']);
 
     //customize feature hovercard config to include association values
-    var tooltips =  re.display_options.circvis.tooltips.feature;
+    var tooltips = {};
+    tooltips = vq.utils.VisUtils.extend({},re.display_options.circvis.tooltips.feature);
     re.model.association.types.forEach(function(assoc) {
             vq.utils.VisUtils.extend(tooltips, assoc.vis.tooltip.entry);
        });
@@ -374,7 +374,7 @@ function singlefeature_circvis(parsed_data,div) {
                 listener : wedge_listener,
                 stroke_style :stroke_style,
                 fill_style : function(tick) {return re.plot.colors.node_colors(tick.source); },
-                tooltip_items :  re.display_options.circvis.tooltips.feature,
+                tooltip_items :  tooltips,
                 tooltip_links : re.display_options.circvis.tooltips.feature_links
             }
         },

@@ -1,8 +1,7 @@
 
 if (re === undefined) { re = {};}
-
-vq.utils.VisUtils.extend(re.ui, {
-        panels : {
+vq.utils.VisUtils.extend(re,{ui:{}});
+re.ui.panels = {
             east : {
                 region: 'east',
                 collapsible: true,
@@ -513,5 +512,4 @@ vq.utils.VisUtils.extend(re.ui, {
             }
 
         }
-    }
-);
+    };
