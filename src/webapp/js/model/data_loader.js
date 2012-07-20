@@ -63,16 +63,13 @@ function generateNetworkDefinition(responses) {
         if (node1.length < 7 || node2.length < 7) {
             console.error('Feature data is malformed. RF-ACE features consist of 7 required properties.');
         }
-
         var source_id = (source_map[f1id] === undefined ? (source_array.push({
                 id : f1id, type : node1[1], label : node1[2], chr : node1[3].slice(3),
                 start: rectifyChrPosition(node1[4]) ,
                 end:rectifyChrPosition(node1[5]) != -1 ? rectifyChrPosition(node1[5]) : rectifyChrPosition(node1[4])}
         )-1) :
             source_map[f1id]);
-
         source_map[f1id] = source_id;
-
         var target_id = (source_map[f2id] === undefined ? (source_array.push({id : f2id,
                 type : node2[1], label : node2[2], chr : node2[3].slice(3),
                 start: rectifyChrPosition(node2[4]) ,
@@ -88,6 +85,7 @@ function generateNetworkDefinition(responses) {
             }
             obj[assoc.ui.grid.store_index] = row[assoc.query.id];
         });
+	//obj["link_distance"] = row["link_distance"];
         return obj;
     });
 
@@ -136,15 +134,16 @@ function parseNetwork(responses) {
                 }
                 obj[assoc.ui.grid.store_index] = row[assoc.query.id];
             });
+	    if (re.model.association.link_distance != undefined)
+	    	obj["link_distance"] = row["link_distance"];	
             return obj;
-//            pvalue : row.pvalue,importance : row.importance, correlation:row.correlation};
         }
     );
     var located_responses = whole_net.filter(function(feature) {
         return feature.node1.chr != '' && feature.node2.chr != '';});
 
     var unlocated_responses =  whole_net.filter(function(feature) {
-        return feature.node1.chr == '' || feature.node2.chr == '';});
+        return feature.node1.chr == '' || feature.node2.chr == '' || feature.node1.chr == 'NA' || feature.node2.chr == 'NA';});
 
     var feature_ids = {};
     var features = [];
