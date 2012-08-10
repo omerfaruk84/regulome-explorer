@@ -1632,7 +1632,7 @@ var datasetGrid = new Ext.grid.GridPanel({
         modal: true,
         closeAction: 'hide',
         layout:'fit',
-        width: 600,
+        width: 700,
         height: 300,
         title: "Load Dataset",
         closable: true,
