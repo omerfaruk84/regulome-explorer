@@ -8,4 +8,5 @@ syntax: glob
 *.gif
 *.pom
 .idea*
-
+node_modules*
+_public*
