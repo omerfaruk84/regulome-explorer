@@ -2,7 +2,12 @@ var application = require('application');
 
 module.exports = Backbone.Router.extend({
   routes: {
-    '': 'home'
+    '': 'home',
+    'graph': 'graph'
+  },
+
+  graph: function() {
+  	$('body').html(application.graphView.render().el);
   },
 
   home: function() {
