@@ -1,14 +1,5 @@
 exports.config =
   # See docs at http://brunch.readthedocs.org/en/latest/config.html.
-  modules:
-    definition: false
-    wrapper: (path, data) ->
-      """
-(function() {
-  'use strict';
-  #{data}
-}).call(this);\n\n
-      """
   paths:
     public: '_public'
   files:
@@ -19,20 +10,33 @@ exports.config =
         'js/vendor.js': /^vendor/
       order:
         before: [
-	  'vendor/js/vivagraph.js',
-          'vendor/js/console-helper.js',
-          'vendor/js/jquery-1.7.2.js',
+	        'vendor/js/console-helper.js',
+          'vendor/js/jquery-1.8.0.js',
+          'vendor/scripts/bootstrap.js',
           'vendor/js/underscore-1.3.3.js',
-          'vendor/js/backbone-0.9.2.js'
+          'vendor/js/backbone-0.9.2.js',
+          'vendor/scripts/backbone-mediator.js'
+        ],
+        after: [
+          'vendor/scripts/bootstrap/bootstrap-transition.js',
+          'vendor/scripts/bootstrap/bootstrap-alert.js',
+          'vendor/scripts/bootstrap/bootstrap-button.js',
+          'vendor/scripts/bootstrap/bootstrap-carousel.js',
+          'vendor/scripts/bootstrap/bootstrap-collapse.js',
+          'vendor/scripts/bootstrap/bootstrap-dropdown.js',
+          'vendor/scripts/bootstrap/bootstrap-modal.js',
+          'vendor/scripts/bootstrap/bootstrap-tooltip.js',
+          'vendor/scripts/bootstrap/bootstrap-popover.js',
+          'vendor/scripts/bootstrap/bootstrap-scrollspy.js',
+          'vendor/scripts/bootstrap/bootstrap-tab.js',
+          'vendor/scripts/bootstrap/bootstrap-typeahed.js'
         ]
-
+   
     stylesheets:
-      defaultExtension: 'styl'
-      joinTo: 
-        'css/app.css': /^(app|vendor)/
+      defaultExtension: 'less'
+      joinTo: 'css/app.css'
       order:
-        before: ['vendor/css/normalize.css']
-        after: ['vendor/css/helpers.css']
+       before: ['vendor/css/bootstrap/bootstrap.less']
 
     templates:
       defaultExtension: 'hbs'
