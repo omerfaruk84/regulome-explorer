@@ -583,7 +583,7 @@ function loadUndirectedNetworkDataByAssociation(params) {
 
     re.state.network_query = buildGQLQuery(params);
     var association_query_str = '?' + re.params.query + re.state.network_query + re.params.json_out;
-    var association_query = re.databases.base_uri + re.databases.rf_ace.uri + re.tables.network_uri + re.rest.query + association_query_str;
+    var association_query = 'http://breve:8080/solr/core0/distributed_select/?q='  + re.state.network_query + '&wt=json';
 
     requestWithRetry(association_query,handleNetworkQuery,'associations',1);
 
@@ -672,98 +672,138 @@ function flipParams(params) {
 };
 
 function buildGQLQuery(args) {
-    var query = 'select alias1, alias2, f1qtinfo, f2qtinfo';
+    var flparam = 'fl=alias1,alias2,f1qtinfo,f2qtinfo';
     if (re.ui.filters.link_distance) {
-        query+= ',link_distance';
+        flparam+= ',link_distance';
     }
+    //try out solr query
+
+    //var query = 'select alias1, alias2';
+    //re.model.association.types.forEach(function(obj) {
+    //    query += ', ' + obj.query.id;
+    //});
+
     re.model.association.types.forEach(function(obj) {
-        query += ', ' + obj.query.id;
-    });
-    var whst = ' where',
-        where = whst;
+            flparam += ',' + obj.query.id;
+        });
+    //var whst = ' where',
+    //    where = whst;
+    var qparam='';
     if (args['t_type'] != '' && args['t_type'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f1source = \'' + args['t_type'] + '\'';
+       // where += (where.length > whst.length ? ' and ' : ' ');
+       // where += 'f1source = \'' + args['t_type'] + '\'';
+        qparam += (qparam == '' ? '':'%20');
+        qparam += '%2Bf1source%3A"'+ args['t_type'] + '"';
     }
     if (args['p_type'] != '' && args['p_type'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f2source = \'' + args['p_type'] + '\'';
+      //  where += (where.length > whst.length ? ' and ' : ' ');
+       // where += 'f2source = \'' + args['p_type'] + '\'';
+        qparam += (qparam == '' ? '':' ');
+               qparam += '%2Bf2source%3A"'+ args['p_type'] + '"';
     }
     if (args['t_label'] != '' && args['t_label'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += '`f1label` ' + parseLabel(args['t_label']);
+     //   where += (where.length > whst.length ? ' and ' : ' ');
+     //   where += '`f1label` ' + parseLabel(args['t_label']);
+        qparam += (qparam == '' ? '':' ');
+               qparam += '+f1label:\''+ parseLabel(args['t_label']) + '\'';
     }
     if (args['p_label'] != '' && args['p_label'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += '`f2label` ' + parseLabel(args['p_label']);
+      //  where += (where.length > whst.length ? ' and ' : ' ');
+      //  where += '`f2label` ' + parseLabel(args['p_label']);
+        qparam += (qparam == '' ? '':' ');
+               qparam += '+f2label:\''+ parseLabel(args['p_label']) + '\'';
     }
     if (args['t_chr'] != '' && args['t_chr'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
+      //  where += (where.length > whst.length ? ' and ' : ' ');
+      //  where += 'f1chr = \'' + args['t_chr'] + '\'';
+        qparam += (qparam == '' ? '':' ');
      //   where += 'f1chr = \'' + args['t_chr'] + '\'';
-      where += re.functions.convertChrListToQueryClause(args['t_chr'],'f1chr');
+    //  qparam += re.functions.convertChrListToQueryClause(args['t_chr'],'f1chr');
+               qparam += '+f1chr:\''+ args['t_chr'] + '\'';
     }
     if (args['p_chr'] != '' && args['p_chr'] != '*') {
-        where += (where.length > whst.length ? ' and ' : ' ');
+      //  where += (where.length > whst.length ? ' and ' : ' ');
+      //  where += 'f2chr = \'' + args['p_chr'] + '\'';
+        qparam += (qparam == '' ? '':' ');
         //where += 'f2chr = \'' + args['p_chr'] + '\'';
-        where += re.functions.convertChrListToQueryClause(args['p_chr'],'f2chr');
+       // qparam += re.functions.convertChrListToQueryClause(args['p_chr'],'f2chr');
+               qparam += '+f2chr:\''+ args['p_chr'] + '\'';
     }
     if (args['t_start'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f1start >= ' + args['t_start'];
+     //   where += (where.length > whst.length ? ' and ' : ' ');
+     //   where += 'f1start >= ' + args['t_start'];
+        qparam += (qparam == '' ? '':' ');
+               qparam += '+f1start:['+ args['t_start'] + ' TO *]';
     }
     if (args['p_start'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f2start >= ' + args['p_start'];
+    //    where += (where.length > whst.length ? ' and ' : ' ');
+    //    where += 'f2start >= ' + args['p_start'];
+        qparam += (qparam == '' ? '':' ');
+        qparam += '+f2start:['+ args['p_start'] + ' TO *]';
     }
     if (args['t_stop'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f1end <= ' + args['t_stop'];
+      //  where += (where.length > whst.length ? ' and ' : ' ');
+      //  where += 'f1end <= ' + args['t_stop'];
+        qparam += (qparam == '' ? '':' ');
+        qparam += '+f1end:[* TO '+ args['t_stop'] + ']';
     }
     if (args['p_stop'] != '') {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f2end <= ' + args['p_stop'];
+      //  where += (where.length > whst.length ? ' and ' : ' ');
+       // where += 'f2end <= ' + args['p_stop'];
+        qparam += (qparam == '' ? '':' ');
+        qparam += '+f2end:[* TO '+ args['p_stop'] + ']';
     }
     if ((args['p_start'] != '') && (args['p_stop'] != '')) {
-        where += ' and f2end >= ' + args['p_start'];
+     //   where += ' and f2end >= ' + args['p_start'];
+        qparam += (qparam == '' ? '':' ');
+        qparam += '+f2end:['+ args['p_start'] + ' TO *]';
     }
+
     if ((args['t_start'] != '') && (args['t_stop'] != '')) {
-        where += ' and f1end >= ' + args['t_start'];
+       // where += ' and f1end >= ' + args['t_start'];
+        qparam += (qparam == '' ? '':' ');
+        qparam += '+f1end:['+ args['t_start'] + ' TO *]';
     }
 
     if (args['cis']) {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f1chr=f2chr';
+      //  where += (where.length > whst.length ? ' and ' : ' ');
+       // where += 'f1chr=f2chr';
+       // qparam += (qparam == '' ? '':' ');
+      //  qparam += '+f2end:[* TO '+ args['p_stop'] + ']';
     }
     if(args['cis'] && args['cis_distance_value'] != '') {
-        var clause1 = flex_field_query('link_distance',args['cis_distance_value'], args['cis_distance_fn']);
-            where += ((clause1.length < 1) ? '' : ((where.length > whst.length ? ' and ' : ' ') + '(' + clause1 + ' )'));
+      //  var clause1 = flex_field_query('link_distance',args['cis_distance_value'], args['cis_distance_fn']);
+       //     where += ((clause1.length < 1) ? '' : ((where.length > whst.length ? ' and ' : ' ') + '(' + clause1 + ' )'));
     }
 
     if(args['trans']) {
-        where += (where.length > whst.length ? ' and ' : ' ');
-        where += 'f1chr!=f2chr'; 
+       // where += (where.length > whst.length ? ' and ' : ' ');
+       // where += 'f1chr!=f2chr';
     }
 
     re.model.association.types.forEach(function(obj) {
         if (typeof obj.query.clause == 'function') {
-            var clause = flex_field_query(obj.query.id, args[obj.query.id+'_value'], args[obj.query.id + '_fn']);
-            where += ((clause.length < 1) ? '' : ((where.length > whst.length ? ' and ' : ' ') + clause));
+  //          var clause = flex_field_query(obj.query.id, args[obj.query.id+'_value'], args[obj.query.id + '_fn']);
+  //          where += ((clause.length < 1) ? '' : ((where.length > whst.length ? ' and ' : ' ') + clause));
             return;
         }
         if (args[obj.query.id] != '') {
-            where += (where.length > whst.length ? ' and ' : ' ');
-            where += obj.query.clause + args[obj.query.id];
+  //          where += (where.length > whst.length ? ' and ' : ' ');
+    //        where += obj.query.clause + args[obj.query.id];
         }
     });
 
     var order_id = (re.model.association.types[re.model.association_map[args['order']]].query.order_id === undefined) ? args['order'] : re.model.association.types[re.model.association_map[args['order']]].query.order_id;
 
 
-    query += (where.length > whst.length ? where : '');
-    query += ' order by ' + order_id + ' ' + (re.model.association.types[re.model.association_map[args['order']]].query.order_direction || 'DESC');
-    query += ' limit ' + args['limit'];
+  //  query += (where.length > whst.length ? where : '');
+  //  query += 'sortby=' + order_id + ' ' + (re.model.association.types[re.model.association_map[args['order']]].query.order_direction || 'DESC');
+  //  query += '&rows=' + args['limit'];
+        qparam += '&sortby=' + order_id + ' ' + (re.model.association.types[re.model.association_map[args['order']]].query.order_direction || 'DESC');
+        qparam += '&rows=' + args['limit'];
 
-    return query;
+    //return qparam;
+return '%2Bf1source%3A%22GEXP%22&sort=logged_pvalue%20desc&rows=200';
 }
 
 
