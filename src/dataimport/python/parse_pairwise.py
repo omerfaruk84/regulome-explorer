@@ -197,7 +197,15 @@ def process_pairwise_edges(dataset_label, matrixfile, pairwised_file, pvlambda, 
     	#create sharded association files for solr import
     	solrshout.write("#!/bin/bash\n");
     	solrshout.write("python createPWShardedDataset.py " + edges_out_re.name + " " + dataset_label + "\n") 
-    	solrshout.write("curl '" + mysolr + "/core0/update/csv?commit=true&separator=%09&overwrite=false&escape=\ ' --data-binary @" + edges_out_re.name + "_core0_final.tsv -H 'Content-type:text/plain;charset=utf-8' &\n")
+    	solrshout.write("curl '" + mysolr + "/core0/update/?commit=true' -H 'Content-type:text/xml' --data-binary '<delete><query>dataset:\"" + dataset_label + "\"</query></delete>'\n")
+ 	solrshout.write("curl '" + mysolr + "/core1/update/?commit=true' -H 'Content-type:text/xml' --data-binary '<delete><query>dataset:\"" + dataset_label + "\"</query></delete>'\n")
+ 	solrshout.write("curl '" + mysolr + "/core2/update/?commit=true' -H 'Content-type:text/xml' --data-binary '<delete><query>dataset:\"" + dataset_label + "\"</query></delete>'\n")
+ 	solrshout.write("curl '" + mysolr + "/core3/update/?commit=true' -H 'Content-type:text/xml' --data-binary '<delete><query>dataset:\"" + dataset_label + "\"</query></delete>'\n")
+ 	solrshout.write("curl '" + mysolr + "/core4/update/?commit=true' -H 'Content-type:text/xml' --data-binary '<delete><query>dataset:\"" + dataset_label + "\"</query></delete>'\n")
+ 	solrshout.write("curl '" + mysolr + "/core5/update/?commit=true' -H 'Content-type:text/xml' --data-binary '<delete><query>dataset:\"" + dataset_label + "\"</query></delete>'\n")
+ 	solrshout.write("curl '" + mysolr + "/core6/update/?commit=true' -H 'Content-type:text/xml' --data-binary '<delete><query>dataset:\"" + dataset_label + "\"</query></delete>'\n")
+ 	solrshout.write("curl '" + mysolr + "/core7/update/?commit=true' -H 'Content-type:text/xml' --data-binary '<delete><query>dataset:\"" + dataset_label + "\"</query></delete>'\n")
+	solrshout.write("curl '" + mysolr + "/core0/update/csv?commit=true&separator=%09&overwrite=false&escape=\ ' --data-binary @" + edges_out_re.name + "_core0_final.tsv -H 'Content-type:text/plain;charset=utf-8' &\n")
     	solrshout.write("curl '" + mysolr + "/core1/update/csv?commit=true&separator=%09&overwrite=false&escape=\ ' --data-binary @" + edges_out_re.name + "_core1_final.tsv -H 'Content-type:text/plain;charset=utf-8' &\n")
     	solrshout.write("curl '" + mysolr + "/core2/update/csv?commit=true&separator=%09&overwrite=false&escape=\ ' --data-binary @" + edges_out_re.name + "_core2_final.tsv  -H 'Content-type:text/plain;charset=utf-8' &\n")
     	solrshout.write("curl '" + mysolr + "/core3/update/csv?commit=true&separator=%09&overwrite=false&escape=\ ' --data-binary @" + edges_out_re.name + "_core3_final.tsv -H 'Content-type:text/plain;charset=utf-8' &\n")
