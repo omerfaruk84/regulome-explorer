@@ -1355,6 +1355,11 @@ function scatterplot_draw(params) {
         //labels to display for category values;
         var uniq_categories = pv.uniq(categories);
         var mappedValues = labelFunction ? uniq_categories.map(labelFunction) : uniq_categories;
+        mappedValues.sort();
+        mappedValues.sort(function(a,b) { 
+            if (b === 'NA'){ return -1;}
+            else if (a === 'NA') { return 1;} 
+            return 0;});
 
         dot_colors = re.functions.assignValueColors(categories);
 
