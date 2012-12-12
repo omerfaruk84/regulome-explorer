@@ -690,24 +690,23 @@ function buildGQLQuery(args) {
                qparam += '+f2source:"'+ args['p_type'] + '"';
     }
     if (args['t_label'] != '' && args['t_label'] != '*') {
-               qparam += '+f1label:'+ querifySolrLabelList(args['t_label']) + ' ';
+               qparam += re.functions.convertListToSolrQueryClause(args['t_label'],'f1label');
     }
     if (args['p_label'] != '' && args['p_label'] != '*') {
-               qparam += '+f2label:'+ querifySolrLabelList(args['p_label']) + ' ';
+               qparam += re.functions.convertListToSolrQueryClause(args['p_label'],'f2label');
     }
     if (args['t_chr'] != '' && args['t_chr'] != '*') {
-        qparam += re.functions.convertChrListToSolrQueryClause(args['t_chr'],'f1chr');
+        qparam += re.functions.convertListToSolrQueryClause(args['t_chr'],'f1chr');
 
     }
     if (args['p_chr'] != '' && args['p_chr'] != '*') {
-        qparam += re.functions.convertChrListToSolrQueryClause(args['p_chr'],'f2chr');
+        qparam += re.functions.convertListToSolrQueryClause(args['p_chr'],'f2chr');
 
     }
     if ((args['p_start'] != '') && (args['p_stop'] != '')) {
         qparam += '+f2start:['+ args['p_start'] + ' TO ' + args['p_stop'] + '] '
                      '+f2end:['+ args['p_start'] + ' TO ' + args['p_stop'] + ']';
     }
-
     else if (args['p_start'] != '') {
         qparam += '+f2start:['+ args['p_start'] + ' TO *]';
     }
@@ -719,11 +718,9 @@ function buildGQLQuery(args) {
         qparam += '+f1start:['+ args['t_start'] + ' TO ' + args['t_stop'] + '] '
                   '+f1end:['+ args['t_start'] + ' TO ' + args['t_stop'] + ']';
         }
-
     else if (args['t_start'] != '') {
                qparam += '+f1start:['+ args['t_start'] + ' TO *]';
     }
-
     else if (args['t_stop'] != '') {
         qparam += '+f1end:[* TO '+ args['t_stop'] + ']';
     }

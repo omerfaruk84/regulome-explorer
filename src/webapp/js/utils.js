@@ -93,37 +93,35 @@ vq.utils.VisUtils.extend(re, {
             return clause;
         },
     
-      convertChrListToSolrQueryClause: function(list_str, column_name) {
+      convertListToSolrQueryClause: function(list_str, column_name) {
                    var tokens = list_str.split(',').map(trim);
                    var and_tokens = new Array();
                    var or_tokens = new Array();
                    //split the list into inclusions/or's and exclusions/!(and)'s
                    tokens.forEach(function(a){
+                    var b = a.replace(new RegExp('[*%]', 'g'), '*');
                        if (a.charAt(0) == '!') {
-                           and_tokens.push(a.slice(1));
+                           and_tokens.push(b.slice(1));
                        }
                        else  //take all characters after the !
-                           or_tokens.push(a);
+                           or_tokens.push(b);
                    });
                    var clause = '';
                    if (and_tokens.length) {
                        clause +='-' + column_name + ':(';
                        var u;
                        while ((u=and_tokens.pop()) != null) {
-
-                          clause +=  '"' + u + '"';
+                          clause +=  !~u.indexOf('*') ? '"' + u + '"' : u; //don't add quotes for wildcard
                        }
                        clause += ')';
                    }
-                   else {
-                   var t;
                        if (or_tokens.length){
+                           var t;
                            clause += '+' + column_name + ':(';
                            while ((t = or_tokens.pop()) != null) {
-                               clause += '"' + t + '"';
+                                 clause +=  !~t.indexOf('*') ? '"' + t + '"' : t; //don't add quotes for wildcard
                            }
                            clause += ')';
-                       }
                    }
                    return clause;
                }
@@ -170,7 +168,6 @@ function solr_flex_field_query(label, value, fn) {
     return qparam;
 }
 
-
 function trim (str) {
     return str.replace(/^\s+/, '').replace(/\s+$/, '');
 }
@@ -178,51 +175,6 @@ function trim (str) {
 // Tests if s is an unsigned integer
 function isUnsignedInteger (s) {
      return (s.toString().search(/^[0-9]+$/) == 0);
-}
-function parseLabelList(labellist) {
-    return labellist.replace(new RegExp(' ', 'g'), '').split(',');
-}
-
-function querifyLabelList(field_id, labellist) {
-    var labels = parseLabelList(labellist);
-    var clause = '(';
-    if (labels.length < 1) return '';
-    labels.forEach(function(label) {
-        clause += ' `' + field_id + '` ' + parseLabel(label);
-        clause += ' or'
-    });
-    clause = clause.slice(0, -3);
-    clause += ')';
-    return clause;
-}
-
-function parseLabel(label) {
-    var return_label = label.toUpperCase();
-    if (return_label.length > 1 && (return_label.indexOf('*') >= 0 || return_label.indexOf('%') >= 0)) {
-        return 'like \'' + return_label.replace(new RegExp('[*%]', 'g'), '%25') + '\'';
-    } else {
-        return '=\'' + return_label + '\'';
-    }
-}
-
-function querifySolrLabelList(labellist) {
-    var labels = parseLabelList(labellist);
-    var clause = '(';
-    if (labels.length < 1) return '';
-    labels.forEach(function(label) {
-        clause += parseSolrLabel(label);
-    });
-    clause += ')';
-    return clause;
-}
-
-function parseSolrLabel(label) {
-    var return_label = label.toUpperCase();
-    if (return_label.length > 1 && (return_label.indexOf('*') >= 0 || return_label.indexOf('%') >= 0)) {
-        return return_label.replace(new RegExp('[*%]', 'g'), '*');
-    } else {
-        return '\"' + return_label + '\"';
-    }
 }
 
 function parseAnnotationList(feature) {
@@ -285,7 +237,6 @@ function translateCNVRAnnotation(annotation) {
 /**
  http://www.webtoolkit.info/javascript-base64.html
  */
-
 
 var Base64 = {
 
