@@ -296,7 +296,7 @@ function retrieveFeatures() {
     var data = re.plot.scatterplot_data;
     var f1 = data.f1alias, f2 = data.f2alias;
     var columns = ['id'].concat(re.ui.getDatasetLabels()['patients']);
-    var rows = [[f1].concat(data.f1values.split(':')),[f2].concat(data.f2values.split(':'))];
+    var rows = [[f1].concat(data.f1values),[f2].concat(data.f2values)];
     if (re.plot.scatterplot_category ) {
         var category = [re.plot.scatterplot_category.alias].concat(re.plot.scatterplot_category.values);
         rows = rows.concat([category]);
